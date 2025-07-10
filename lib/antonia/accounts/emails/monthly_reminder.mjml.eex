@@ -1,0 +1,57 @@
+g button<mjml>
+  <mj-head>
+    <mj-style>
+      .title-color {
+        color: #0f172a;
+      }
+      .link-color {
+        color: #4f46e5;
+        font-weight: bold;
+      }
+      .box-shadow {
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+      }
+    </mj-style>
+    <mj-attributes>
+      <mj-all font-family="ui-sans-serif, sans-serif" />
+      <mj-text font-weight="400" line-height="1.4" padding="4px 0"/>
+      <mj-button inner-padding="8px 16px" font-weight="bold"/>
+    </mj-attributes>
+  </mj-head>
+  <mj-body background-color="#f9fafb">
+    <mj-section></mj-section>
+    <mj-section background-color="#ffffff" border-radius="0.5rem" padding="32px 24px" css-class="box-shadow">
+      <mj-column>
+        <mj-image src="<%= @base_url %>/images/ahead-logo.svg" width="64px" alt="logo" padding-bottom="16px" padding-left="0px" align="left" />
+        <mj-text font-size="20px" line-height="20px" font-weight="700" padding-bottom="16px">
+          Revenue declaration
+        </mj-text>
+        <mj-text color="#4b5563">
+          It's time to declare the revenue for store <%= @store.name %>, for the period <%= @period_start %> to <%= @period_end %>.
+        </mj-text>
+        <mj-text color="#4b5563" padding-bottom="16px">
+          Please submit your revenue within 7 days of receiving this email.
+        </mj-text>
+        <mj-button href="<%= @base_url %>/stores/<%= @store.id %>" align="left" background-color="#4f46e5" border-radius="0.375rem" padding="0px">
+          Report revenue
+        </mj-button>
+        <mj-text color="#4b5563" padding-top="16px">
+          If you have any questions, feel free to reach out to us at <a href="mailto:help@buyahead.co" class="link-color">help@buyahead.co</a>.
+        </mj-text>
+        <mj-text color="#4b5563" padding-top="16px">
+          Thanks,
+        </mj-text>
+        <mj-text color="#4b5563" padding-top="4px">
+          Ahead team
+        </mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section padding-top="16px">
+      <mj-column>
+        <mj-text align="center" font-size="12px" line-height="20px" color="#6b7280">
+          &copy; 2023 Ahead Software Ltd. All rights reserved.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

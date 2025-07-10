@@ -1,0 +1,18 @@
+{
+  "coverage_options": {
+    "treat_no_relevant_lines_as_covered": true,
+    "output_dir": "cover/ex_unit",
+    "minimum_coverage": 63
+  },
+  "skip_files": [
+    "deps",
+    "lib/antonia_app.ex",
+    "lib/antonia_web.ex",
+    "lib/antonia_app/config.ex",
+    "lib/antonia_app/prom_ex.ex",
+    "lib/antonia/release.ex",
+    "lib/mix/tasks",
+    "test/support",
+    "dev"
+  ]
+}

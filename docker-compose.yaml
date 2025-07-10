@@ -1,0 +1,33 @@
+version: "3.9"
+services:
+  postgres:
+    image: postgis/postgis:16-3.4-alpine
+    platform: linux/amd64
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/initdb.d:/docker-entrypoint-initdb.d
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+  app:
+    build: .
+    depends_on:
+      - postgres
+    profiles:
+      - app
+    ports:
+      - "4000:4000"
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/antonia_dev
+      SECRET_KEY_BASE: EzsV3Yb+cw62e0iLYo92zUsr98bHZWZgORzyWDgS/QVlVDkHYoCbguh2KcBM3i0e
+      PORT: 4000
+      POOL_SIZE: 10
+      PHX_HOST: localhost
+      O11Y_PORT: 3999
+      LIVE_VIEW_SIGNING_SALT: 5Pvugx1k
+      CHECK_ORIGIN: //localhost
+volumes:
+  postgres_data: {}
+  minio_data: {}

@@ -1,0 +1,92 @@
+name: CI/CD
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+env:
+  ECR_REPOSITORY: ahead/antonia-app
+
+jobs:
+  build:
+    name: Build and test
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4-alpine
+        env:
+          POSTGRES_DB: antonia_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Elixir
+        uses: erlef/setup-beam@75edbb82877ab10edeb12a99c3cf2f0909f3dc87
+        with:
+          elixir-version: "1.15.2"
+          otp-version: "26.0"
+      - name: Restore dependencies cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            deps
+            _build
+          key: ${{ runner.os }}-mix-v1-cache-${{ hashFiles('**/mix.lock') }}
+          restore-keys: ${{ runner.os }}-mix-v1-cache-
+      # Restore PLT cache
+      - name: Restore PLT cache
+        uses: actions/cache@v4
+        with:
+          path: priv/plts
+          key: ${{ runner.os }}-mix-plt-v1-${{ hashFiles('**/mix.lock') }}
+          restore-keys: ${{ runner.os }}-mix-plt-v1-
+      - name: Install dependencies
+        run: mix deps.get
+      - name: Run tests
+        run: mix check
+  push-image:
+    name: Push image to ECR
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    environment: prd
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          audience: sts.amazonaws.com
+          aws-region: eu-west-1
+          role-to-assume: arn:aws:iam::484112682885:role/ahead-prd-antonia-app-cicd-role
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@d63b14614fe5d7fc5e5e52c523dea4e876816cc4
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          # Build a docker container and
+          # push it to ECR so that it can
+          # be deployed to ECS.
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
