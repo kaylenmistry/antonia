@@ -14,6 +14,7 @@ defmodule AntoniaApp do
       AntoniaWeb.Telemetry,
       Antonia.Repo,
       {Phoenix.PubSub, name: Antonia.PubSub},
+      {Oban, Application.fetch_env!(:antonia, Oban)},
       {Finch, name: Antonia.Finch},
       AntoniaWeb.Endpoint
     ]

@@ -1,0 +1,15 @@
+==============================
+
+Thank you for submitting your revenue declaration for store <%= @store.name %>, for the period <%= @period_start %> to <%= @period_end %>.
+
+You can view your submission below:
+
+<%= "#{@base_url}/stores/#{@store.id}" %>
+
+If you have any questions, feel free to reach out to us at <a href="mailto:help@buyahead.co" class="link-color">help@buyahead.co</a>.
+
+Thanks,
+
+Ahead team
+
+==============================

@@ -92,6 +92,12 @@ config :phoenix,
 
 config :tesla, :adapter, {Tesla.Adapter.Finch, name: Antonia.Finch, request_timeout: 60_000}
 
+config :antonia, Oban,
+  engine: Oban.Engines.Basic,
+  notifier: Oban.Notifiers.Postgres,
+  queues: [mailers: 20],
+  repo: Antonia.Repo
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

@@ -1,0 +1,15 @@
+==============================
+
+It's time to declare the revenue for store <%= @store.name %>, for the period <%= @period_start %> to <%= @period_end %>.
+
+Please submit your revenue within 7 days of receiving this email.
+
+<%= "#{@base_url}/stores/#{@store.id}" %>
+
+If you have any questions, feel free to reach out to us at <a href="mailto:help@buyahead.co" class="link-color">help@buyahead.co</a>.
+
+Thanks,
+
+Ahead team
+
+==============================

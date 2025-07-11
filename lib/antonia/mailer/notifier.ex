@@ -1,4 +1,4 @@
-defmodule Antonia.Accounts.UserNotifier do
+defmodule Antonia.Mailer.Notifier do
   @moduledoc """
   Delivers emails to users.
   """
@@ -10,33 +10,43 @@ defmodule Antonia.Accounts.UserNotifier do
   require Logger
 
   alias Antonia.Mailer
+  alias Antonia.Mailer.Emails
 
   @doc "Delivers the monthly reminder email to a recipient store"
   @spec deliver_monthly_reminder(term()) ::
           {:ok, Swoosh.Email.t()} | {:error, :missing_customer_email | term}
-  def deliver_monthly_reminder(store) do
+  def deliver_monthly_reminder(email) do
+    store = test_store(email)
     subject = gettext("Revenue report due")
-    recipient = store.correspondence_email
 
-    deliver(:monthly_reminder, recipient, subject, %{base_url: base_url()})
+    deliver(:monthly_reminder, store.email, subject, %{store: store, period_start: "2025-01-01", period_end: "2025-01-31", base_url: base_url()})
   end
 
   @doc "Delivers the overdue reminder email to a recipient store"
   @spec deliver_overdue_reminder(term()) :: {:ok, Swoosh.Email.t()} | {:error, term()}
-  def deliver_overdue_reminder(store) do
+  def deliver_overdue_reminder(email) do
+    store = test_store(email)
     subject = gettext("REMINDER: Report revenue due")
-    recipient = store.correspondence_email
 
-    deliver(:overdue_reminder, recipient, subject, %{base_url: base_url()})
+    deliver(:overdue_reminder, store.email, subject, %{store: store, period_start: "2025-01-01", period_end: "2025-01-31", base_url: base_url()})
   end
 
   @doc "Delivers the submission receipt email to a recipient store"
   @spec deliver_submission_receipt(term()) :: {:ok, Swoosh.Email.t()} | {:error, term()}
-  def deliver_submission_receipt(store) do
+  def deliver_submission_receipt(email) do
+    store = test_store(email)
     subject = gettext("Thank you")
-    recipient = store.correspondence_email
 
-    deliver(:overdue_reminder, recipient, subject, %{base_url: base_url()})
+    deliver(:submission_receipt, store.email, subject, %{store: store, period_start: "2025-01-01", period_end: "2025-01-31", base_url: base_url()})
+  end
+
+  # TODO: Remove this once we have a real store
+  def test_store(email) do
+    %{
+      id: Uniq.UUID.uuid7(),
+      email: email,
+      name: "Test Store"
+    }
   end
 
   # Delivers the email using the application mailer.
@@ -65,8 +75,8 @@ defmodule Antonia.Accounts.UserNotifier do
   defp apply_template(template, suffix, assigns) do
     func = String.to_existing_atom("#{template}_#{suffix}")
 
-    if function_exported?(UserEmails, func, 1) do
-      {:ok, apply(UserEmails, func, [assigns])}
+    if function_exported?(Emails, func, 1) do
+      {:ok, apply(Emails, func, [assigns])}
     else
       Logger.error("message=template-not-found template=#{template} suffix=#{suffix}")
       {:error, :template_not_found}
