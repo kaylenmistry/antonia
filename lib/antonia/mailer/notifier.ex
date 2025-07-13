@@ -12,46 +12,52 @@ defmodule Antonia.Mailer.Notifier do
   alias Antonia.Mailer
   alias Antonia.Mailer.Emails
 
-  @doc "Delivers the monthly reminder email to a recipient store"
-  @spec deliver_monthly_reminder(term()) ::
-          {:ok, Swoosh.Email.t()} | {:error, :missing_customer_email | term}
-  def deliver_monthly_reminder(email) do
-    store = test_store(email)
-    subject = gettext("Revenue report due")
+  alias Antonia.Revenue.Report
+  alias Antonia.Revenue.Store
 
-    deliver(:monthly_reminder, store.email, subject, %{store: store, period_start: "2025-01-01", period_end: "2025-01-31", base_url: base_url()})
+  @doc "Delivers the monthly reminder email to a recipient store"
+  @spec deliver_monthly_reminder(Store.t(), Report.t()) ::
+          {:ok, Swoosh.Email.t()} | {:error, term()}
+  def deliver_monthly_reminder(store, report) do
+    subject = gettext("Revenue report due")
+    assigns = email_assigns(store, report)
+
+    deliver(:monthly_reminder, store.email, subject, assigns)
   end
 
   @doc "Delivers the overdue reminder email to a recipient store"
-  @spec deliver_overdue_reminder(term()) :: {:ok, Swoosh.Email.t()} | {:error, term()}
-  def deliver_overdue_reminder(email) do
-    store = test_store(email)
+  @spec deliver_overdue_reminder(Store.t(), Report.t()) ::
+          {:ok, Swoosh.Email.t()} | {:error, term()}
+  def deliver_overdue_reminder(store, report) do
     subject = gettext("REMINDER: Report revenue due")
+    assigns = email_assigns(store, report)
 
-    deliver(:overdue_reminder, store.email, subject, %{store: store, period_start: "2025-01-01", period_end: "2025-01-31", base_url: base_url()})
+    deliver(:overdue_reminder, store.email, subject, assigns)
   end
 
   @doc "Delivers the submission receipt email to a recipient store"
-  @spec deliver_submission_receipt(term()) :: {:ok, Swoosh.Email.t()} | {:error, term()}
-  def deliver_submission_receipt(email) do
-    store = test_store(email)
+  @spec deliver_submission_receipt(Store.t(), Report.t()) ::
+          {:ok, Swoosh.Email.t()} | {:error, term()}
+  def deliver_submission_receipt(store, report) do
     subject = gettext("Thank you")
+    assigns = email_assigns(store, report)
 
-    deliver(:submission_receipt, store.email, subject, %{store: store, period_start: "2025-01-01", period_end: "2025-01-31", base_url: base_url()})
+    deliver(:submission_receipt, store.email, subject, assigns)
   end
 
-  # TODO: Remove this once we have a real store
-  def test_store(email) do
+  @spec email_assigns(Store.t(), Report.t()) :: map()
+  defp email_assigns(store, report) do
     %{
-      id: Uniq.UUID.uuid7(),
-      email: email,
-      name: "Test Store"
+      store: store,
+      period_start: report.period_start,
+      period_end: report.period_end,
+      base_url: base_url()
     }
   end
 
   # Delivers the email using the application mailer.
-  @spec deliver(atom(), {String.t(), String.t()}, String.t(), map) ::
-          {:ok, Swoosh.Email.t()} | {:error, term}
+  @spec deliver(atom(), String.t(), String.t(), map()) ::
+          {:ok, Swoosh.Email.t()} | {:error, term()}
   defp deliver(template, recipient, subject, assigns) do
     assigns = Map.put(assigns, :recipient, recipient)
 

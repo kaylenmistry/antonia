@@ -5,11 +5,11 @@ defmodule AntoniaApp.Logger.FormatterTest do
 
   describe "format/4" do
     setup do
-      value = Application.get_env(:Antonia, LogFormatter)
-      Application.put_env(:Antonia, LogFormatter, exclude: [:excluded_key])
+      value = Application.get_env(:antonia, LogFormatter)
+      Application.put_env(:antonia, LogFormatter, exclude: [:excluded_key])
 
       on_exit(fn ->
-        Application.put_env(:Antonia, LogFormatter, value)
+        Application.put_env(:antonia, LogFormatter, value)
       end)
     end
 

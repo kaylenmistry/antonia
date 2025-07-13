@@ -1,13 +1,20 @@
 defmodule AntoniaWeb.Router do
   use AntoniaWeb, :router
 
+  alias AntoniaWeb.Plugs.ReferrerPolicy
+
+  @csp :antonia
+       |> Application.compile_env(:content_security_policy)
+       |> Enum.join("; ")
+
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
     plug :fetch_live_flash
     plug :put_root_layout, html: {AntoniaWeb.Layouts, :root}
     plug :protect_from_forgery
-    plug :put_secure_browser_headers
+    plug :put_secure_browser_headers, %{"content-security-policy" => @csp}
+    plug ReferrerPolicy
   end
 
   pipeline :api do
@@ -17,7 +24,8 @@ defmodule AntoniaWeb.Router do
   scope "/", AntoniaWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
+    live "/", SplashLive
+    live "/reports/:id", ReportLive
   end
 
   # Other scopes may use custom stacks.
