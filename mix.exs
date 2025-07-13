@@ -34,7 +34,7 @@ defmodule Antonia.MixProject do
   defp deps do
     [
       {:bandit, "~> 1.5"},
-      {:dns_cluster, "~> 0.1.1"},
+      {:dns_cluster, "~> 0.2.0"},
       {:ecto_sql, "~> 3.10"},
       {:finch, "~> 0.13"},
       {:gettext, "~> 0.26"},
