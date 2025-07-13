@@ -71,7 +71,7 @@ defmodule Antonia.MixProject do
       {:igniter, "~> 0.5"},
       {:mix_audit, "~> 2.1", only: [:dev, :test], runtime: false},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
-      {:tailwind, "~> 0.2.0", runtime: Mix.env() == :dev},
+      {:tailwind, "~> 0.3.1", runtime: Mix.env() == :dev},
       {:typed_ecto_schema, "~> 0.4.1", runtime: false}
     ]
   end
