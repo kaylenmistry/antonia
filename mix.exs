@@ -54,13 +54,13 @@ defmodule Antonia.MixProject do
   defp deps do
     [
       {:bandit, "~> 1.5"},
-      {:dns_cluster, "~> 0.1.1"},
+      {:dns_cluster, "~> 0.2.0"},
       {:ecto_sql, "~> 3.10"},
       {:finch, "~> 0.13"},
       {:gettext, "~> 0.26"},
       {:heroicons,
        github: "tailwindlabs/heroicons",
-       tag: "v2.1.1",
+       tag: "v2.2.0",
        sparse: "optimized",
        app: false,
        compile: false,
@@ -98,7 +98,7 @@ defmodule Antonia.MixProject do
       {:mock, "~> 0.3.7", only: :test},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:sobelow, "~> 0.8", only: :dev, runtime: false},
-      {:tailwind, "~> 0.2.0", runtime: Mix.env() == :dev},
+      {:tailwind, "~> 0.3.1", runtime: Mix.env() == :dev},
       {:typed_ecto_schema, "~> 0.4.3", runtime: false}
     ]
   end
