@@ -69,6 +69,7 @@ defmodule Antonia.MixProject do
       {:logfmt, "~> 3.3"},
       {:mjml, "~> 5.0"},
       {:oban, "~> 2.19"},
+      {:quantum, "~> 3.0"},
       {:phoenix_ecto, "~> 4.5"},
       {:phoenix_html, "~> 4.1"},
       {:phoenix_live_dashboard, "~> 0.8.3"},

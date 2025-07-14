@@ -36,3 +36,6 @@ config :phoenix_live_view,
   enable_expensive_runtime_checks: true
 
 config :antonia, Oban, testing: :manual
+
+# Disable scheduler in test environment
+config :antonia, Antonia.Scheduler, jobs: []

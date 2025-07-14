@@ -98,6 +98,17 @@ config :antonia, Oban,
   queues: [mailers: 20],
   repo: Antonia.Repo
 
+# Configure Quantum scheduler
+config :antonia, Antonia.Scheduler,
+  jobs: [
+    # Create monthly reports on 1st of each month at 8 AM
+    {"0 8 1 * *", {Antonia.Revenue.ReportService, :create_monthly_reports, []}},
+    # Send initial monthly reminders on 1st of each month at 9 AM
+    {"0 9 1 * *", {Antonia.Revenue.ReportService, :send_initial_reminders, []}},
+    # Check for follow-up reminders daily at 10 AM
+    {"0 10 * * *", {Antonia.Revenue.ReportService, :send_daily_reminders, []}}
+  ]
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

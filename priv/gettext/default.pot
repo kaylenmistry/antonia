@@ -31,12 +31,12 @@ msgstr ""
 msgid "Hang in there while we get back on track"
 msgstr ""
 
-#: lib/antonia/mailer/notifier.ex:32
+#: lib/antonia/mailer/notifier.ex:33
 #, elixir-autogen, elixir-format
 msgid "REMINDER: Report revenue due"
 msgstr ""
 
-#: lib/antonia/mailer/notifier.ex:22
+#: lib/antonia/mailer/notifier.ex:23
 #, elixir-autogen, elixir-format
 msgid "Revenue report due"
 msgstr ""
@@ -51,7 +51,7 @@ msgstr ""
 msgid "Success!"
 msgstr ""
 
-#: lib/antonia/mailer/notifier.ex:42
+#: lib/antonia/mailer/notifier.ex:43
 #, elixir-autogen, elixir-format
 msgid "Thank you"
 msgstr ""

@@ -11,7 +11,8 @@ defmodule Antonia.Mailer.Notifier do
 
   alias Antonia.Mailer
   alias Antonia.Mailer.Emails
-
+  alias Antonia.Repo
+  alias Antonia.Revenue.EmailLog
   alias Antonia.Revenue.Report
   alias Antonia.Revenue.Store
 
@@ -22,7 +23,7 @@ defmodule Antonia.Mailer.Notifier do
     subject = gettext("Revenue report due")
     assigns = email_assigns(store, report)
 
-    deliver(:monthly_reminder, store.email, subject, assigns)
+    deliver_with_logging(:monthly_reminder, store.email, subject, assigns, report)
   end
 
   @doc "Delivers the overdue reminder email to a recipient store"
@@ -32,7 +33,7 @@ defmodule Antonia.Mailer.Notifier do
     subject = gettext("REMINDER: Report revenue due")
     assigns = email_assigns(store, report)
 
-    deliver(:overdue_reminder, store.email, subject, assigns)
+    deliver_with_logging(:overdue_reminder, store.email, subject, assigns, report)
   end
 
   @doc "Delivers the submission receipt email to a recipient store"
@@ -42,7 +43,7 @@ defmodule Antonia.Mailer.Notifier do
     subject = gettext("Thank you")
     assigns = email_assigns(store, report)
 
-    deliver(:submission_receipt, store.email, subject, assigns)
+    deliver_with_logging(:submission_receipt, store.email, subject, assigns, report)
   end
 
   @spec email_assigns(Store.t(), Report.t()) :: map()
@@ -55,8 +56,62 @@ defmodule Antonia.Mailer.Notifier do
     }
   end
 
+  # Delivers the email with logging using a transaction
+  @spec deliver_with_logging(String.t(), String.t(), String.t(), map(), Report.t()) ::
+          {:ok, Swoosh.Email.t()} | {:error, term()}
+  defp deliver_with_logging(email_type, recipient, subject, assigns, report) do
+    case Repo.transaction(fn ->
+           create_email_log_and_send(email_type, recipient, subject, assigns, report)
+         end) do
+      {:ok, result} -> result
+      {:error, error} -> {:error, error}
+    end
+  end
+
+  # Creates email log and sends the email
+  @spec create_email_log_and_send(String.t(), String.t(), String.t(), map(), Report.t()) ::
+          {:ok, Swoosh.Email.t()} | {:error, term()}
+  defp create_email_log_and_send(email_type, recipient, subject, assigns, report) do
+    email_log_attrs = %{
+      report_id: report.id,
+      email_type: email_type,
+      recipient_email: recipient,
+      subject: subject,
+      status: :pending
+    }
+
+    case Repo.insert(EmailLog.changeset(%EmailLog{}, email_log_attrs)) do
+      {:ok, email_log} ->
+        send_and_log_email(email_type, recipient, subject, assigns, email_log)
+
+      {:error, changeset} ->
+        Repo.rollback(changeset)
+    end
+  end
+
+  # Sends email and updates the log based on result
+  @spec send_and_log_email(String.t(), String.t(), String.t(), map(), EmailLog.t()) ::
+          {:ok, Swoosh.Email.t()} | {:error, term()}
+  defp send_and_log_email(email_type, recipient, subject, assigns, email_log) do
+    case deliver(email_type, recipient, subject, assigns) do
+      {:ok, email} ->
+        email_log
+        |> EmailLog.mark_sent()
+        |> Repo.update!()
+
+        {:ok, email}
+
+      {:error, error} ->
+        email_log
+        |> EmailLog.mark_failed(inspect(error))
+        |> Repo.update!()
+
+        {:error, error}
+    end
+  end
+
   # Delivers the email using the application mailer.
-  @spec deliver(atom(), String.t(), String.t(), map()) ::
+  @spec deliver(String.t(), String.t(), String.t(), map()) ::
           {:ok, Swoosh.Email.t()} | {:error, term()}
   defp deliver(template, recipient, subject, assigns) do
     assigns = Map.put(assigns, :recipient, recipient)
@@ -66,7 +121,7 @@ defmodule Antonia.Mailer.Notifier do
     email =
       new()
       |> to(recipient)
-      |> from({"Ahead", "notifications@buyahead.co"})
+      |> Swoosh.Email.from({"Ahead", "notifications@buyahead.co"})
       |> subject(subject)
       |> text_body(text_body)
       |> maybe_apply_mjml_body(template, assigns)
