@@ -1,15 +1,19 @@
-==============================
+<%
+  use Gettext, backend: AntoniaWeb.Gettext
+%>
+<%= gettext("Revenue declaration reminder") %>
 
-It's time to declare the revenue for store <%= @store.name %>, for the period <%= @period_start %> to <%= @period_end %>.
+<%= gettext("Dear Sir or Madam,") %>
 
-Please submit your revenue within 7 days of receiving this email.
+<%= gettext("In accordance with the terms of the lease agreement, we request that you report the revenue for %{store_name} for the period %{period_start} to %{period_end}.", store_name: @store.name, period_start: @period_start, period_end: @period_end) %>
 
-<%= "#{@base_url}/stores/#{@store.id}" %>
+<%= gettext("Report revenue") %>: <%= @base_url %>/stores/<%= @store.id %>
 
-If you have any questions, feel free to reach out to us at <a href="mailto:help@buyahead.co" class="link-color">help@buyahead.co</a>.
+<%= gettext("We would like to politely remind you to submit the revenue report.") %>
 
-Thanks,
+<%= gettext("We are of course happy to answer any questions you may have.") %>
 
-Ahead team
+<%= gettext("Best regards,") %>
+<%= gettext("Realverwaltung GmbH") %>
 
-==============================
+<%= gettext("© Realverwaltung GmbH. All rights reserved.") %>

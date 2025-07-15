@@ -20,30 +20,36 @@ defmodule Antonia.Mailer.Notifier do
   @spec deliver_monthly_reminder(Store.t(), Report.t()) ::
           {:ok, Swoosh.Email.t()} | {:error, term()}
   def deliver_monthly_reminder(store, report) do
-    subject = gettext("Revenue report due")
-    assigns = email_assigns(store, report)
+    Gettext.with_locale(AntoniaWeb.Gettext, "de", fn ->
+      subject = "#{gettext("Revenue report due")} #{store.name}"
+      assigns = email_assigns(store, report)
 
-    deliver_with_logging(:monthly_reminder, store.email, subject, assigns, report)
+      deliver_with_logging(:monthly_reminder, store.email, subject, assigns, report)
+    end)
   end
 
   @doc "Delivers the overdue reminder email to a recipient store"
   @spec deliver_overdue_reminder(Store.t(), Report.t()) ::
           {:ok, Swoosh.Email.t()} | {:error, term()}
   def deliver_overdue_reminder(store, report) do
-    subject = gettext("REMINDER: Report revenue due")
-    assigns = email_assigns(store, report)
+    Gettext.with_locale(AntoniaWeb.Gettext, "de", fn ->
+      subject = "#{gettext("REMINDER: Revenue report due")} #{store.name}"
+      assigns = email_assigns(store, report)
 
-    deliver_with_logging(:overdue_reminder, store.email, subject, assigns, report)
+      deliver_with_logging(:overdue_reminder, store.email, subject, assigns, report)
+    end)
   end
 
   @doc "Delivers the submission receipt email to a recipient store"
   @spec deliver_submission_receipt(Store.t(), Report.t()) ::
           {:ok, Swoosh.Email.t()} | {:error, term()}
   def deliver_submission_receipt(store, report) do
-    subject = gettext("Thank you")
-    assigns = email_assigns(store, report)
+    Gettext.with_locale(AntoniaWeb.Gettext, "de", fn ->
+      subject = "#{gettext("Acknowledgement of receipt of revenue report")} #{store.name}"
+      assigns = email_assigns(store, report)
 
-    deliver_with_logging(:submission_receipt, store.email, subject, assigns, report)
+      deliver_with_logging(:submission_receipt, store.email, subject, assigns, report)
+    end)
   end
 
   @spec email_assigns(Store.t(), Report.t()) :: map()
@@ -121,7 +127,7 @@ defmodule Antonia.Mailer.Notifier do
     email =
       new()
       |> to(recipient)
-      |> Swoosh.Email.from({"Ahead", "notifications@buyahead.co"})
+      |> Swoosh.Email.from({"Realverwaltung GmbH", "notifications@buyahead.co"})
       |> subject(subject)
       |> text_body(text_body)
       |> maybe_apply_mjml_body(template, assigns)

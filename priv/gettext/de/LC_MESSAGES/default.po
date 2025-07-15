@@ -1,67 +1,67 @@
-## This file is a PO Template file.
-##
-## "msgid"s here are often extracted from source code.
-## Add new messages manually only if they're dynamic
-## messages that can't be statically extracted.
-##
-## Run "mix gettext.extract" to bring this file up to
-## date. Leave "msgstr"s empty as changing them here has no
-## effect: edit them in PO (.po) files instead.
-#
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
 msgid ""
 msgstr ""
+"Language: de\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: lib/antonia_web/components/core_components.ex:484
 #, elixir-autogen, elixir-format
 msgid "Actions"
-msgstr ""
+msgstr "Aktionen"
 
 #: lib/antonia_web/components/core_components.ex:162
 #, elixir-autogen, elixir-format
 msgid "Attempting to reconnect"
-msgstr ""
+msgstr "Verbindung wird wiederhergestellt"
 
 #: lib/antonia_web/components/core_components.ex:153
 #, elixir-autogen, elixir-format
 msgid "Error!"
-msgstr ""
+msgstr "Fehler!"
 
 #: lib/antonia_web/components/core_components.ex:174
 #, elixir-autogen, elixir-format
 msgid "Hang in there while we get back on track"
-msgstr ""
+msgstr "Bitte haben Sie Geduld, während wir das Problem beheben"
 
 #: lib/antonia/mailer/notifier.ex:24
 #, elixir-autogen, elixir-format
 msgid "Revenue report due"
-msgstr ""
+msgstr "Umsatzmeldung fällig"
 
 #: lib/antonia_web/components/core_components.ex:169
 #, elixir-autogen, elixir-format
 msgid "Something went wrong!"
-msgstr ""
+msgstr "Etwas ist schiefgelaufen!"
 
 #: lib/antonia_web/components/core_components.ex:152
 #, elixir-autogen, elixir-format
 msgid "Success!"
-msgstr ""
+msgstr "Erfolgreich!"
 
 #: lib/antonia_web/components/core_components.ex:157
 #, elixir-autogen, elixir-format
 msgid "We can't find the internet"
-msgstr ""
+msgstr "Keine Internetverbindung gefunden"
 
 #: lib/antonia_web/components/core_components.ex:78
 #: lib/antonia_web/components/core_components.ex:132
 #, elixir-autogen, elixir-format
 msgid "close"
-msgstr ""
+msgstr "schließen"
 
 #: lib/antonia/mailer/emails/submission_receipt.mjml.eex:30
 #: lib/antonia/mailer/emails/submission_receipt.txt.eex:4
 #, elixir-autogen, elixir-format
 msgid "Acknowledgement of receipt"
-msgstr ""
+msgstr "Empfangsbestätigung"
 
 #: lib/antonia/mailer/emails/monthly_reminder.mjml.eex:48
 #: lib/antonia/mailer/emails/monthly_reminder.txt.eex:16
@@ -71,7 +71,7 @@ msgstr ""
 #: lib/antonia/mailer/emails/submission_receipt.txt.eex:14
 #, elixir-autogen, elixir-format
 msgid "Best regards,"
-msgstr ""
+msgstr "Freundliche Grüße,"
 
 #: lib/antonia/mailer/emails/monthly_reminder.mjml.eex:33
 #: lib/antonia/mailer/emails/monthly_reminder.txt.eex:6
@@ -79,7 +79,7 @@ msgstr ""
 #: lib/antonia/mailer/emails/overdue_reminder.txt.eex:6
 #, elixir-autogen, elixir-format
 msgid "Dear Sir or Madam,"
-msgstr ""
+msgstr "Sehr geehrte Damen und Herren,"
 
 #: lib/antonia/mailer/emails/monthly_reminder.mjml.eex:36
 #: lib/antonia/mailer/emails/monthly_reminder.txt.eex:8
@@ -87,7 +87,7 @@ msgstr ""
 #: lib/antonia/mailer/emails/overdue_reminder.txt.eex:8
 #, elixir-autogen, elixir-format
 msgid "In accordance with the terms of the lease agreement, we request that you report the revenue for %{store_name} for the period %{period_start} to %{period_end}."
-msgstr ""
+msgstr "Gemäß den Bestimmungen der Mietvereinbarung bitten wir Sie, die Umsätze für das Geschäft %{store_name} für den Zeitraum vom %{period_start} bis zum %{period_end} zu melden."
 
 #: lib/antonia/mailer/emails/monthly_reminder.mjml.eex:51
 #: lib/antonia/mailer/emails/monthly_reminder.txt.eex:17
@@ -97,7 +97,7 @@ msgstr ""
 #: lib/antonia/mailer/emails/submission_receipt.txt.eex:15
 #, elixir-autogen, elixir-format
 msgid "Realverwaltung GmbH"
-msgstr ""
+msgstr "Realverwaltung GmbH"
 
 #: lib/antonia/mailer/emails/monthly_reminder.mjml.eex:39
 #: lib/antonia/mailer/emails/monthly_reminder.txt.eex:10
@@ -105,31 +105,31 @@ msgstr ""
 #: lib/antonia/mailer/emails/overdue_reminder.txt.eex:10
 #, elixir-autogen, elixir-format
 msgid "Report revenue"
-msgstr ""
+msgstr "Umsatz melden"
 
 #: lib/antonia/mailer/emails/monthly_reminder.mjml.eex:30
 #: lib/antonia/mailer/emails/monthly_reminder.txt.eex:4
 #, elixir-autogen, elixir-format
 msgid "Revenue declaration"
-msgstr ""
+msgstr "Umsatzmeldung"
 
 #: lib/antonia/mailer/emails/overdue_reminder.mjml.eex:30
 #: lib/antonia/mailer/emails/overdue_reminder.txt.eex:4
 #, elixir-autogen, elixir-format
 msgid "Revenue declaration reminder"
-msgstr ""
+msgstr "Erinnerung Umsatzmeldung"
 
 #: lib/antonia/mailer/emails/submission_receipt.mjml.eex:33
 #: lib/antonia/mailer/emails/submission_receipt.txt.eex:6
 #, elixir-autogen, elixir-format
 msgid "Thank you for reporting your revenue for the period %{period_start} to %{period_end}."
-msgstr ""
+msgstr "Vielen Dank für die Meldung Ihrer Umsätze für den Zeitraum vom %{period_start} bis zum %{period_end}."
 
 #: lib/antonia/mailer/emails/submission_receipt.mjml.eex:39
 #: lib/antonia/mailer/emails/submission_receipt.txt.eex:10
 #, elixir-autogen, elixir-format
 msgid "View submission"
-msgstr ""
+msgstr "Meldung ansehen"
 
 #: lib/antonia/mailer/emails/monthly_reminder.mjml.eex:45
 #: lib/antonia/mailer/emails/monthly_reminder.txt.eex:14
@@ -139,25 +139,25 @@ msgstr ""
 #: lib/antonia/mailer/emails/submission_receipt.txt.eex:12
 #, elixir-autogen, elixir-format
 msgid "We are of course happy to answer any questions you may have."
-msgstr ""
+msgstr "Für Rückfragen stehen wir Ihnen selbstverständlich gerne zur Verfügung."
 
 #: lib/antonia/mailer/emails/monthly_reminder.mjml.eex:42
 #: lib/antonia/mailer/emails/monthly_reminder.txt.eex:12
 #, elixir-autogen, elixir-format
 msgid "We would like to politely remind you to submit the revenue report within 7 days of receiving this letter."
-msgstr ""
+msgstr "Wir möchten Sie höflich daran erinnern, die Umsatzmeldung innerhalb von 7 Tagen nach Erhalt dieses Schreibens einzureichen."
 
 #: lib/antonia/mailer/emails/overdue_reminder.mjml.eex:42
 #: lib/antonia/mailer/emails/overdue_reminder.txt.eex:12
 #, elixir-autogen, elixir-format
 msgid "We would like to politely remind you to submit the revenue report."
-msgstr ""
+msgstr "Wir möchten Sie höflich daran erinnern, die Umsatzmeldung einzureichen."
 
 #: lib/antonia/mailer/emails/submission_receipt.mjml.eex:36
 #: lib/antonia/mailer/emails/submission_receipt.txt.eex:8
 #, elixir-autogen, elixir-format
 msgid "You can view your submitted report below."
-msgstr ""
+msgstr "Sie können Ihre eingereichte Meldung unten einsehen."
 
 #: lib/antonia/mailer/emails/monthly_reminder.mjml.eex:58
 #: lib/antonia/mailer/emails/monthly_reminder.txt.eex:19
@@ -167,14 +167,14 @@ msgstr ""
 #: lib/antonia/mailer/emails/submission_receipt.txt.eex:17
 #, elixir-autogen, elixir-format
 msgid "© Realverwaltung GmbH. All rights reserved."
-msgstr ""
+msgstr "© Realverwaltung GmbH. Alle Rechte vorbehalten."
 
 #: lib/antonia/mailer/notifier.ex:48
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Acknowledgement of receipt of revenue report"
-msgstr ""
+msgstr "Empfangsbestätigung der Umsatzmeldung"
 
 #: lib/antonia/mailer/notifier.ex:36
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "REMINDER: Revenue report due"
-msgstr ""
+msgstr "ERINNERUNG: Umsatzmeldung fällig"

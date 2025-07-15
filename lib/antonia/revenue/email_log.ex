@@ -9,8 +9,8 @@ defmodule Antonia.Revenue.EmailLog do
 
   import Ecto.Changeset
 
-  alias Antonia.Enums.EmailType
   alias Antonia.Enums.EmailStatus
+  alias Antonia.Enums.EmailType
   alias Antonia.Revenue.Report
 
   @fields [

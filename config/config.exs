@@ -37,10 +37,10 @@ config :antonia, AntoniaWeb.Endpoint,
 #
 # For production it's recommended to configure a different adapter
 # at the `config/runtime.exs`.
-config :antonia, Antonia.Mailer, adapter: Swoosh.Adapters.Local
+config :antonia, Antonia.Mailer, adapter: Resend.Swoosh.Adapter
 
 # Swoosh API client is needed for adapters other than SMTP.
-config :swoosh, :api_client, false
+config :swoosh, local: false
 
 # Configure esbuild (the version is required)
 config :esbuild,
@@ -108,6 +108,8 @@ config :antonia, Antonia.Scheduler,
     # Check for follow-up reminders daily at 10 AM
     {"0 10 * * *", {Antonia.Revenue.ReportService, :send_daily_reminders, []}}
   ]
+
+config :logger, level: :info
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

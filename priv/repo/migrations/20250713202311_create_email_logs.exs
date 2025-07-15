@@ -15,12 +15,5 @@ defmodule Antonia.Repo.Migrations.CreateEmailLogs do
 
       timestamps(type: :utc_datetime)
     end
-
-    create index(:email_logs, [:report_id])
-    create index(:email_logs, [:email_type])
-    create index(:email_logs, [:status])
-    create index(:email_logs, [:sent_at])
-    create index(:email_logs, [:report_id, :email_type])
-    create index(:email_logs, [:report_id, :email_type, :status])
   end
 end
