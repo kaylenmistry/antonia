@@ -1,4 +1,4 @@
-defmodule Antonia.Accounts.Emails do
+defmodule Antonia.Mailer.Emails do
   @moduledoc """
   Templates for emails sent to users.
   """

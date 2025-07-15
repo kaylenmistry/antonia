@@ -13,5 +13,3 @@ config :antonia, Antonia.Repo,
 config :antonia, Antonia.Mailer, adapter: Resend.Swoosh.Adapter
 
 config :swoosh, local: false
-
-config :logger, level: :info

@@ -37,10 +37,10 @@ config :antonia, AntoniaWeb.Endpoint,
 #
 # For production it's recommended to configure a different adapter
 # at the `config/runtime.exs`.
-config :antonia, Antonia.Mailer, adapter: Swoosh.Adapters.Local
+config :antonia, Antonia.Mailer, adapter: Resend.Swoosh.Adapter
 
 # Swoosh API client is needed for adapters other than SMTP.
-config :swoosh, :api_client, false
+config :swoosh, local: false
 
 # Configure esbuild (the version is required)
 config :esbuild,
@@ -91,6 +91,25 @@ config :phoenix,
   filter_parameters: ["password", "secret", "token"]
 
 config :tesla, :adapter, {Tesla.Adapter.Finch, name: Antonia.Finch, request_timeout: 60_000}
+
+config :antonia, Oban,
+  engine: Oban.Engines.Basic,
+  notifier: Oban.Notifiers.Postgres,
+  queues: [mailers: 20],
+  repo: Antonia.Repo
+
+# Configure Quantum scheduler
+config :antonia, Antonia.Scheduler,
+  jobs: [
+    # Create monthly reports on 1st of each month at 8 AM
+    {"0 8 1 * *", {Antonia.Revenue.ReportService, :create_monthly_reports, []}},
+    # Send initial monthly reminders on 1st of each month at 9 AM
+    {"0 9 1 * *", {Antonia.Revenue.ReportService, :send_initial_reminders, []}},
+    # Check for follow-up reminders daily at 10 AM
+    {"0 10 * * *", {Antonia.Revenue.ReportService, :send_daily_reminders, []}}
+  ]
+
+config :logger, level: :info
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
