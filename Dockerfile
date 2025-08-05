@@ -24,7 +24,7 @@ COPY --from=build-node /app/assets ./assets
 RUN mix assets.deploy && mix release   
 
 # ---- Run application ----
-FROM public.ecr.aws/docker/library/alpine:3.22.0
+FROM public.ecr.aws/docker/library/alpine:3.22.1
 RUN apk add --no-cache bash openssl libgcc libstdc++ libssl3
 WORKDIR /app
 
