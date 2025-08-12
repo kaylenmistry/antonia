@@ -31,7 +31,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Set up Elixir
         uses: erlef/setup-beam@8e7fdef09ffa3ea54328b5000c170a3b9b20ca96
         with:
@@ -67,7 +67,7 @@ jobs:
     environment: prd
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
