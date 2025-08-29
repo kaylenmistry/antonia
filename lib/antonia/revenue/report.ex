@@ -18,7 +18,7 @@ defmodule Antonia.Revenue.Report do
     :due_date
   ]
 
-  @required_fields [:status, :currency, :revenue, :period_start, :period_end, :store_id]
+  @required_fields @fields
 
   typed_schema "reports" do
     field(:status, Ecto.Enum, values: ReportStatus.values())
@@ -58,13 +58,10 @@ defmodule Antonia.Revenue.Report do
   end
 
   defp maybe_set_due_date(changeset) do
-    case get_field(changeset, :due_date) do
-      nil ->
-        case get_field(changeset, :period_end) do
-          nil -> changeset
-          period_end -> put_change(changeset, :due_date, calculate_due_date(period_end))
-        end
-
+    with nil <- get_field(changeset, :due_date),
+         period_end when not is_nil(period_end) <- get_field(changeset, :period_end) do
+      put_change(changeset, :due_date, calculate_due_date(period_end))
+    else
       _ ->
         changeset
     end
@@ -103,15 +100,13 @@ defmodule Antonia.Revenue.Report do
 
   defp should_send_overdue_reminder?(%__MODULE__{id: id}) do
     case EmailLog.last_sent_email(id, :overdue_reminder) do
-      nil ->
-        true
-
-      last_email ->
-        # Send reminder every 3 days
-        days_since_last_reminder =
-          Date.diff(Date.utc_today(), DateTime.to_date(last_email.sent_at))
-
-        days_since_last_reminder >= 3
+      nil -> true
+      last_email -> days_since_last_reminder(last_email) >= 3
     end
+  end
+
+  @spec days_since_last_reminder(EmailLog.t()) :: integer()
+  defp days_since_last_reminder(last_email) do
+    Date.diff(Date.utc_today(), DateTime.to_date(last_email.sent_at))
   end
 end

@@ -1,7 +1,10 @@
 defmodule AntoniaWeb.Router do
   use AntoniaWeb, :router
 
+  alias AntoniaWeb.Plugs.FetchCurrentUser
+  alias AntoniaWeb.Plugs.RedirectAuthenticatedUser
   alias AntoniaWeb.Plugs.ReferrerPolicy
+  alias AntoniaWeb.Plugs.RequireAuthenticatedUser
 
   @csp :antonia
        |> Application.compile_env(:content_security_policy)
@@ -14,11 +17,27 @@ defmodule AntoniaWeb.Router do
     plug :put_root_layout, html: {AntoniaWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers, %{"content-security-policy" => @csp}
+    plug FetchCurrentUser
     plug ReferrerPolicy
   end
 
   pipeline :api do
     plug :accepts, ["json"]
+  end
+
+  scope "/auth", AntoniaWeb do
+    pipe_through :browser
+
+    get "/logout", AuthController, :logout
+  end
+
+  # Authentication routes
+  scope "/auth", AntoniaWeb do
+    pipe_through [:browser, RedirectAuthenticatedUser]
+
+    get "/", AuthController, :index
+    get "/:provider", AuthController, :request
+    get "/:provider/callback", AuthController, :callback
   end
 
   scope "/", AntoniaWeb do
@@ -28,10 +47,13 @@ defmodule AntoniaWeb.Router do
     live "/reports/:id", ReportLive
   end
 
-  # Other scopes may use custom stacks.
-  # scope "/api", AntoniaWeb do
-  #   pipe_through :api
-  # end
+  scope "/app", AntoniaWeb do
+    pipe_through [:browser, RequireAuthenticatedUser]
+
+    live "/", AppLive
+    live "/groups/:id", GroupLive
+    live "/groups/:id/stores/:store_id", StoreLive
+  end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
   if Application.compile_env(:antonia, :dev_routes) do

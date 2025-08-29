@@ -1,0 +1,162 @@
+<div class="max-w-4xl mx-auto">
+  <div class="mb-8">
+    <div class="flex items-center gap-4 mb-4">
+      <.link
+        navigate={~p"/app/groups/#{@shopping_centre.id}"}
+        class="text-blue-600 hover:text-blue-700 font-medium"
+      >
+        ← Back to {@shopping_centre.name}
+      </.link>
+    </div>
+
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">
+      {@store.name}
+    </h1>
+    <p class="text-gray-600">Revenue reports for this store</p>
+    <p class="text-sm text-gray-500">
+      {@store.email}
+    </p>
+  </div>
+
+  <div class="mb-6">
+    <button
+      phx-click="show-add-form"
+      class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+    >
+      Add Report
+    </button>
+  </div>
+
+  <%= if @show_form do %>
+    <div class="bg-white border border-gray-200 rounded-lg p-6 mb-6">
+      <h2 class="text-xl font-semibold mb-4">Add New Report</h2>
+
+      <.form for={@changeset} phx-change="validate" phx-submit="save" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <.label for="report_period_start">Period Start</.label>
+            <.input field={@changeset[:period_start]} type="date" required />
+            <%= if @changeset.errors[:period_start] do %>
+              <.error>{elem(@changeset.errors[:period_start], 0)}</.error>
+            <% end %>
+          </div>
+
+          <div>
+            <.label for="report_period_end">Period End</.label>
+            <.input field={@changeset[:period_end]} type="date" required />
+            <%= if @changeset.errors[:period_end] do %>
+              <.error>{elem(@changeset.errors[:period_end], 0)}</.error>
+            <% end %>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <.label for="report_revenue">Revenue</.label>
+            <.input
+              field={@changeset[:revenue]}
+              type="number"
+              step="0.01"
+              placeholder="0.00"
+              required
+            />
+            <%= if @changeset.errors[:revenue] do %>
+              <.error>{elem(@changeset.errors[:revenue], 0)}</.error>
+            <% end %>
+          </div>
+
+          <div>
+            <.label for="report_currency">Currency</.label>
+            <.input field={@changeset[:currency]} type="text" placeholder="USD" required />
+            <%= if @changeset.errors[:currency] do %>
+              <.error>{elem(@changeset.errors[:currency], 0)}</.error>
+            <% end %>
+          </div>
+        </div>
+
+        <div class="flex gap-3">
+          <button
+            type="submit"
+            class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+          >
+            Save
+          </button>
+          <button
+            type="button"
+            phx-click="hide-add-form"
+            class="bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+          >
+            Cancel
+          </button>
+        </div>
+      </.form>
+    </div>
+  <% end %>
+
+  <div class="space-y-4">
+    <%= for report <- @reports do %>
+      <div class="bg-white border border-gray-200 rounded-lg p-6">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900">
+              {report.currency} {Number.Delimit.number_to_delimited(report.revenue, precision: 2)}
+            </h3>
+            <p class="text-sm text-gray-600">
+              {Date.to_string(report.period_start)} - {Date.to_string(report.period_end)}
+            </p>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <span class={[
+              "px-2 py-1 text-xs font-medium rounded-full",
+              case report.status do
+                :pending -> "bg-yellow-100 text-yellow-800"
+                :submitted -> "bg-green-100 text-green-800"
+                :overdue -> "bg-red-100 text-red-800"
+                _ -> "bg-gray-100 text-gray-800"
+              end
+            ]}>
+              {String.upcase(to_string(report.status))}
+            </span>
+
+            <%= if Report.overdue?(report) do %>
+              <span class="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">
+                OVERDUE
+              </span>
+            <% end %>
+          </div>
+        </div>
+
+        <div class="text-sm text-gray-600">
+          <p>Due: {Date.to_string(report.due_date)}</p>
+          <p>Created: {Calendar.strftime(report.inserted_at, "%B %d, %Y")}</p>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <%= if Enum.empty?(@reports) do %>
+    <div class="text-center py-12">
+      <div class="text-gray-400 mb-4">
+        <svg class="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+          />
+        </svg>
+      </div>
+      <h3 class="text-lg font-medium text-gray-900 mb-2">No reports yet</h3>
+      <p class="text-gray-600 mb-4">
+        Get started by adding your first revenue report for this store
+      </p>
+      <button
+        phx-click="show-add-form"
+        class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+      >
+        Add Report
+      </button>
+    </div>
+  <% end %>
+</div>

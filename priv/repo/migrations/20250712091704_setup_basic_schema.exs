@@ -29,6 +29,7 @@ defmodule Antonia.Repo.Migrations.SetupBasicSchema do
       add :period_start, :date, null: false
       add :period_end, :date, null: false
       add :store_id, references(:stores, on_delete: :delete_all, type: :binary_id), null: false
+      add :due_date, :date, null: false
 
       timestamps()
     end

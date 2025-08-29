@@ -16,12 +16,6 @@ defmodule Antonia.MixProject do
       ],
       # Coveralls
       test_coverage: [tool: ExCoveralls],
-      preferred_cli_env: [
-        coveralls: :test,
-        "coveralls.detail": :test,
-        "coveralls.html": :test,
-        "coveralls.json": :test
-      ],
       # ExDocs
       name: "Antonia",
       source_url: "https://github.com/kaylenmistry/antonia",
@@ -29,6 +23,17 @@ defmodule Antonia.MixProject do
       docs: [
         main: "Antonia",
         extras: ["README.md"]
+      ]
+    ]
+  end
+
+  def cli do
+    [
+      preferred_envs: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.html": :test,
+        "coveralls.json": :test
       ]
     ]
   end
@@ -83,7 +88,10 @@ defmodule Antonia.MixProject do
       {:telemetry_metrics, "~> 1.0"},
       {:telemetry_poller, "~> 1.0"},
       {:tesla, "~> 1.4"},
+      {:ueberauth_google, "~> 0.10"},
+      {:ueberauth, "~> 0.10"},
       {:uniq, "~> 0.1"},
+      {:number, "~> 1.0.1"},
       # Dev and test dependencies
       {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.1", only: :dev, runtime: false},
