@@ -70,7 +70,7 @@ defmodule AntoniaApp.Logger.EctoLoggerTest do
         log: fn :debug, msg, _ts, metadata ->
           send(pid, {msg, Map.new(metadata)})
         end do
-        EctoLogger.handle_event([:Antonia, :repo, :query], measurements, metadata, %{})
+        EctoLogger.handle_event([:antonia, :repo, :query], measurements, metadata, %{})
 
         assert_receive {"SQL Query Success",
                         %{
@@ -131,7 +131,7 @@ defmodule AntoniaApp.Logger.EctoLoggerTest do
         log: fn :error, msg, _ts, metadata ->
           send(pid, {msg, Map.new(metadata)})
         end do
-        EctoLogger.handle_event([:Antonia, :repo, :query], measurements, metadata, %{})
+        EctoLogger.handle_event([:antonia, :repo, :query], measurements, metadata, %{})
 
         assert_receive {"SQL Query Error",
                         %{

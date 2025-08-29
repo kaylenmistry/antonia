@@ -1,0 +1,17 @@
+<%
+  use Gettext, backend: AntoniaWeb.Gettext
+%>
+<%= gettext("Acknowledgement of receipt") %>
+
+<%= gettext("Thank you for reporting your revenue for the period %{period_start} to %{period_end}.", period_start: @period_start, period_end: @period_end) %>
+
+<%= gettext("You can view your submitted report below.") %>
+
+<%= gettext("View submission") %>: <%= @base_url %>/stores/<%= @store.id %>
+
+<%= gettext("We are of course happy to answer any questions you may have.") %>
+
+<%= gettext("Best regards,") %>
+<%= gettext("Realverwaltung GmbH") %>
+
+<%= gettext("© Realverwaltung GmbH. All rights reserved.") %>

@@ -6,10 +6,10 @@ defmodule AntoniaApp.PromExTest do
   @opts PromEx.Plug.init(prom_ex_module: AntoniaApp.PromEx)
 
   @plugin_identifiers [
-    "Antonia_prom_ex_beam_system",
-    "Antonia_prom_ex_ecto",
-    "Antonia_prom_ex_application",
-    "Antonia_prom_ex_phoenix"
+    "antonia_prom_ex_beam_system",
+    "antonia_prom_ex_ecto",
+    "antonia_prom_ex_application",
+    "antonia_prom_ex_phoenix"
   ]
 
   describe "/metrics" do

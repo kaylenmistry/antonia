@@ -3,24 +3,39 @@
 ```mermaid
 erDiagram
 
-locations ||--o{ stores : "Has many"
-stores ||--o{ declarations : "Has many"
+shopping_centres ||--o{ stores : "Has many"
+stores ||--o{ reports : "Has many"
 
-stores {
+shopping_centres {
     id UUID PK
-    correspondence_email string
+    name string
 
     inserted_at timestamp
     updated_at timestamp
 }
 
-declarations {
+stores {
+    id UUID PK
+    email string
+
+    shopping_centre_id UUID FK
+
+    inserted_at timestamp
+    updated_at timestamp
+}
+
+reports {
     id UUID PK
     
     status string
 
-    period_start timestamp
-    period_end timestamp
+    currency string
+    revenue decimal
+
+    period_start date
+    period_end date
+
+    store_id UUID FK
 
     inserted_at timestamp
     updated_at timestamp

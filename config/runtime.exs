@@ -32,7 +32,8 @@ config :antonia, AntoniaWeb.Endpoint,
     ),
   base_url: base_url
 
-config :antonia, AntoniaWeb.O11Y.Endpoint, port: get_integer("O11Y_PORT", for_env.(3999, test: 4999))
+config :antonia, AntoniaWeb.O11Y.Endpoint,
+  port: get_integer("O11Y_PORT", for_env.(3999, test: 4999))
 
 config :antonia, Antonia.Mailer,
   api_key: get_string("RESEND_API_KEY", "re_JToSkskJ_4oQcGmUfxtCKDkaR9Q2QsXYu")

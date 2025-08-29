@@ -1,0 +1,123 @@
+<div class="max-w-4xl mx-auto">
+  <div class="mb-8">
+    <div class="flex items-center gap-4 mb-4">
+      <.link navigate={~p"/app"} class="text-blue-600 hover:text-blue-700 font-medium">
+        ← Back to Shopping Centres
+      </.link>
+    </div>
+
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">
+      {@shopping_centre.name}
+    </h1>
+    <p class="text-gray-600">Manage stores in this shopping centre</p>
+  </div>
+
+  <div class="mb-6">
+    <button
+      phx-click="show-add-form"
+      class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+    >
+      Add Store
+    </button>
+  </div>
+
+  <%= if @show_form do %>
+    <div class="bg-white border border-gray-200 rounded-lg p-6 mb-6">
+      <h2 class="text-xl font-semibold mb-4">Add New Store</h2>
+
+      <.form for={@changeset} phx-change="validate" phx-submit="save" class="space-y-4">
+        <div>
+          <.label for="store_name">Store Name</.label>
+          <.input field={@changeset[:name]} type="text" placeholder="Enter store name" required />
+          <%= if @changeset.errors[:name] do %>
+            <.error>{elem(@changeset.errors[:name], 0)}</.error>
+          <% end %>
+        </div>
+
+        <div>
+          <.label for="store_email">Email</.label>
+          <.input
+            field={@changeset[:email]}
+            type="email"
+            placeholder="Enter store email"
+            required
+          />
+          <%= if @changeset.errors[:email] do %>
+            <.error>{elem(@changeset.errors[:email], 0)}</.error>
+          <% end %>
+        </div>
+
+        <div class="flex gap-3">
+          <button
+            type="submit"
+            class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+          >
+            Save
+          </button>
+          <button
+            type="button"
+            phx-click="hide-add-form"
+            class="bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+          >
+            Cancel
+          </button>
+        </div>
+      </.form>
+    </div>
+  <% end %>
+
+  <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <%= for store <- @stores do %>
+      <div class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-900">
+            {store.name}
+          </h3>
+          <span class="text-sm text-gray-500">
+            {length(store.reports || [])} reports
+          </span>
+        </div>
+
+        <div class="mb-4">
+          <p class="text-sm text-gray-600">
+            {store.email}
+          </p>
+        </div>
+
+        <div class="flex gap-2">
+          <.link
+            navigate={~p"/app/groups/#{@shopping_centre.id}/stores/#{store.id}"}
+            class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-3 rounded transition-colors"
+          >
+            View Reports
+          </.link>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <%= if Enum.empty?(@stores) do %>
+    <div class="text-center py-12">
+      <div class="text-gray-400 mb-4">
+        <svg class="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+          />
+        </svg>
+      </div>
+      <h3 class="text-lg font-medium text-gray-900 mb-2">No stores yet</h3>
+      <p class="text-gray-600 mb-4">
+        Get started by adding your first store to this shopping centre
+      </p>
+      <button
+        phx-click="show-add-form"
+        class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+      >
+        Add Store
+      </button>
+    </div>
+  <% end %>
+</div>
