@@ -1,4 +1,7 @@
 defmodule AntoniaWeb.StoreLive do
+  @moduledoc """
+  LiveView for managing a group's stores.
+  """
   use AntoniaWeb, :live_view
 
   import Ecto.Query

@@ -1,4 +1,5 @@
 defmodule AntoniaWeb.AppLive do
+  @moduledoc "LiveView for the main authenticated view"
   use AntoniaWeb, :live_view
 
   alias Antonia.Repo

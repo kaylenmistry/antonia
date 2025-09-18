@@ -1,4 +1,7 @@
 defmodule AntoniaWeb.ReportLive do
+  @moduledoc """
+  LiveView for report submission.
+  """
   use AntoniaWeb, :live_view
 
   alias Antonia.Repo

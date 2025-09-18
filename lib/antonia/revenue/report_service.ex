@@ -135,8 +135,8 @@ defmodule Antonia.Revenue.ReportService do
             not exists(
               from(el in EmailLog,
                 where:
-                  el.report_id == parent_as(:report).id and el.email_type == "overdue_reminder" and
-                    el.status == "sent",
+                  el.report_id == parent_as(:report).id and el.email_type == :overdue_reminder and
+                    el.status == :sent,
                 where: el.sent_at >= ^DateTime.new!(Date.add(date, -3), ~T[00:00:00], "Etc/UTC")
               )
             ),
@@ -144,7 +144,7 @@ defmodule Antonia.Revenue.ReportService do
         )
       )
 
-    count = schedule_emails(overdue_reports, "overdue_reminder")
+    count = schedule_emails(overdue_reports, :overdue_reminder)
     Logger.info("Scheduled #{count} overdue reminder emails")
 
     {:ok, count}
@@ -162,7 +162,7 @@ defmodule Antonia.Revenue.ReportService do
       case Repo.update(changeset) do
         {:ok, updated_report} ->
           # Schedule receipt email
-          schedule_emails([updated_report], "submission_receipt")
+          schedule_emails([updated_report], :submission_receipt)
           updated_report
 
         {:error, changeset} ->

@@ -169,12 +169,12 @@ msgstr ""
 msgid "© Realverwaltung GmbH. All rights reserved."
 msgstr ""
 
-#: lib/antonia/mailer/notifier.ex:48
-#, elixir-autogen, elixir-format, fuzzy
-msgid "Acknowledgement of receipt of revenue report"
-msgstr ""
-
 #: lib/antonia/mailer/notifier.ex:36
-#, elixir-autogen, elixir-format, fuzzy
-msgid "REMINDER: Revenue report due"
-msgstr ""
+#, elixir-autogen, elixir-format
+msgid "REMINDER: Report revenue due"
+msgstr "REMINDER: Report revenue due"
+
+#: lib/antonia/mailer/notifier.ex:48
+#, elixir-autogen, elixir-format
+msgid "Thank you"
+msgstr "Thank you"

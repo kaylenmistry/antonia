@@ -8,6 +8,7 @@ defmodule AntoniaApp do
   @impl Application
   def start(_type, _args) do
     :ok = AntoniaApp.Logger.start()
+    setup_logger_backends()
 
     children = [
       AntoniaApp.PromEx,
@@ -31,6 +32,22 @@ defmodule AntoniaApp do
   @impl Application
   def config_change(changed, _new, removed) do
     AntoniaWeb.Endpoint.config_change(changed, removed)
+    :ok
+  end
+
+  defp setup_logger_backends do
+    case Mix.env() do
+      :dev ->
+        {:ok, _pid} = LoggerBackends.add(Antonia.DevLoggerFileBackend)
+
+      :test ->
+        # Add test logger backend for mocking in tests
+        {:ok, _pid} = LoggerBackends.add(Antonia.TestLoggerBackend)
+
+      _ ->
+        :ok
+    end
+
     :ok
   end
 end

@@ -1,4 +1,7 @@
 defmodule AntoniaWeb.GroupLive do
+  @moduledoc """
+  LiveView for managing groups.
+  """
   use AntoniaWeb, :live_view
 
   import Ecto.Query

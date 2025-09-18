@@ -72,6 +72,7 @@ defmodule Antonia.MixProject do
        depth: 1},
       {:jason, "~> 1.2"},
       {:logfmt, "~> 3.3"},
+      {:logger_backends, "~> 1.0"},
       {:mjml, "~> 5.0"},
       {:oban, "~> 2.19"},
       {:quantum, "~> 3.0"},

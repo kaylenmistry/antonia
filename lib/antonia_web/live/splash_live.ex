@@ -1,4 +1,7 @@
 defmodule AntoniaWeb.SplashLive do
+  @moduledoc """
+  LiveView for Splash page
+  """
   use AntoniaWeb, :live_view
 
   @impl Phoenix.LiveView
