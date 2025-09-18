@@ -18,8 +18,13 @@ defmodule AntoniaWeb.CoreComponents do
   use Gettext, backend: AntoniaWeb.Gettext
 
   alias Phoenix.LiveView.JS
-
   alias Phoenix.HTML.Form
+
+  # Import verified routes for navigation
+  use Phoenix.VerifiedRoutes,
+    endpoint: AntoniaWeb.Endpoint,
+    router: AntoniaWeb.Router,
+    statics: AntoniaWeb.static_paths()
 
   @doc """
   Renders a modal.
@@ -646,6 +651,67 @@ defmodule AntoniaWeb.CoreComponents do
     |> JS.hide(to: "##{id}", transition: {"block", "block", "hidden"})
     |> JS.remove_class("overflow-hidden", to: "body")
     |> JS.pop_focus()
+  end
+
+  @doc """
+  Renders the application navbar with authentication state support.
+
+  ## Examples
+
+      <.navbar />
+      <.navbar current_user={@current_user} />
+
+  """
+  attr :current_user, :map, default: nil
+  attr :class, :string, default: nil
+
+  def navbar(assigns) do
+    ~H"""
+    <nav class={["bg-white shadow-sm border-b border-gray-200", @class]}>
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+          <div class="flex items-center space-x-3">
+            <.link navigate={~p"/"} class="flex items-center space-x-3">
+              <.icon name="hero-building-office-2" class="h-8 w-8 text-blue-600" />
+              <span class="text-xl font-semibold text-gray-900">Revenue Management</span>
+            </.link>
+          </div>
+
+          <div class="flex items-center space-x-3">
+            <%= if @current_user do %>
+              <!-- Authenticated user menu -->
+              <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2 text-gray-700">
+                  <.icon name="hero-user" class="h-4 w-4" />
+                  <span class="text-sm font-medium"><%= @current_user.name || @current_user.email %></span>
+                </div>
+                <button
+                  phx-click="logout"
+                  class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                >
+                  Logout
+                </button>
+              </div>
+            <% else %>
+              <!-- Guest user buttons -->
+              <button
+                phx-click="navigate-to-signup"
+                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+              >
+                Sign-up
+              </button>
+              <button
+                phx-click="navigate-to-login"
+                class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors"
+              >
+                Log-in
+              </button>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </nav>
+    """
   end
 
   @doc """

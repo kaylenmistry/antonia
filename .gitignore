@@ -39,3 +39,6 @@ npm-debug.log
 .DS_Store
 *.local.env
 .elixir_ls
+
+.kiro/
+.mockup/

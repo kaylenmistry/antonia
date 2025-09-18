@@ -11,6 +11,7 @@ defmodule AntoniaApp do
     setup_logger_backends()
 
     children = [
+      TwMerge.Cache,
       AntoniaApp.PromEx,
       AntoniaWeb.Telemetry,
       Antonia.Repo,

@@ -1,64 +1,74 @@
-<div class="max-w-4xl mx-auto text-center">
-  <div class="mb-8">
-    <h1 class="text-4xl font-bold text-gray-900 mb-4">Welcome to Antonia</h1>
-    <p class="text-xl text-gray-600 mb-8">
-      Revenue reporting and management for shopping centres
-    </p>
-  </div>
-
-  <div class="mb-8">
-    <button
-      phx-click="navigate-to-app"
-      class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg text-lg transition-colors"
-    >
-      Get Started
-    </button>
-  </div>
-
-  <div class="grid md:grid-cols-3 gap-8 mt-16">
+<!-- Hero Section -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
     <div class="text-center">
-      <div class="text-blue-600 mb-4">
-        <svg class="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-          />
-        </svg>
+      <div class="flex justify-center mb-8">
+        <div class="p-4 bg-blue-100 rounded-full">
+          <.icon name="hero-building-office-2" class="h-16 w-16 text-blue-600" />
+        </div>
       </div>
-      <h3 class="text-lg font-semibold text-gray-900 mb-2">Manage Shopping Centres</h3>
-      <p class="text-gray-600">Organize your shopping centres and their stores</p>
+      
+      <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+        Revenue Management
+        <span class="block text-blue-600">Made Easy</span>
+      </h1>
+      
+      <p class="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
+        Streamline tenant revenue reporting and track your commercial property performance 
+        with our comprehensive management platform designed for property owners.
+      </p>
+      
+      <div class="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+        <button
+          phx-click="navigate-to-app"
+          class="px-8 py-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+        >
+          Get Started Free
+        </button>
+        <button
+          phx-click="navigate-to-app"
+          class="px-8 py-4 bg-white text-blue-600 font-semibold rounded-lg border-2 border-blue-600 hover:bg-blue-50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+        >
+          Sign In
+        </button>
+      </div>
     </div>
-
-    <div class="text-center">
-      <div class="text-blue-600 mb-4">
-        <svg class="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-          />
-        </svg>
-      </div>
-      <h3 class="text-lg font-semibold text-gray-900 mb-2">Track Revenue</h3>
-      <p class="text-gray-600">Monitor revenue reports from your stores</p>
-    </div>
-
-    <div class="text-center">
-      <div class="text-blue-600 mb-4">
-        <svg class="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-          />
-        </svg>
-      </div>
-      <h3 class="text-lg font-semibold text-gray-900 mb-2">Generate Reports</h3>
-      <p class="text-gray-600">Create and manage detailed revenue reports</p>
+    
+    <!-- Features Grid -->
+    <div class="grid md:grid-cols-3 gap-8 mt-20">
+      <.card class="hover:shadow-xl transition-all duration-200">
+        <.card_content class="p-8">
+          <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-6">
+            <.icon name="hero-chart-bar" class="h-6 w-6 text-blue-600" />
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-4">Revenue Tracking</h3>
+          <p class="text-gray-600 leading-relaxed">
+            Monitor tenant revenue reports across all your properties with detailed monthly breakdowns and year-over-year comparisons.
+          </p>
+        </.card_content>
+      </.card>
+      
+      <.card class="hover:shadow-xl transition-all duration-200">
+        <.card_content class="p-8">
+          <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-6">
+            <.icon name="hero-check-circle" class="h-6 w-6 text-green-600" />
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-4">Report Management</h3>
+          <p class="text-gray-600 leading-relaxed">
+            Easily track which tenants have submitted their monthly revenue reports and identify any missing submissions.
+          </p>
+        </.card_content>
+      </.card>
+      
+      <.card class="hover:shadow-xl transition-all duration-200">
+        <.card_content class="p-8">
+          <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-6">
+            <.icon name="hero-arrow-trending-up" class="h-6 w-6 text-purple-600" />
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-4">Performance Analytics</h3>
+          <p class="text-gray-600 leading-relaxed">
+            Analyze performance trends with comprehensive analytics including percentage changes and historical comparisons.
+          </p>
+        </.card_content>
+      </.card>
     </div>
   </div>
-</div>
