@@ -3,14 +3,22 @@ defmodule Antonia.Factory do
 
   use ExMachina.Ecto, repo: Antonia.Repo
 
+  alias Antonia.Revenue.Building
   alias Antonia.Revenue.EmailLog
+  alias Antonia.Revenue.Group
   alias Antonia.Revenue.Report
-  alias Antonia.Revenue.ShoppingCentre
   alias Antonia.Revenue.Store
 
-  def shopping_centre_factory do
-    %ShoppingCentre{
-      name: sequence(:name, &"Test Shopping Centre #{&1}")
+  def group_factory do
+    %Group{
+      name: sequence(:name, &"Test Group #{&1}")
+    }
+  end
+
+  def building_factory do
+    %Building{
+      name: sequence(:name, &"Test Building #{&1}"),
+      group: build(:group)
     }
   end
 
@@ -18,7 +26,9 @@ defmodule Antonia.Factory do
     %Store{
       name: sequence(:name, &"Test Store #{&1}"),
       email: sequence(:email, &"test#{&1}@example.com"),
-      shopping_centre: build(:shopping_centre)
+      # Generate area between 25-300
+      area: sequence(:area, &(&1 * 50 + 25)),
+      building: build(:building)
     }
   end
 

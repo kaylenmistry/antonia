@@ -12,14 +12,14 @@ defmodule AntoniaWeb.ReportLive do
     report = Repo.get(Report, id)
 
     if report do
-      report = Repo.preload(report, [:store, store: :shopping_centre])
+      report = Repo.preload(report, [:store, store: :building])
 
       {:ok, assign(socket, :report, report)}
     else
       {:ok,
        socket
        |> put_flash(:error, "Report not found")
-       |> push_navigate(to: ~p"/app")}
+       |> push_navigate(to: ~p"/reporting")}
     end
   end
 end

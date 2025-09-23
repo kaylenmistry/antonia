@@ -94,6 +94,7 @@ defmodule AntoniaWeb do
       import SaladUI.Badge
       import SaladUI.Progress
       import SaladUI.Dialog
+      import SaladUI.DropdownMenu
 
       # Shortcut for generating JS commands
       alias Phoenix.LiveView.JS

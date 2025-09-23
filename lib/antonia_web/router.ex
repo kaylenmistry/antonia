@@ -45,14 +45,19 @@ defmodule AntoniaWeb.Router do
 
     live "/", SplashLive
     live "/reports/:id", ReportLive
+    live "/reporting", ReportingLive
+    live "/reporting/groups/:id", ReportingLive
+    live "/reporting/groups/:id/buildings/:building_id", BuildingLive
+    live "/reporting/groups/:id/buildings/:building_id/stores/:store_id", StoreLive
   end
 
   scope "/app", AntoniaWeb do
     pipe_through [:browser, RequireAuthenticatedUser]
 
-    live "/", AppLive
-    live "/groups/:id", GroupLive
-    live "/groups/:id/stores/:store_id", StoreLive
+    live "/", GroupsLive
+    live "/groups/:id", ReportingLive
+    live "/groups/:id/buildings/:building_id", BuildingLive
+    live "/groups/:id/buildings/:building_id/stores/:store_id", StoreLive
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development

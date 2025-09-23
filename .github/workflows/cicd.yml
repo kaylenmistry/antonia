@@ -31,12 +31,12 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Set up Elixir
-        uses: erlef/setup-beam@8e7fdef09ffa3ea54328b5000c170a3b9b20ca96
+        uses: erlef/setup-beam@e6d7c94229049569db56a7ad5a540c051a010af9
         with:
-          elixir-version: "1.15.2"
-          otp-version: "26.0"
+          elixir-version: "1.19.0-rc.0"
+          otp-version: "28.0.2"
       - name: Restore dependencies cache
         uses: actions/cache@v4
         with:
@@ -67,9 +67,9 @@ jobs:
     environment: prd
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v5
         with:
           audience: sts.amazonaws.com
           aws-region: eu-west-1

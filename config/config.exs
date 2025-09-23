@@ -12,10 +12,10 @@ config :antonia,
   generators: [timestamp_type: :utc_datetime, binary_id: true],
   content_security_policy: [
     "default-src 'self' 'unsafe-eval'",
-    "img-src 'self'",
+    "img-src 'self' blob: data: https://lh3.googleusercontent.com/",
     "style-src 'self' 'unsafe-inline'",
     "font-src 'self'",
-    "connect-src 'self'",
+    "connect-src 'self' ws: wss: https://s3.eu-west-1.amazonaws.com/",
     "script-src-elem 'self'"
   ]
 
@@ -110,6 +110,11 @@ config :antonia, Antonia.Scheduler,
   ]
 
 config :logger, level: :info
+
+config :ueberauth, Ueberauth,
+  providers: [
+    google: {Ueberauth.Strategy.Google, default_scope: "email openid profile"}
+  ]
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

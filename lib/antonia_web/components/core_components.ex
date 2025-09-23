@@ -17,14 +17,16 @@ defmodule AntoniaWeb.CoreComponents do
   use Phoenix.Component
   use Gettext, backend: AntoniaWeb.Gettext
 
-  alias Phoenix.LiveView.JS
-  alias Phoenix.HTML.Form
-
   # Import verified routes for navigation
   use Phoenix.VerifiedRoutes,
     endpoint: AntoniaWeb.Endpoint,
     router: AntoniaWeb.Router,
     statics: AntoniaWeb.static_paths()
+
+  import SaladUI.DropdownMenu
+
+  alias Phoenix.HTML.Form
+  alias Phoenix.LiveView.JS
 
   @doc """
   Renders a modal.
@@ -121,6 +123,8 @@ defmodule AntoniaWeb.CoreComponents do
       id={@id}
       phx-click={JS.push("lv:clear-flash", value: %{key: @kind}) |> hide("##{@id}")}
       role="alert"
+      aria-live="polite"
+      tabindex="-1"
       class={[
         "fixed top-2 right-2 mr-2 w-80 sm:w-96 z-50 rounded-lg p-3 ring-1",
         @kind == :info && "bg-emerald-50 text-emerald-800 ring-emerald-500 fill-cyan-900",
@@ -659,10 +663,10 @@ defmodule AntoniaWeb.CoreComponents do
   ## Examples
 
       <.navbar />
-      <.navbar current_user={@current_user} />
+      <.navbar user={@user} />
 
   """
-  attr :current_user, :map, default: nil
+  attr :user, :map, default: nil
   attr :class, :string, default: nil
 
   def navbar(assigns) do
@@ -670,42 +674,65 @@ defmodule AntoniaWeb.CoreComponents do
     <nav class={["bg-white shadow-sm border-b border-gray-200", @class]}>
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
+          <!-- Logo and brand -->
           <div class="flex items-center space-x-3">
-            <.link navigate={~p"/"} class="flex items-center space-x-3">
+            <.link
+              navigate={~p"/"}
+              class="flex items-center space-x-3 hover:opacity-80 transition-opacity"
+            >
               <.icon name="hero-building-office-2" class="h-8 w-8 text-blue-600" />
-              <span class="text-xl font-semibold text-gray-900">Revenue Management</span>
+              <span class="text-xl font-semibold text-gray-900">{gettext("Revenue Management")}</span>
             </.link>
           </div>
-
+          
+    <!-- Navigation items -->
           <div class="flex items-center space-x-3">
-            <%= if @current_user do %>
-              <!-- Authenticated user menu -->
-              <div class="flex items-center space-x-4">
-                <div class="flex items-center space-x-2 text-gray-700">
-                  <.icon name="hero-user" class="h-4 w-4" />
-                  <span class="text-sm font-medium"><%= @current_user.name || @current_user.email %></span>
-                </div>
-                <button
-                  phx-click="logout"
-                  class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-                >
-                  Logout
-                </button>
-              </div>
+            <%= if @user do %>
+              <!-- Authenticated user dropdown menu -->
+              <.dropdown_menu id="user-menu">
+                <.dropdown_menu_trigger>
+                  <button class="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    <.icon name="hero-user" class="h-4 w-4" />
+                    <span class="hidden sm:block">{@user.name || @user.email}</span>
+                    <.icon name="hero-chevron-down" class="h-4 w-4" />
+                  </button>
+                </.dropdown_menu_trigger>
+                <.dropdown_menu_content align="end" class="w-56">
+                  <.dropdown_menu_label>
+                    {gettext("My Account")}
+                  </.dropdown_menu_label>
+                  <.dropdown_menu_separator />
+                  <.dropdown_menu_group>
+                    <.dropdown_menu_link_item href={~p"/app"} id="dashboard-menu-item">
+                      <.icon name="hero-home" /> {gettext("Dashboard")}
+                    </.dropdown_menu_link_item>
+                  </.dropdown_menu_group>
+                  <.dropdown_menu_separator />
+                  <.dropdown_menu_link_item
+                    variant="destructive"
+                    href={~p"/auth/logout"}
+                    id="logout-menu-item"
+                  >
+                    <.icon name="hero-arrow-right-on-rectangle" /> {gettext("Log out")}
+                  </.dropdown_menu_link_item>
+                </.dropdown_menu_content>
+              </.dropdown_menu>
             <% else %>
               <!-- Guest user buttons -->
-              <button
-                phx-click="navigate-to-signup"
-                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-              >
-                Sign-up
-              </button>
-              <button
-                phx-click="navigate-to-login"
-                class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors"
-              >
-                Log-in
-              </button>
+              <div class="flex items-center space-x-2">
+                <.link
+                  href={~p"/auth"}
+                  class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                >
+                  {gettext("Sign-up")}
+                </.link>
+                <.link
+                  href={~p"/auth"}
+                  class="px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                >
+                  {gettext("Log-in")}
+                </.link>
+              </div>
             <% end %>
           </div>
         </div>

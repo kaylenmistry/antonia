@@ -2,9 +2,19 @@ defmodule Antonia.Repo.Migrations.SetupBasicSchema do
   use Ecto.Migration
 
   def change do
-    create table(:shopping_centres, primary_key: false) do
+    # Create groups table
+    create table(:groups, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :name, :string, null: false
+
+      timestamps(type: :utc_datetime)
+    end
+
+    create table(:buildings, primary_key: false) do
+      add :id, :binary_id, primary_key: true
+      add :name, :string, null: false
+      add :address, :text
+      add :group_id, references(:groups, on_delete: :nilify_all, type: :binary_id)
 
       timestamps(type: :utc_datetime)
     end
@@ -14,8 +24,8 @@ defmodule Antonia.Repo.Migrations.SetupBasicSchema do
       add :name, :string, null: false
       add :email, :string, null: false
 
-      add :shopping_centre_id,
-          references(:shopping_centres, on_delete: :delete_all, type: :binary_id),
+      add :building_id,
+          references(:buildings, on_delete: :delete_all, type: :binary_id),
           null: false
 
       timestamps()
@@ -36,7 +46,8 @@ defmodule Antonia.Repo.Migrations.SetupBasicSchema do
 
     create unique_index(:reports, [:store_id, :period_start])
 
-    create index(:stores, [:shopping_centre_id])
+    create index(:buildings, [:group_id])
+    create index(:stores, [:building_id])
     create index(:reports, [:store_id])
     create index(:reports, [:store_id, :status])
   end

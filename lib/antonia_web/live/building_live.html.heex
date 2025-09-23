@@ -1,0 +1,129 @@
+<div class="min-h-screen bg-gray-50">
+  <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+      <button
+        phx-click="back_to_group"
+        class="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors mb-4"
+      >
+        <.icon name="hero-arrow-left" class="w-4 h-4" />
+        <span>{gettext("Back to %{group_name}", group_name: @group.name)}</span>
+      </button>
+
+      <div class="flex items-start justify-between">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900 mb-2">{@building.name}</h1>
+          <%= if @building.address do %>
+            <div class="flex items-center space-x-2 text-gray-600 mb-4">
+              <.icon name="hero-map-pin" class="w-4 h-4" />
+              <span>{@building.address}</span>
+            </div>
+          <% end %>
+          <div class="flex items-center space-x-6 text-sm">
+            <div class="flex items-center space-x-2">
+              <.icon name="hero-building-storefront" class="w-4 h-4 text-gray-500" />
+              <span class="text-gray-600">{gettext("Total Stores")}:</span>
+              <span class="font-medium text-gray-900">{length(@stores)}</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-gray-600">{gettext("Total Area")}:</span>
+              <span class="font-medium text-gray-900">
+                {Enum.reduce(@stores, 0, fn store, acc -> acc + (store.area || 0) end)} m²
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+<!-- Add Store Button -->
+    <div class="mb-8 flex justify-end">
+      <.dialog id="add-store-dialog" on-close="dialog_closed">
+        <.dialog_trigger>
+          <SaladUI.Button.button>
+            <.icon name="hero-plus" class="w-4 h-4 mr-2" />
+            {gettext("Add New Store")}
+          </SaladUI.Button.button>
+        </.dialog_trigger>
+        <.dialog_content class="sm:max-w-[500px]">
+          <.dialog_header>
+            <.dialog_title>{gettext("Add New Store")}</.dialog_title>
+            <.dialog_description>
+              {gettext("Add a new store to %{building_name}", building_name: @building.name)}
+            </.dialog_description>
+          </.dialog_header>
+
+          <.form for={@form} phx-submit="create_store" class="space-y-4">
+            <div>
+              <.input
+                field={@form[:name]}
+                type="text"
+                label={gettext("Store Name")}
+                placeholder={gettext("Enter store name")}
+                required
+              />
+            </div>
+            <div>
+              <.input
+                field={@form[:email]}
+                type="email"
+                label={gettext("Contact Email")}
+                placeholder="store@example.com"
+                required
+              />
+            </div>
+            <div>
+              <.input
+                field={@form[:area]}
+                type="number"
+                label={gettext("Area (sq ft)")}
+                placeholder={gettext("1000")}
+                min="1"
+                step="1"
+              />
+            </div>
+
+            <.dialog_footer>
+              <SaladUI.Button.button type="submit">
+                <.icon name="hero-check" class="w-4 h-4 mr-2" />
+                {gettext("Add Store")}
+              </SaladUI.Button.button>
+              <SaladUI.Button.button type="button" data-action="close" variant="outline">
+                {gettext("Cancel")}
+              </SaladUI.Button.button>
+            </.dialog_footer>
+          </.form>
+        </.dialog_content>
+      </.dialog>
+    </div>
+    
+<!-- Revenue Table -->
+    <%= if not Enum.empty?(@stores) do %>
+      <.revenue_table revenue_data={@revenue_data} group={@group} building={@building} />
+      
+<!-- Summary Stats -->
+      <.stats_summary
+        stats={
+          Enum.map(@revenue_data.years, fn year ->
+            year_data = Map.get(@revenue_data.totals_by_year, year, %{total: 0, yoy_change: nil})
+
+            %{
+              title: "#{year} #{gettext("Total Revenue")}",
+              value: year_data.total,
+              change: year_data.yoy_change,
+              change_label: gettext("vs %{year}", year: year - 1)
+            }
+          end)
+        }
+        class="mt-8"
+      />
+    <% else %>
+      <!-- Empty state -->
+      <.empty_state
+        icon="hero-building-storefront"
+        title={gettext("No stores yet")}
+        description={gettext("Add your first store to this building using the button above")}
+      />
+    <% end %>
+  </div>
+</div>

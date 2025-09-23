@@ -15,10 +15,21 @@ defmodule Antonia.Revenue.Report do
     :period_start,
     :period_end,
     :store_id,
-    :due_date
+    :due_date,
+    :note,
+    :email_content,
+    :attachment_url
   ]
 
-  @required_fields @fields
+  @required_fields [
+    :status,
+    :currency,
+    :revenue,
+    :period_start,
+    :period_end,
+    :store_id,
+    :due_date
+  ]
 
   typed_schema "reports" do
     field(:status, Ecto.Enum, values: ReportStatus.values())
@@ -27,6 +38,9 @@ defmodule Antonia.Revenue.Report do
     field(:period_start, :date)
     field(:period_end, :date)
     field(:due_date, :date)
+    field(:note, :string)
+    field(:email_content, :string)
+    field(:attachment_url, :string)
 
     belongs_to(:store, Store)
     has_many(:email_logs, EmailLog)

@@ -14,8 +14,8 @@ defmodule AntoniaWeb.Plugs.FetchCurrentUser do
     conn = fetch_cookies(conn)
 
     case get_session(conn, :auth) do
-      %Auth{info: %Auth.Info{} = user} -> assign(conn, :current_user, user)
-      _ -> assign(conn, :current_user, nil)
+      %Auth{info: %Auth.Info{} = user} -> assign(conn, :user, user)
+      _ -> assign(conn, :user, nil)
     end
   end
 end

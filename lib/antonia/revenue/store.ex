@@ -4,13 +4,14 @@ defmodule Antonia.Revenue.Store do
 
   import Ecto.Changeset
 
+  alias Antonia.Revenue.Building
   alias Antonia.Revenue.Report
-  alias Antonia.Revenue.ShoppingCentre
 
   @fields [
     :name,
     :email,
-    :shopping_centre_id
+    :building_id,
+    :area
   ]
 
   @required_fields @fields
@@ -18,8 +19,9 @@ defmodule Antonia.Revenue.Store do
   typed_schema "stores" do
     field(:name, :string)
     field(:email, :string)
+    field(:area, :integer)
 
-    belongs_to(:shopping_centre, ShoppingCentre)
+    belongs_to(:building, Building)
     has_many(:reports, Report)
 
     timestamps()
@@ -32,6 +34,6 @@ defmodule Antonia.Revenue.Store do
     |> cast(attrs, @fields)
     |> validate_required(@required_fields)
     |> validate_format(:email, ~r/@/)
-    |> foreign_key_constraint(:shopping_centre_id)
+    |> foreign_key_constraint(:building_id)
   end
 end

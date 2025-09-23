@@ -1,162 +1,198 @@
-<div class="max-w-4xl mx-auto">
-  <div class="mb-8">
-    <div class="flex items-center gap-4 mb-4">
-      <.link
-        navigate={~p"/app/groups/#{@shopping_centre.id}"}
-        class="text-blue-600 hover:text-blue-700 font-medium"
-      >
-        ← Back to {@shopping_centre.name}
-      </.link>
-    </div>
-
-    <h1 class="text-3xl font-bold text-gray-900 mb-2">
-      {@store.name}
-    </h1>
-    <p class="text-gray-600">Revenue reports for this store</p>
-    <p class="text-sm text-gray-500">
-      {@store.email}
-    </p>
-  </div>
-
-  <div class="mb-6">
-    <button
-      phx-click="show-add-form"
-      class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
-    >
-      Add Report
-    </button>
-  </div>
-
-  <%= if @show_form do %>
-    <div class="bg-white border border-gray-200 rounded-lg p-6 mb-6">
-      <h2 class="text-xl font-semibold mb-4">Add New Report</h2>
-
-      <.form for={@changeset} phx-change="validate" phx-submit="save" class="space-y-4">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <.label for="report_period_start">Period Start</.label>
-            <.input field={@changeset[:period_start]} type="date" required />
-            <%= if @changeset.errors[:period_start] do %>
-              <.error>{elem(@changeset.errors[:period_start], 0)}</.error>
-            <% end %>
-          </div>
-
-          <div>
-            <.label for="report_period_end">Period End</.label>
-            <.input field={@changeset[:period_end]} type="date" required />
-            <%= if @changeset.errors[:period_end] do %>
-              <.error>{elem(@changeset.errors[:period_end], 0)}</.error>
-            <% end %>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <.label for="report_revenue">Revenue</.label>
-            <.input
-              field={@changeset[:revenue]}
-              type="number"
-              step="0.01"
-              placeholder="0.00"
-              required
-            />
-            <%= if @changeset.errors[:revenue] do %>
-              <.error>{elem(@changeset.errors[:revenue], 0)}</.error>
-            <% end %>
-          </div>
-
-          <div>
-            <.label for="report_currency">Currency</.label>
-            <.input field={@changeset[:currency]} type="text" placeholder="USD" required />
-            <%= if @changeset.errors[:currency] do %>
-              <.error>{elem(@changeset.errors[:currency], 0)}</.error>
-            <% end %>
-          </div>
-        </div>
-
-        <div class="flex gap-3">
-          <button
-            type="submit"
-            class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
-          >
-            Save
-          </button>
-          <button
-            type="button"
-            phx-click="hide-add-form"
-            class="bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg transition-colors"
-          >
-            Cancel
-          </button>
-        </div>
-      </.form>
-    </div>
-  <% end %>
-
-  <div class="space-y-4">
-    <%= for report <- @reports do %>
-      <div class="bg-white border border-gray-200 rounded-lg p-6">
-        <div class="flex items-center justify-between mb-4">
-          <div>
-            <h3 class="text-lg font-semibold text-gray-900">
-              {report.currency} {Number.Delimit.number_to_delimited(report.revenue, precision: 2)}
-            </h3>
-            <p class="text-sm text-gray-600">
-              {Date.to_string(report.period_start)} - {Date.to_string(report.period_end)}
-            </p>
-          </div>
-
-          <div class="flex items-center gap-2">
-            <span class={[
-              "px-2 py-1 text-xs font-medium rounded-full",
-              case report.status do
-                :pending -> "bg-yellow-100 text-yellow-800"
-                :submitted -> "bg-green-100 text-green-800"
-                :overdue -> "bg-red-100 text-red-800"
-                _ -> "bg-gray-100 text-gray-800"
-              end
-            ]}>
-              {String.upcase(to_string(report.status))}
-            </span>
-
-            <%= if Report.overdue?(report) do %>
-              <span class="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">
-                OVERDUE
-              </span>
-            <% end %>
-          </div>
-        </div>
-
-        <div class="text-sm text-gray-600">
-          <p>Due: {Date.to_string(report.due_date)}</p>
-          <p>Created: {Calendar.strftime(report.inserted_at, "%B %d, %Y")}</p>
-        </div>
-      </div>
-    <% end %>
-  </div>
-
-  <%= if Enum.empty?(@reports) do %>
-    <div class="text-center py-12">
-      <div class="text-gray-400 mb-4">
-        <svg class="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-          />
-        </svg>
-      </div>
-      <h3 class="text-lg font-medium text-gray-900 mb-2">No reports yet</h3>
-      <p class="text-gray-600 mb-4">
-        Get started by adding your first revenue report for this store
-      </p>
+<div class="min-h-screen bg-gray-50">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-8">
       <button
-        phx-click="show-add-form"
-        class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+        phx-click="back_to_building"
+        class="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors mb-4"
       >
-        Add Report
+        <.icon name="hero-arrow-left" class="w-4 h-4" />
+        <span>{gettext("Back to Building Details")}</span>
       </button>
+
+      <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+        <h1 class="text-2xl font-bold text-gray-900 mb-2">
+          {@building.name} - {@store.name} - {gettext("Revenue")} {month_name(@month)}
+        </h1>
+        <p class="text-gray-600">
+          {gettext("Revenue details for %{month} %{year}", month: month_name(@month), year: @year)}
+        </p>
+      </div>
     </div>
-  <% end %>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <!-- Left Column - Revenue Data -->
+      <div class="space-y-6">
+        <!-- Historical Revenue -->
+        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+          <h2 class="text-lg font-semibold text-gray-900 mb-4">
+            {gettext("Historical Revenue")} - {month_name(@month)}
+          </h2>
+
+          <div class="space-y-3">
+            <%= for data <- @historical_data do %>
+              <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <span class="font-medium text-gray-700">{data.year}</span>
+                <span class="font-semibold text-gray-900">
+                  <%= if data.is_current do %>
+                    <%= if @is_editing do %>
+                      <input
+                        type="number"
+                        value={@edited_revenue}
+                        phx-change="update_revenue"
+                        name="revenue"
+                        class="w-24 px-2 py-1 border border-gray-300 rounded text-right"
+                      />
+                    <% else %>
+                      <span class="text-blue-600">{format_currency(data.revenue)}</span>
+                    <% end %>
+                  <% else %>
+                    {format_currency(data.revenue)}
+                  <% end %>
+                </span>
+              </div>
+            <% end %>
+          </div>
+
+          <div class="mt-6 flex space-x-3">
+            <%= if not @is_editing do %>
+              <button
+                phx-click="start_editing"
+                class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <.icon name="hero-pencil" class="h-4 w-4" />
+                <span>{gettext("Edit")}</span>
+              </button>
+            <% else %>
+              <div class="flex space-x-2">
+                <button
+                  phx-click="save_revenue"
+                  class="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  <.icon name="hero-check" class="h-4 w-4" />
+                  <span>{gettext("Save")}</span>
+                </button>
+                <button
+                  phx-click="cancel_editing"
+                  class="flex items-center space-x-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                >
+                  <.icon name="hero-x-mark" class="h-4 w-4" />
+                  <span>{gettext("Cancel")}</span>
+                </button>
+              </div>
+            <% end %>
+          </div>
+        </div>
+        
+<!-- Attachment Section -->
+        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+          <h2 class="text-lg font-semibold text-gray-900 mb-4">{gettext("Attachment")}</h2>
+
+          <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+            <%= if @current_report && @current_report.attachment_url || @selected_file do %>
+              <div class="space-y-4">
+                <.icon name="hero-document-text" class="h-12 w-12 text-blue-600 mx-auto" />
+                <div>
+                  <p class="text-sm font-medium text-gray-900">
+                    <%= if @selected_file do %>
+                      {@selected_file.name}
+                    <% else %>
+                      revenue_report.pdf
+                    <% end %>
+                  </p>
+                  <p class="text-xs text-gray-500">
+                    <%= if @selected_file do %>
+                      {gettext("New file selected")}
+                    <% else %>
+                      {gettext("Uploaded via email")}
+                    <% end %>
+                  </p>
+                </div>
+                <%= if @current_report && @current_report.attachment_url && not @selected_file do %>
+                  <button class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                    {gettext("View Document")}
+                  </button>
+                <% end %>
+              </div>
+            <% else %>
+              <div class="space-y-4">
+                <.icon name="hero-arrow-up-tray" class="h-12 w-12 text-gray-400 mx-auto" />
+                <div>
+                  <p class="text-sm text-gray-600">{gettext("No attachment available")}</p>
+                  <p class="text-xs text-gray-500">{gettext("Upload a supporting document")}</p>
+                </div>
+              </div>
+            <% end %>
+          </div>
+
+          <div class="mt-4">
+            <label class="block">
+              <input type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" class="hidden" />
+              <span class="flex items-center justify-center space-x-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors cursor-pointer">
+                <.icon name="hero-arrow-up-tray" class="h-4 w-4" />
+                <span>{gettext("Upload New Document")}</span>
+              </span>
+            </label>
+          </div>
+        </div>
+      </div>
+      
+<!-- Right Column - Notes and Email -->
+      <div class="space-y-6">
+        <!-- Notes Section -->
+        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+          <h2 class="text-lg font-semibold text-gray-900 mb-4">{gettext("Note")}</h2>
+
+          <textarea
+            value={@note}
+            phx-change="update_note"
+            name="note"
+            placeholder={gettext("Add notes about this revenue report...")}
+            class="w-full h-32 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+          ></textarea>
+        </div>
+        
+<!-- Email Section -->
+        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+          <h2 class="text-lg font-semibold text-gray-900 mb-4">{gettext("Email Sent")}</h2>
+
+          <div class="border border-gray-200 rounded-lg p-4 bg-gray-50 min-h-[200px]">
+            <%= if @current_report && @current_report.email_content do %>
+              <div class="space-y-3">
+                <div class="flex items-center space-x-2 text-sm text-gray-600">
+                  <.icon name="hero-envelope" class="h-4 w-4" />
+                  <span>{gettext("From")}: {@store.email}</span>
+                </div>
+                <div class="text-sm text-gray-600">
+                  <span>
+                    {gettext("Date")}: {Calendar.strftime(
+                      @current_report.inserted_at,
+                      "%B %d, %Y"
+                    )}
+                  </span>
+                </div>
+                <div class="text-sm text-gray-600">
+                  <span>
+                    {gettext("Subject")}: {gettext("Revenue Report")} - {month_name(@month)} {@year}
+                  </span>
+                </div>
+                <hr class="border-gray-300" />
+                <div class="text-sm text-gray-800 whitespace-pre-wrap">
+                  {@current_report.email_content}
+                </div>
+              </div>
+            <% else %>
+              <div class="flex items-center justify-center h-full text-gray-500">
+                <div class="text-center">
+                  <.icon name="hero-envelope" class="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                  <p class="text-sm">{gettext("No email content available")}</p>
+                  <p class="text-xs">{gettext("Revenue may have been entered manually")}</p>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

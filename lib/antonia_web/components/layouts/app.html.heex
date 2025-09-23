@@ -1,6 +1,6 @@
-<.navbar current_user={assigns[:current_user]} />
+<.navbar user={assigns[:user]} />
 
-<main class="w-full">
+<main class="w-full pt-8">
   <.flash_group flash={@flash} />
   {@inner_content}
 </main>
