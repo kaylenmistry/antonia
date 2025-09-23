@@ -8,6 +8,6 @@
   ],
   ignore_paths: [
     ~r/lib\/Antonia_web\/controllers/,
-    ~r/lib\/Antonia_web\/live/,
+    ~r/lib\/Antonia_web\/live/
   ]
 }

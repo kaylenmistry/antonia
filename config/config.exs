@@ -12,10 +12,10 @@ config :antonia,
   generators: [timestamp_type: :utc_datetime, binary_id: true],
   content_security_policy: [
     "default-src 'self' 'unsafe-eval'",
-    "img-src 'self'",
+    "img-src 'self' blob: data: https://lh3.googleusercontent.com/",
     "style-src 'self' 'unsafe-inline'",
     "font-src 'self'",
-    "connect-src 'self'",
+    "connect-src 'self' ws: wss: https://s3.eu-west-1.amazonaws.com/",
     "script-src-elem 'self'"
   ]
 
@@ -37,10 +37,10 @@ config :antonia, AntoniaWeb.Endpoint,
 #
 # For production it's recommended to configure a different adapter
 # at the `config/runtime.exs`.
-config :antonia, Antonia.Mailer, adapter: Swoosh.Adapters.Local
+config :antonia, Antonia.Mailer, adapter: Resend.Swoosh.Adapter
 
 # Swoosh API client is needed for adapters other than SMTP.
-config :swoosh, :api_client, false
+config :swoosh, local: false
 
 # Configure esbuild (the version is required)
 config :esbuild,
@@ -91,6 +91,30 @@ config :phoenix,
   filter_parameters: ["password", "secret", "token"]
 
 config :tesla, :adapter, {Tesla.Adapter.Finch, name: Antonia.Finch, request_timeout: 60_000}
+
+config :antonia, Oban,
+  engine: Oban.Engines.Basic,
+  notifier: Oban.Notifiers.Postgres,
+  queues: [mailers: 20],
+  repo: Antonia.Repo
+
+# Configure Quantum scheduler
+config :antonia, Antonia.Scheduler,
+  jobs: [
+    # Create monthly reports on 1st of each month at 8 AM
+    {"0 8 1 * *", {Antonia.Revenue.ReportService, :create_monthly_reports, []}},
+    # Send initial monthly reminders on 1st of each month at 9 AM
+    {"0 9 1 * *", {Antonia.Revenue.ReportService, :send_initial_reminders, []}},
+    # Check for follow-up reminders daily at 10 AM
+    {"0 10 * * *", {Antonia.Revenue.ReportService, :send_daily_reminders, []}}
+  ]
+
+config :logger, level: :info
+
+config :ueberauth, Ueberauth,
+  providers: [
+    google: {Ueberauth.Strategy.Google, default_scope: "email openid profile"}
+  ]
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

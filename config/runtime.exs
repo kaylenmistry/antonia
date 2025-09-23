@@ -11,6 +11,7 @@ default_db_url = "postgres://postgres:postgres@localhost:5432/#{default_db_name}
 config :antonia, Antonia.Repo,
   log: false,
   url: get_database_url(default_db_url),
+  migration_source: "antonia_schema_migrations",
   pool_size: get_integer("POOL_SIZE", 10),
   adapter: Ecto.Adapters.Postgres
 
@@ -32,9 +33,18 @@ config :antonia, AntoniaWeb.Endpoint,
     ),
   base_url: base_url
 
-config :antonia, AntoniaWeb.O11Y.Endpoint, port: get_integer("O11Y_PORT", for_env.(3999, test: 4999))
+config :antonia, AntoniaWeb.O11Y.Endpoint,
+  port: get_integer("O11Y_PORT", for_env.(3999, test: 4999))
 
 config :antonia, Antonia.Mailer,
   api_key: get_string("RESEND_API_KEY", "re_JToSkskJ_4oQcGmUfxtCKDkaR9Q2QsXYu")
+
+config :ueberauth, Ueberauth.Strategy.Google.OAuth,
+  client_id:
+    get_string(
+      "GOOGLE_CLIENT_ID",
+      "1057577530329-8sfaa8mvnvrcri6l4dktsg1bp39ujdf2.apps.googleusercontent.com"
+    ),
+  client_secret: get_string("GOOGLE_CLIENT_SECRET", "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")
 
 config :antonia, Antonia.Accounts.UserNotifier, base_url: base_url

@@ -9,7 +9,32 @@ defmodule Antonia.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
-      deps: deps()
+      deps: deps(),
+      dialyzer: [
+        plt_file: {:no_warn, "priv/plts/dialyzer.plt"},
+        plt_add_apps: [:mix, :credo]
+      ],
+      # Coveralls
+      test_coverage: [tool: ExCoveralls],
+      # ExDocs
+      name: "Antonia",
+      source_url: "https://github.com/kaylenmistry/antonia",
+      homepage_url: "https://antonia.co",
+      docs: [
+        main: "Antonia",
+        extras: ["README.md"]
+      ]
+    ]
+  end
+
+  def cli do
+    [
+      preferred_envs: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.html": :test,
+        "coveralls.json": :test
+      ]
     ]
   end
 
@@ -47,8 +72,10 @@ defmodule Antonia.MixProject do
        depth: 1},
       {:jason, "~> 1.2"},
       {:logfmt, "~> 3.3"},
+      {:logger_backends, "~> 1.0"},
       {:mjml, "~> 5.0"},
       {:oban, "~> 2.19"},
+      {:quantum, "~> 3.0"},
       {:phoenix_ecto, "~> 4.5"},
       {:phoenix_html, "~> 4.1"},
       {:phoenix_live_dashboard, "~> 0.8.3"},
@@ -62,17 +89,27 @@ defmodule Antonia.MixProject do
       {:telemetry_metrics, "~> 1.0"},
       {:telemetry_poller, "~> 1.0"},
       {:tesla, "~> 1.4"},
+      {:ueberauth_google, "~> 0.10"},
+      {:ueberauth, "~> 0.10"},
       {:uniq, "~> 0.1"},
+      {:number, "~> 1.0.1"},
       # Dev and test dependencies
+      {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.1", only: :dev, runtime: false},
+      {:doctor, "~> 0.22.0", only: :dev, runtime: false},
       {:esbuild, "~> 0.8", runtime: Mix.env() == :dev},
+      {:ex_check, "~> 0.16.0", only: [:dev], runtime: false},
+      {:ex_doc, "~> 0.26", only: :dev, runtime: false},
       {:ex_machina, "~> 2.8.0", only: [:dev, :test]},
       {:excoveralls, "~> 0.14", only: :test},
       {:floki, ">= 0.30.0", only: :test},
       {:igniter, "~> 0.5"},
       {:mix_audit, "~> 2.1", only: [:dev, :test], runtime: false},
+      {:mock, "~> 0.3.7", only: :test},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
+      {:sobelow, "~> 0.8", only: :dev, runtime: false},
       {:tailwind, "~> 0.3.1", runtime: Mix.env() == :dev},
-      {:typed_ecto_schema, "~> 0.4.1", runtime: false}
+      {:typed_ecto_schema, "~> 0.4.3", runtime: false}
     ]
   end
 

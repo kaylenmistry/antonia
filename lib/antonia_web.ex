@@ -89,6 +89,12 @@ defmodule AntoniaWeb do
       import Phoenix.HTML
       # Core UI components
       import AntoniaWeb.CoreComponents
+      # Salad UI components (selective imports to avoid conflicts)
+      import SaladUI.Card
+      import SaladUI.Badge
+      import SaladUI.Progress
+      import SaladUI.Dialog
+      import SaladUI.DropdownMenu
 
       # Shortcut for generating JS commands
       alias Phoenix.LiveView.JS

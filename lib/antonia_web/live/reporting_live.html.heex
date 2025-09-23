@@ -1,0 +1,236 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <!-- Header Section -->
+  <div class="mb-8">
+    <div class="flex items-center gap-4 mb-4">
+      <.link
+        navigate={~p"/app"}
+        class="text-blue-600 hover:text-blue-700 font-medium flex items-center"
+      >
+        <.icon name="hero-arrow-left" class="w-4 h-4 mr-2" />
+        {gettext("Back to Groups")}
+      </.link>
+    </div>
+
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">
+      {@group.name} - {gettext("Reporting Dashboard")}
+    </h1>
+    <p class="text-gray-600">
+      {gettext("Monitor revenue reporting across buildings in this group")}
+    </p>
+  </div>
+  
+<!-- Stats Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <.card class="p-6">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <.icon name="hero-building-office-2" class="h-8 w-8 text-blue-600" />
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-500">{gettext("Total Buildings")}</p>
+          <p class="text-2xl font-bold text-gray-900">{@dashboard_stats.buildings_count}</p>
+        </div>
+      </div>
+    </.card>
+
+    <.card class="p-6">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <.icon name="hero-building-storefront" class="h-8 w-8 text-green-600" />
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-500">{gettext("Total Shops")}</p>
+          <p class="text-2xl font-bold text-gray-900">{@dashboard_stats.stores_count}</p>
+        </div>
+      </div>
+    </.card>
+
+    <.card class="p-6">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <.icon name="hero-check-circle" class="h-8 w-8 text-green-600" />
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-500">{gettext("Reported this month")}</p>
+          <p class="text-2xl font-bold text-gray-900">{@dashboard_stats.reported_count}</p>
+        </div>
+      </div>
+    </.card>
+
+    <.card class="p-6">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <.icon name="hero-clock" class="h-8 w-8 text-yellow-600" />
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-500">{gettext("Pending Reports")}</p>
+          <p class="text-2xl font-bold text-gray-900">{@dashboard_stats.pending_count}</p>
+        </div>
+      </div>
+    </.card>
+  </div>
+  
+<!-- Buildings Section -->
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="text-xl font-semibold text-gray-900">{gettext("Buildings")}</h2>
+    <.dialog id="add-building-dialog" on-close="dialog_closed">
+      <.dialog_trigger>
+        <SaladUI.Button.button>
+          <.icon name="hero-plus" class="w-4 h-4 mr-2" />
+          {gettext("Add New Building")}
+        </SaladUI.Button.button>
+      </.dialog_trigger>
+      <.dialog_content class="sm:max-w-[425px]">
+        <.dialog_header>
+          <.dialog_title>{gettext("Add New Building")}</.dialog_title>
+          <.dialog_description>
+            {gettext("Create a new building in %{group_name}. Fill in the details below.",
+              group_name: @group.name
+            )}
+          </.dialog_description>
+        </.dialog_header>
+
+        <.form for={@form} phx-submit="create_building" class="space-y-4">
+          <div>
+            <.input
+              field={@form[:name]}
+              label={gettext("Building Name")}
+              placeholder={gettext("Enter building name")}
+            />
+          </div>
+          <div>
+            <.input
+              field={@form[:address]}
+              label={gettext("Address")}
+              placeholder={gettext("Enter building address")}
+            />
+          </div>
+          <.dialog_footer>
+            <SaladUI.Button.button type="submit">
+              <.icon name="hero-check" class="w-4 h-4 mr-2" />
+              {gettext("Create Building")}
+            </SaladUI.Button.button>
+            <SaladUI.Button.button type="button" data-action="close" variant="outline">
+              {gettext("Cancel")}
+            </SaladUI.Button.button>
+          </.dialog_footer>
+        </.form>
+      </.dialog_content>
+    </.dialog>
+  </div>
+  
+<!-- Buildings List -->
+  <div class="space-y-4">
+    <%= for building <- @buildings do %>
+      <.card
+        class="p-6 hover:shadow-md hover:border-gray-300 transition-all duration-200 cursor-pointer"
+        phx-click="navigate_to_building"
+        phx-value-building_id={building.id}
+      >
+        <div class="flex items-center justify-between">
+          <div class="flex-1">
+            <!-- Building Name and Status Badge -->
+            <div class="flex items-center space-x-3 mb-2">
+              <h3 class="text-lg font-semibold text-gray-900">{building.name}</h3>
+              <div class="flex items-center space-x-2">
+                <%= if building.stats.status == :complete do %>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    <.icon name="hero-check-circle" class="w-3 h-3 mr-1" />
+                    {gettext("Complete")}
+                  </span>
+                <% else %>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                    <.icon name="hero-exclamation-triangle" class="w-3 h-3 mr-1" />
+                    {gettext("Pending")}
+                  </span>
+                <% end %>
+              </div>
+            </div>
+            
+<!-- Address -->
+            <%= if building.address do %>
+              <p class="text-gray-600 mb-3">{building.address}</p>
+            <% end %>
+            
+<!-- Stats Row -->
+            <div class="flex items-center space-x-6 mb-3">
+              <div class="flex items-center space-x-2">
+                <span class="text-sm text-gray-600">{gettext("Total Shops")}:</span>
+                <span class="text-sm font-medium text-gray-900">
+                  {building.stats.total_stores}
+                </span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <span class="text-sm text-gray-600">{gettext("Reported")}:</span>
+                <span class="text-sm font-medium text-green-600">
+                  {building.stats.reported_count}
+                </span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <span class="text-sm text-gray-600">{gettext("Pending")}:</span>
+                <span class="text-sm font-medium text-orange-600">
+                  {building.stats.pending_count}
+                </span>
+              </div>
+            </div>
+            
+<!-- Unreported Shops -->
+            <%= if building.stats.pending_count > 0 and length(building.stats.unreported_shops) > 0 do %>
+              <div class="mb-3">
+                <p class="text-sm text-gray-600 mb-2">{gettext("Unreported shops")}:</p>
+                <div class="flex flex-wrap gap-1">
+                  <%= for shop <- Enum.take(building.stats.unreported_shops, 3) do %>
+                    <span class="inline-block px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
+                      {shop}
+                    </span>
+                  <% end %>
+                  <%= if length(building.stats.unreported_shops) > 3 do %>
+                    <span class="inline-block px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
+                      +{length(building.stats.unreported_shops) - 3} {gettext("more")}
+                    </span>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+          
+<!-- Progress Bar Section -->
+          <div class="flex items-center space-x-4">
+            <div class="text-right">
+              <div class="w-32 h-2 bg-gray-200 rounded-full mb-1">
+                <div
+                  class={[
+                    "h-2 rounded-full transition-all duration-300",
+                    if(building.stats.completion_percentage == 100,
+                      do: "bg-green-500",
+                      else: "bg-blue-500"
+                    )
+                  ]}
+                  style={"width: #{building.stats.completion_percentage}%"}
+                />
+              </div>
+              <p class="text-xs text-gray-600">
+                {building.stats.completion_percentage}% {gettext("Complete")}
+              </p>
+            </div>
+          </div>
+        </div>
+      </.card>
+    <% end %>
+  </div>
+  
+<!-- Empty State -->
+  <%= if Enum.empty?(@buildings) do %>
+    <.card class="text-center py-12">
+      <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <.icon name="hero-building-office-2" class="w-8 h-8 text-gray-400" />
+      </div>
+      <h3 class="text-lg font-medium text-gray-900 mb-2">{gettext("No buildings yet")}</h3>
+      <p class="text-gray-600">
+        {gettext("Get started by adding your first building to %{group_name}",
+          group_name: @group.name
+        )}
+      </p>
+    </.card>
+  <% end %>
+</div>

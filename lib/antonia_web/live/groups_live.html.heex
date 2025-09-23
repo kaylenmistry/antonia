@@ -1,0 +1,44 @@
+<div class="max-w-4xl mx-auto p-6">
+  <div class="flex justify-between items-center mb-8">
+    <h1 class="text-3xl font-bold text-gray-900">{gettext("Groups")}</h1>
+    <.form_dialog
+      id="add-group-dialog"
+      title={gettext("Create New Group")}
+      description={gettext("Add a new group to organize your buildings and stores")}
+      form={@form}
+      submit_event="create_group"
+      fields={[
+        %{
+          name: :name,
+          label: gettext("Group Name"),
+          placeholder: gettext("Enter group name"),
+          required: true
+        }
+      ]}
+      submit_label={gettext("Create Group")}
+    />
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <%= for group <- @groups do %>
+      <div class="cursor-pointer" phx-click="select_group" phx-value-id={group.id}>
+        <.entity_card
+          entity={group}
+          title={group.name}
+          subtitle={gettext("Click to view dashboard")}
+          stats={[
+            %{icon: "hero-cursor-arrow-rays", label: gettext("Click to manage"), value: ""}
+          ]}
+        />
+      </div>
+    <% end %>
+  </div>
+
+  <%= if Enum.empty?(@groups) do %>
+    <.empty_state
+      icon="hero-building-office-2"
+      title={gettext("No groups yet")}
+      description={gettext("Create your first group to get started")}
+    />
+  <% end %>
+</div>

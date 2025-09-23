@@ -1,0 +1,98 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <!-- Header Section -->
+  <div class="mb-8">
+    <div class="flex items-center gap-4 mb-4">
+      <.link
+        navigate={~p"/reporting"}
+        class="text-blue-600 hover:text-blue-700 font-medium flex items-center"
+      >
+        <.icon name="hero-arrow-left" class="w-4 h-4 mr-2" />
+        {gettext("Back to Dashboard")}
+      </.link>
+    </div>
+
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">
+      {@building.name}
+    </h1>
+    <p class="text-gray-600">{gettext("Manage shops in this building")}</p>
+  </div>
+  
+<!-- Shops Section Header -->
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="text-xl font-semibold text-gray-900">{gettext("Shops")}</h2>
+    <.form_dialog
+      id="add-shop-dialog"
+      title={gettext("Add New Shop")}
+      description={gettext("Add a new shop to %{building_name}", building_name: @building.name)}
+      form={@changeset}
+      submit_event="save"
+      validate_event="validate"
+      fields={[
+        %{
+          name: :name,
+          label: gettext("Shop Name"),
+          placeholder: gettext("Enter shop name"),
+          required: true
+        },
+        %{
+          name: :email,
+          type: "email",
+          label: gettext("Email Address"),
+          placeholder: gettext("shop@example.com"),
+          required: true
+        },
+        %{
+          name: :area,
+          type: "number",
+          label: gettext("Area (sq ft)"),
+          placeholder: gettext("1000"),
+          min: 1,
+          step: 1
+        }
+      ]}
+      submit_label={gettext("Create Shop")}
+    />
+  </div>
+  
+<!-- Shops Grid -->
+  <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <%= for store <- @stores do %>
+      <.entity_card
+        entity={store}
+        title={store.name}
+        subtitle={store.email}
+        stats={[
+          %{icon: "hero-user", label: gettext("Contact"), value: "John Doe"},
+          %{icon: "hero-phone", label: gettext("Phone"), value: "+1 (555) 123-4567"},
+          %{
+            icon: "hero-building-office",
+            label: gettext("Area"),
+            value: "#{store.area || 0} sq ft"
+          }
+        ]}
+        actions={[
+          %{
+            navigate:
+              ~p"/reporting/groups/#{@building.id}/buildings/#{@building.id}/stores/#{store.id}",
+            icon: "hero-chart-bar",
+            label: gettext("View Reports"),
+            variant: "outline"
+          }
+        ]}
+      />
+    <% end %>
+  </div>
+  
+<!-- Empty State -->
+  <%= if Enum.empty?(@stores) do %>
+    <.empty_state
+      icon="hero-building-storefront"
+      title={gettext("No shops yet")}
+      description={
+        gettext("Get started by adding your first shop to %{building_name}",
+          building_name: @building.name
+        )
+      }
+    />
+  <% end %>
+</div>

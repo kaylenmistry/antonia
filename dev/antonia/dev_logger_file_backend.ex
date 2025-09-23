@@ -17,8 +17,12 @@ defmodule Antonia.DevLoggerFileBackend do
   @doc """
   Inits the logger backend.
   """
-  @spec init(tuple()) :: {:ok, map()}
+  @spec init(tuple() | atom()) :: {:ok, map()}
   def init({__MODULE__, name}) do
+    {:ok, configure(name, [])}
+  end
+
+  def init(name) when is_atom(name) do
     {:ok, configure(name, [])}
   end
 

@@ -17,10 +17,6 @@ defmodule AntoniaWeb.ConnCase do
 
   use ExUnit.CaseTemplate
 
-  import Antonia.Factory
-
-  alias Ueberauth.Auth
-
   using do
     quote do
       # The default endpoint for testing

@@ -1,0 +1,83 @@
+<!-- Hero Section -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
+  <div class="text-center">
+    <div class="flex justify-center mb-8">
+      <div class="p-4 bg-blue-100 rounded-full">
+        <.icon name="hero-building-office-2" class="h-16 w-16 text-blue-600" />
+      </div>
+    </div>
+
+    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+      {gettext("Revenue Management")}
+      <span class="block text-blue-600">{gettext("Made Easy")}</span>
+    </h1>
+
+    <p class="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
+      {gettext(
+        "Streamline tenant revenue reporting and track your commercial property performance with our comprehensive management platform designed for property owners."
+      )}
+    </p>
+
+    <div class="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+      <button
+        phx-click="navigate-to-app"
+        class="px-8 py-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+      >
+        {gettext("Get Started Free")}
+      </button>
+      <button
+        phx-click="navigate-to-app"
+        class="px-8 py-4 bg-white text-blue-600 font-semibold rounded-lg border-2 border-blue-600 hover:bg-blue-50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+      >
+        {gettext("Sign In")}
+      </button>
+    </div>
+  </div>
+  
+<!-- Features Grid -->
+  <div class="grid md:grid-cols-3 gap-8 mt-20">
+    <.card class="hover:shadow-xl transition-all duration-200">
+      <.card_content class="p-8">
+        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-6">
+          <.icon name="hero-chart-bar" class="h-6 w-6 text-blue-600" />
+        </div>
+        <h3 class="text-xl font-semibold text-gray-900 mb-4">{gettext("Revenue Tracking")}</h3>
+        <p class="text-gray-600 leading-relaxed">
+          {gettext(
+            "Monitor tenant revenue reports across all your properties with detailed monthly breakdowns and year-over-year comparisons."
+          )}
+        </p>
+      </.card_content>
+    </.card>
+
+    <.card class="hover:shadow-xl transition-all duration-200">
+      <.card_content class="p-8">
+        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-6">
+          <.icon name="hero-check-circle" class="h-6 w-6 text-green-600" />
+        </div>
+        <h3 class="text-xl font-semibold text-gray-900 mb-4">{gettext("Report Management")}</h3>
+        <p class="text-gray-600 leading-relaxed">
+          {gettext(
+            "Easily track which tenants have submitted their monthly revenue reports and identify any missing submissions."
+          )}
+        </p>
+      </.card_content>
+    </.card>
+
+    <.card class="hover:shadow-xl transition-all duration-200">
+      <.card_content class="p-8">
+        <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-6">
+          <.icon name="hero-arrow-trending-up" class="h-6 w-6 text-purple-600" />
+        </div>
+        <h3 class="text-xl font-semibold text-gray-900 mb-4">
+          {gettext("Performance Analytics")}
+        </h3>
+        <p class="text-gray-600 leading-relaxed">
+          {gettext(
+            "Analyze performance trends with comprehensive analytics including percentage changes and historical comparisons."
+          )}
+        </p>
+      </.card_content>
+    </.card>
+  </div>
+</div>

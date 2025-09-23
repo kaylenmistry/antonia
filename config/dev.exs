@@ -66,7 +66,7 @@ config :antonia, AntoniaWeb.Endpoint,
 config :antonia, dev_routes: true
 
 # Configure logging to file as well as to the console in local environment
-config :logger, backends: [:console, {Antonia.DevLoggerFileBackend, :file_backend}]
+config :logger, Antonia.DevLoggerFileBackend, []
 
 config :logger, :file_backend,
   format: {AntoniaApp.Logger.Formatter, :format},

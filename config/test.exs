@@ -24,9 +24,8 @@ config :antonia, AntoniaWeb.Endpoint,
 config :antonia, Antonia.Mailer, adapter: Swoosh.Adapters.Test
 
 # Print only warnings and errors during test
-config :logger,
-  level: :warning,
-  backends: [:console, Antonia.TestLoggerBackend]
+config :logger, level: :warning
+config :logger, Antonia.TestLoggerBackend, []
 
 # Initialize plugs at runtime for faster test compilation
 config :phoenix, :plug_init_mode, :runtime
@@ -34,3 +33,8 @@ config :phoenix, :plug_init_mode, :runtime
 # Enable helpful, but potentially expensive runtime checks
 config :phoenix_live_view,
   enable_expensive_runtime_checks: true
+
+config :antonia, Oban, testing: :manual
+
+# Disable scheduler in test environment
+config :antonia, Antonia.Scheduler, jobs: []
