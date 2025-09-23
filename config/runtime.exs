@@ -11,7 +11,6 @@ default_db_url = "postgres://postgres:postgres@localhost:5432/#{default_db_name}
 config :antonia, Antonia.Repo,
   log: false,
   url: get_database_url(default_db_url),
-  migration_source: "antonia_schema_migrations",
   pool_size: get_integer("POOL_SIZE", 10),
   adapter: Ecto.Adapters.Postgres
 
