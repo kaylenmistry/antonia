@@ -91,7 +91,11 @@ defmodule AntoniaWeb.StoreLive do
   end
 
   defp assign_store_data(socket, data) do
-    revenue = if data.current_report, do: Decimal.to_float(data.current_report.revenue), else: 0
+    revenue =
+      if data.current_report && data.current_report.revenue,
+        do: Decimal.to_float(data.current_report.revenue),
+        else: 0
+
     note = if data.current_report, do: data.current_report.note, else: ""
 
     socket
@@ -258,7 +262,7 @@ defmodule AntoniaWeb.StoreLive do
 
   defp build_current_year_data(store, hist_year, month) do
     report = find_report_for_period(store.reports, hist_year, month)
-    revenue = if report, do: Decimal.to_float(report.revenue), else: 0
+    revenue = if report && report.revenue, do: Decimal.to_float(report.revenue), else: 0
     %{year: hist_year, revenue: revenue, is_current: true}
   end
 
@@ -288,7 +292,7 @@ defmodule AntoniaWeb.StoreLive do
   end
 
   defp format_currency(amount) when is_number(amount) do
-    amount = :erlang.float_to_binary(amount, decimals: 0)
+    amount = :erlang.float_to_binary(amount * 1.0, decimals: 0)
     amount = String.replace(amount, ~r/\B(?=(\d{3})+(?!\d))/, ",")
     "€#{amount}"
   end

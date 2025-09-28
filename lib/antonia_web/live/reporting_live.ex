@@ -140,14 +140,10 @@ defmodule AntoniaWeb.ReportingLive do
       |> Repo.aggregate(:count, :id)
 
     stores_count =
-      query =
-      from(s in Store,
-        join: b in Building,
-        on: s.building_id == b.id,
-        where: b.group_id == ^group_id
-      )
-
-    Repo.aggregate(query, :count, :id)
+      Store
+      |> join(:inner, [s], b in Building, on: s.building_id == b.id)
+      |> where([s, b], b.group_id == ^group_id)
+      |> Repo.aggregate(:count, :id)
 
     current_month = Date.beginning_of_month(Date.utc_today())
     next_month = Date.add(current_month, 32)
