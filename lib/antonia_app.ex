@@ -37,7 +37,7 @@ defmodule AntoniaApp do
   end
 
   defp setup_logger_backends do
-    case Mix.env() do
+    case Application.get_env(:antonia, :env) do
       :dev ->
         {:ok, _pid} = LoggerBackends.add(Antonia.DevLoggerFileBackend)
 

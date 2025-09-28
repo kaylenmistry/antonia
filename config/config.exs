@@ -10,6 +10,7 @@ import Config
 config :antonia,
   ecto_repos: [Antonia.Repo],
   generators: [timestamp_type: :utc_datetime, binary_id: true],
+  env: config_env(),
   content_security_policy: [
     "default-src 'self' 'unsafe-eval'",
     "img-src 'self' blob: data: https://lh3.googleusercontent.com/",
