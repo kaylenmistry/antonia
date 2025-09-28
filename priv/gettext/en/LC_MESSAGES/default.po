@@ -584,7 +584,7 @@ msgstr ""
 msgid "Export to Excel"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.ex:231
+#: lib/antonia_web/live/store_live.ex:235
 #, elixir-autogen, elixir-format
 msgid "Failed to update revenue"
 msgstr ""
@@ -699,7 +699,7 @@ msgstr ""
 msgid "Revenue may have been entered manually"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.ex:226
+#: lib/antonia_web/live/store_live.ex:230
 #, elixir-autogen, elixir-format
 msgid "Revenue updated successfully"
 msgstr ""
