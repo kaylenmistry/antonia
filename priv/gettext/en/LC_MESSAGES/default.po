@@ -533,7 +533,7 @@ msgstr ""
 msgid "Enter store name"
 msgstr ""
 
-#: lib/antonia_web/live/building_live.ex:90
+#: lib/antonia_web/live/building_live.ex:89
 #, elixir-autogen, elixir-format
 msgid "Excel export functionality coming soon"
 msgstr ""
@@ -543,7 +543,7 @@ msgstr ""
 msgid "Export to Excel"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.ex:237
+#: lib/antonia_web/live/store_live.ex:236
 #, elixir-autogen, elixir-format
 msgid "Failed to update revenue"
 msgstr ""
@@ -563,7 +563,7 @@ msgstr ""
 msgid "Group Name"
 msgstr ""
 
-#: lib/antonia_web/live/reporting_live.ex:32
+#: lib/antonia_web/live/reporting_live.ex:31
 #, elixir-autogen, elixir-format
 msgid "Group not found"
 msgstr ""
@@ -653,7 +653,7 @@ msgstr ""
 msgid "Revenue may have been entered manually"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.ex:232
+#: lib/antonia_web/live/store_live.ex:231
 #, elixir-autogen, elixir-format
 msgid "Revenue updated successfully"
 msgstr ""
@@ -749,17 +749,17 @@ msgstr ""
 msgid "Area (sq m)"
 msgstr ""
 
-#: lib/antonia_web/live/reporting_live.ex:54
+#: lib/antonia_web/live/reporting_live.ex:53
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Created building"
 msgstr ""
 
-#: lib/antonia_web/live/groups_live.ex:34
+#: lib/antonia_web/live/groups_live.ex:33
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Created group"
 msgstr ""
 
-#: lib/antonia_web/live/building_live.ex:62
+#: lib/antonia_web/live/building_live.ex:61
 #, elixir-autogen, elixir-format
 msgid "Created store"
 msgstr ""
