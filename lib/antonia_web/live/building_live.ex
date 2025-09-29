@@ -14,7 +14,7 @@ defmodule AntoniaWeb.BuildingLive do
   alias Antonia.Revenue.Store
 
   @impl Phoenix.LiveView
-  def mount(%{"id" => group_id, "building_id" => building_id}, _session, socket) do
+  def mount(%{"id" => group_id, "building_id" => building_id}, %{"auth" => auth}, socket) do
     group = Repo.get(Group, group_id)
     building = Repo.get(Building, building_id)
     building = Repo.preload(building, [:group, :stores])
@@ -30,6 +30,7 @@ defmodule AntoniaWeb.BuildingLive do
         |> assign(:stores, stores)
         |> assign(:revenue_data, revenue_data)
         |> assign(:form, to_form(Store.changeset(%Store{}, %{building_id: building_id})))
+        |> assign(:user, auth.info)
 
       {:ok, socket}
     else
@@ -45,7 +46,7 @@ defmodule AntoniaWeb.BuildingLive do
     store_params = Map.put(store_params, "building_id", socket.assigns.building.id)
 
     case Repo.insert(Store.changeset(%Store{}, store_params)) do
-      {:ok, _store} ->
+      {:ok, store} ->
         stores = load_stores_with_revenue_data(socket.assigns.building.id)
         revenue_data = build_revenue_table_data(stores)
 
@@ -57,7 +58,7 @@ defmodule AntoniaWeb.BuildingLive do
             :form,
             to_form(Store.changeset(%Store{}, %{building_id: socket.assigns.building.id}))
           )
-          |> put_flash(:info, gettext("Store created successfully"))
+          |> put_flash(:info, gettext("Created store") <> " '" <> store.name <> "'")
 
         {:noreply, socket}
 
@@ -114,9 +115,9 @@ defmodule AntoniaWeb.BuildingLive do
     })
   end
 
-  defp calculate_store_area(_store) do
-    # Mock area calculation - in real implementation, add area field to Store schema
-    Enum.random(25..300)
+  defp calculate_store_area(store) do
+    # Use the actual area from the database, fallback to 100 if not set
+    store.area || 100
   end
 
   defp group_reports_by_period(reports) do

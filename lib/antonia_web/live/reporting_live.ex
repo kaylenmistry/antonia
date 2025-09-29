@@ -9,16 +9,9 @@ defmodule AntoniaWeb.ReportingLive do
   alias Antonia.Revenue.Group
   alias Antonia.Revenue.Report
   alias Antonia.Revenue.Store
-  alias Ueberauth.Auth
 
   @impl Phoenix.LiveView
-  def mount(%{"id" => group_id}, session, socket) do
-    user =
-      case session["auth"] do
-        %Auth{info: %Auth.Info{} = user_info} -> user_info
-        _ -> nil
-      end
-
+  def mount(%{"id" => group_id}, %{"auth" => auth}, socket) do
     group = Repo.get(Group, group_id)
 
     if group do
@@ -31,7 +24,7 @@ defmodule AntoniaWeb.ReportingLive do
        |> assign(:buildings, buildings)
        |> assign(:dashboard_stats, dashboard_stats)
        |> assign(:form, to_form(Building.changeset(%Building{}, %{group_id: group_id})))
-       |> assign(:user, user)}
+       |> assign(:user, auth.info)}
     else
       {:ok,
        socket
@@ -54,19 +47,15 @@ defmodule AntoniaWeb.ReportingLive do
     case %Building{}
          |> Building.changeset(building_params)
          |> Repo.insert() do
-      {:ok, _building} ->
-        buildings = load_buildings_with_stats(socket.assigns.group.id)
-        dashboard_stats = calculate_group_stats(socket.assigns.group.id)
+      {:ok, building} ->
+        socket =
+          socket
+          |> put_flash(:info, gettext("Created building") <> " '" <> building.name <> "'")
+          |> push_navigate(
+            to: ~p"/app/groups/#{socket.assigns.group.id}/buildings/#{building.id}"
+          )
 
-        {:noreply,
-         socket
-         |> assign(:buildings, buildings)
-         |> assign(:dashboard_stats, dashboard_stats)
-         |> assign(
-           :form,
-           to_form(Building.changeset(%Building{}, %{group_id: socket.assigns.group.id}))
-         )
-         |> put_flash(:info, gettext("Building created successfully!"))}
+        {:noreply, socket}
 
       {:error, changeset} ->
         {:noreply, assign(socket, :form, to_form(changeset))}

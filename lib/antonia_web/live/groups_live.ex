@@ -8,34 +8,29 @@ defmodule AntoniaWeb.GroupsLive do
 
   alias Antonia.Repo
   alias Antonia.Revenue.Group
-  alias Ueberauth.Auth
 
   @impl Phoenix.LiveView
-  def mount(_params, session, socket) do
-    user =
-      case session["auth"] do
-        %Auth{info: %Auth.Info{} = user_info} -> user_info
-        _ -> nil
-      end
-
+  def mount(_params, %{"auth" => auth}, socket) do
     groups = Repo.all(Group)
 
     socket =
       socket
       |> assign(:groups, groups)
       |> assign(:form, to_form(Group.changeset(%Group{}, %{})))
-      |> assign(:user, user)
+      |> assign(:user, auth.info)
 
     {:ok, socket}
   end
 
   @impl Phoenix.LiveView
   def handle_event("create_group", %{"group" => group_params}, socket) do
-    case Repo.insert(Group.changeset(%Group{}, group_params)) do
+    result = %Group{} |> Group.changeset(group_params) |> Repo.insert()
+
+    case result do
       {:ok, group} ->
         socket =
           socket
-          |> put_flash(:info, gettext("Group created successfully"))
+          |> put_flash(:info, gettext("Created group") <> " '" <> group.name <> "'")
           |> push_navigate(to: ~p"/app/groups/#{group.id}")
 
         {:noreply, socket}

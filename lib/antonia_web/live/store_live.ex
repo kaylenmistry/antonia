@@ -13,12 +13,12 @@ defmodule AntoniaWeb.StoreLive do
   @impl Phoenix.LiveView
   def mount(
         %{"id" => group_id, "building_id" => building_id, "store_id" => store_id} = params,
-        _session,
+        %{"auth" => auth},
         socket
       ) do
     case load_store_data(group_id, building_id, store_id, params) do
       {:ok, data} ->
-        socket = assign_store_data(socket, data)
+        socket = assign_store_data(socket, data, auth.info)
         {:ok, socket}
 
       {:error, reason} ->
@@ -90,7 +90,7 @@ defmodule AntoniaWeb.StoreLive do
       store.building_id == building.id
   end
 
-  defp assign_store_data(socket, data) do
+  defp assign_store_data(socket, data, user) do
     revenue =
       if data.current_report && data.current_report.revenue,
         do: Decimal.to_float(data.current_report.revenue),
@@ -110,6 +110,7 @@ defmodule AntoniaWeb.StoreLive do
     |> assign(:edited_revenue, revenue)
     |> assign(:note, note)
     |> assign(:selected_file, nil)
+    |> assign(:user, user)
   end
 
   defp handle_mount_error(socket, :invalid_access, group_id) do
@@ -286,9 +287,9 @@ defmodule AntoniaWeb.StoreLive do
     end
   end
 
-  defp calculate_store_area(_store) do
-    # Mock area calculation - in real implementation, add area field to Store schema
-    Enum.random(25..300)
+  defp calculate_store_area(store) do
+    # Use the actual area from the database, fallback to 100 if not set
+    store.area || 100
   end
 
   defp format_currency(amount) when is_number(amount) do

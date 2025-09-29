@@ -44,7 +44,7 @@
         %{
           name: :area,
           type: "number",
-          label: gettext("Area (sq ft)"),
+          label: gettext("Area (sq m)"),
           placeholder: gettext("1000"),
           min: 1,
           step: 1
@@ -67,7 +67,7 @@
           %{
             icon: "hero-building-office",
             label: gettext("Area"),
-            value: "#{store.area || 0} sq ft"
+            value: "#{store.area || 0} sq m"
           }
         ]}
         actions={[

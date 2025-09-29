@@ -102,12 +102,12 @@ config :antonia, Oban,
 # Configure Quantum scheduler
 config :antonia, Antonia.Scheduler,
   jobs: [
-    # Create monthly reports on 1st of each month at 8 AM
-    {"0 8 1 * *", {Antonia.Revenue.ReportService, :create_monthly_reports, []}},
-    # Send initial monthly reminders on 1st of each month at 9 AM
-    {"0 9 1 * *", {Antonia.Revenue.ReportService, :send_initial_reminders, []}},
-    # Check for follow-up reminders daily at 10 AM
-    {"0 10 * * *", {Antonia.Revenue.ReportService, :send_daily_reminders, []}}
+    # # Create monthly reports on 1st of each month at 8 AM
+    # {"0 8 1 * *", {Antonia.Revenue.ReportService, :create_monthly_reports, []}},
+    # # Send initial monthly reminders on 1st of each month at 9 AM
+    # {"0 9 1 * *", {Antonia.Revenue.ReportService, :send_initial_reminders, []}},
+    # # Check for follow-up reminders daily at 10 AM
+    # {"0 10 * * *", {Antonia.Revenue.ReportService, :send_daily_reminders, []}}
   ]
 
 config :logger, level: :info

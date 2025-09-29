@@ -11,24 +11,9 @@ msgstr ""
 "Language: en\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: lib/antonia_web/components/core_components.ex:493
+#: lib/antonia_web/components/core_components.ex:513
 #, elixir-autogen, elixir-format
 msgid "Actions"
-msgstr ""
-
-#: lib/antonia_web/components/core_components.ex:171
-#, elixir-autogen, elixir-format
-msgid "Attempting to reconnect"
-msgstr ""
-
-#: lib/antonia_web/components/core_components.ex:162
-#, elixir-autogen, elixir-format
-msgid "Error!"
-msgstr ""
-
-#: lib/antonia_web/components/core_components.ex:183
-#, elixir-autogen, elixir-format
-msgid "Hang in there while we get back on track"
 msgstr ""
 
 #: lib/antonia/mailer/notifier.ex:24
@@ -36,23 +21,8 @@ msgstr ""
 msgid "Revenue report due"
 msgstr ""
 
-#: lib/antonia_web/components/core_components.ex:178
-#, elixir-autogen, elixir-format
-msgid "Something went wrong!"
-msgstr ""
-
-#: lib/antonia_web/components/core_components.ex:161
-#, elixir-autogen, elixir-format
-msgid "Success!"
-msgstr ""
-
-#: lib/antonia_web/components/core_components.ex:166
-#, elixir-autogen, elixir-format
-msgid "We can't find the internet"
-msgstr ""
-
 #: lib/antonia_web/components/core_components.ex:85
-#: lib/antonia_web/components/core_components.ex:141
+#: lib/antonia_web/components/core_components.ex:160
 #, elixir-autogen, elixir-format
 msgid "close"
 msgstr ""
@@ -218,7 +188,7 @@ msgstr ""
 msgid "Create Building"
 msgstr ""
 
-#: lib/antonia_web/components/core_components.ex:707
+#: lib/antonia_web/components/core_components.ex:727
 #, elixir-autogen, elixir-format
 msgid "Dashboard"
 msgstr ""
@@ -238,12 +208,12 @@ msgstr ""
 msgid "Get Started Free"
 msgstr ""
 
-#: lib/antonia_web/components/core_components.ex:716
+#: lib/antonia_web/components/core_components.ex:736
 #, elixir-autogen, elixir-format
 msgid "Log out"
 msgstr ""
 
-#: lib/antonia_web/components/core_components.ex:733
+#: lib/antonia_web/components/core_components.ex:753
 #, elixir-autogen, elixir-format
 msgid "Log-in"
 msgstr ""
@@ -258,7 +228,7 @@ msgstr ""
 msgid "Monitor tenant revenue reports across all your properties with detailed monthly breakdowns and year-over-year comparisons."
 msgstr ""
 
-#: lib/antonia_web/components/core_components.ex:702
+#: lib/antonia_web/components/core_components.ex:722
 #, elixir-autogen, elixir-format
 msgid "My Account"
 msgstr ""
@@ -289,7 +259,7 @@ msgstr ""
 msgid "Report Management"
 msgstr ""
 
-#: lib/antonia_web/components/core_components.ex:684
+#: lib/antonia_web/components/core_components.ex:704
 #: lib/antonia_web/live/splash_live.html.heex:11
 #, elixir-autogen, elixir-format
 msgid "Revenue Management"
@@ -315,7 +285,7 @@ msgstr ""
 msgid "Sign in with Google"
 msgstr ""
 
-#: lib/antonia_web/components/core_components.ex:727
+#: lib/antonia_web/components/core_components.ex:747
 #, elixir-autogen, elixir-format
 msgid "Sign-up"
 msgstr ""
@@ -360,12 +330,6 @@ msgstr ""
 #: lib/antonia_web/live/business_live.html.heex:25
 #, elixir-autogen, elixir-format
 msgid "Add New Shop"
-msgstr ""
-
-#: lib/antonia_web/live/building_live.html.heex:79
-#: lib/antonia_web/live/business_live.html.heex:47
-#, elixir-autogen, elixir-format
-msgid "Area (sq ft)"
 msgstr ""
 
 #: lib/antonia_web/live/business_live.html.heex:10
@@ -499,11 +463,6 @@ msgstr ""
 msgid "Back to Groups"
 msgstr ""
 
-#: lib/antonia_web/live/reporting_live.ex:69
-#, elixir-autogen, elixir-format, fuzzy
-msgid "Building created successfully!"
-msgstr ""
-
 #: lib/antonia_web/live/groups_live.html.heex:30
 #, elixir-autogen, elixir-format
 msgid "Click to manage"
@@ -574,7 +533,7 @@ msgstr ""
 msgid "Enter store name"
 msgstr ""
 
-#: lib/antonia_web/live/building_live.ex:88
+#: lib/antonia_web/live/building_live.ex:90
 #, elixir-autogen, elixir-format
 msgid "Excel export functionality coming soon"
 msgstr ""
@@ -584,7 +543,7 @@ msgstr ""
 msgid "Export to Excel"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.ex:235
+#: lib/antonia_web/live/store_live.ex:237
 #, elixir-autogen, elixir-format
 msgid "Failed to update revenue"
 msgstr ""
@@ -604,12 +563,7 @@ msgstr ""
 msgid "Group Name"
 msgstr ""
 
-#: lib/antonia_web/live/groups_live.ex:38
-#, elixir-autogen, elixir-format, fuzzy
-msgid "Group created successfully"
-msgstr ""
-
-#: lib/antonia_web/live/reporting_live.ex:38
+#: lib/antonia_web/live/reporting_live.ex:32
 #, elixir-autogen, elixir-format
 msgid "Group not found"
 msgstr ""
@@ -699,7 +653,7 @@ msgstr ""
 msgid "Revenue may have been entered manually"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.ex:230
+#: lib/antonia_web/live/store_live.ex:232
 #, elixir-autogen, elixir-format
 msgid "Revenue updated successfully"
 msgstr ""
@@ -717,11 +671,6 @@ msgstr ""
 #: lib/antonia_web/components/shared_components.ex:177
 #, elixir-autogen, elixir-format
 msgid "Store Revenue Details"
-msgstr ""
-
-#: lib/antonia_web/live/building_live.ex:60
-#, elixir-autogen, elixir-format, fuzzy
-msgid "Store created successfully"
 msgstr ""
 
 #: lib/antonia_web/live/store_live.html.heex:176
@@ -792,4 +741,25 @@ msgstr ""
 #: lib/antonia_web/live/building_live.html.heex:114
 #, elixir-autogen, elixir-format
 msgid "vs %{year}"
+msgstr ""
+
+#: lib/antonia_web/live/building_live.html.heex:79
+#: lib/antonia_web/live/business_live.html.heex:47
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Area (sq m)"
+msgstr ""
+
+#: lib/antonia_web/live/reporting_live.ex:54
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Created building"
+msgstr ""
+
+#: lib/antonia_web/live/groups_live.ex:34
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Created group"
+msgstr ""
+
+#: lib/antonia_web/live/building_live.ex:62
+#, elixir-autogen, elixir-format
+msgid "Created store"
 msgstr ""
