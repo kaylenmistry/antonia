@@ -80,7 +80,7 @@ defmodule Antonia.MixProject do
       {:phoenix_html, "~> 4.1"},
       {:phoenix_live_dashboard, "~> 0.8.3"},
       {:phoenix_live_view, "~> 1.0"},
-      {:phoenix, "~> 1.7.21"},
+      {:phoenix, "~> 1.8.1"},
       {:postgrex, ">= 0.0.0"},
       {:prom_ex, "~> 1.11.0"},
       {:resend, "~> 0.4.0"},
