@@ -108,7 +108,7 @@ defmodule Antonia.MixProject do
       {:mock, "~> 0.3.7", only: :test},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:sobelow, "~> 0.8", only: :dev, runtime: false},
-      {:tailwind, "~> 0.3.1", runtime: Mix.env() == :dev},
+      {:tailwind, "~> 0.4.0", runtime: Mix.env() == :dev},
       {:typed_ecto_schema, "~> 0.4.3", runtime: false}
     ]
   end
