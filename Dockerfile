@@ -11,7 +11,7 @@ COPY config ./config
 COPY lib ./lib
 
 # ---- Build Node image ----
-FROM public.ecr.aws/docker/library/node:24.8.0-alpine AS build-node
+FROM public.ecr.aws/docker/library/node:24.10.0-alpine AS build-node
 ENV NODE_ENV=prod
 WORKDIR /app/assets
 COPY assets .
