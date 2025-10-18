@@ -20,13 +20,13 @@ defmodule AntoniaWeb.O11Y.Endpoint do
   @spec child_spec(any()) :: Supervisor.child_spec()
   def child_spec(_) do
     Supervisor.child_spec(
-      {Plug.Cowboy, scheme: :http, plug: __MODULE__, options: [port: config()[:port]]},
+      {Bandit, plug: __MODULE__, port: config()[:port]},
       []
     )
   end
 
   @spec config :: Keyword.t()
   defp config do
-    Application.get_env(:Antonia, __MODULE__, [])
+    Application.get_env(:antonia, __MODULE__, [])
   end
 end
