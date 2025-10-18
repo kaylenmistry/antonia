@@ -14,6 +14,7 @@ defmodule Antonia.Release do
       {:ok, _, _} = Ecto.Migrator.with_repo(repo, &Ecto.Migrator.run(&1, :up, all: true))
     end
   end
+
   @doc false
   def rollback(repo, version) do
     load_app()
