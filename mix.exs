@@ -62,7 +62,7 @@ defmodule Antonia.MixProject do
       {:dns_cluster, "~> 0.2.0"},
       {:ecto_sql, "~> 3.10"},
       {:finch, "~> 0.13"},
-      {:gettext, "~> 0.26"},
+      {:gettext, "~> 1.0"},
       {:heroicons,
        github: "tailwindlabs/heroicons",
        tag: "v2.2.0",
