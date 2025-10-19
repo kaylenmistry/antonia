@@ -38,6 +38,7 @@ defmodule AntoniaWeb.GroupsLive do
           |> put_flash(:info, gettext("Created group") <> " '" <> group.name <> "'")
           |> assign(groups: [group | socket.assigns.groups])
           |> assign(form: to_form(Revenue.change_group()))
+          |> push_event("close-dialog", %{id: "add-group-dialog"})
 
         {:noreply, socket}
 

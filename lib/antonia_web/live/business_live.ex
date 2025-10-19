@@ -6,21 +6,22 @@ defmodule AntoniaWeb.BusinessLive do
 
   import AntoniaWeb.SharedComponents
   import AntoniaWeb.FormHelpers, only: [format_params: 1]
-  import Ecto.Query
 
   alias Antonia.Repo
+  alias Antonia.Revenue
   alias Antonia.Revenue.Building
   alias Antonia.Revenue.Store
 
   @impl Phoenix.LiveView
-  def mount(%{"id" => group_id, "building_id" => building_id}, _session, socket) do
+  def mount(%{"id" => group_id, "building_id" => building_id}, %{"auth" => auth}, socket) do
     building = Repo.get(Building, building_id)
 
     if building && building.group_id == group_id do
-      stores = Repo.all(from s in Store, where: s.building_id == ^building_id)
+      stores = Revenue.list_stores(auth.info.uid, group_id, building_id)
 
       {:ok,
        socket
+       |> assign(:user_id, auth.info.uid)
        |> assign(:group_id, group_id)
        |> assign(:building, building)
        |> assign(:stores, stores)
@@ -56,7 +57,11 @@ defmodule AntoniaWeb.BusinessLive do
          |> Repo.insert() do
       {:ok, _store} ->
         stores =
-          Repo.all(from s in Store, where: s.building_id == ^socket.assigns.building.id)
+          Revenue.list_stores(
+            socket.assigns.user_id,
+            socket.assigns.group_id,
+            socket.assigns.building.id
+          )
 
         {:noreply,
          socket
@@ -65,7 +70,8 @@ defmodule AntoniaWeb.BusinessLive do
            :changeset,
            Store.changeset(%Store{}, %{building_id: socket.assigns.building.id})
          )
-         |> put_flash(:info, gettext("Shop created successfully!"))}
+         |> put_flash(:info, gettext("Shop created successfully!"))
+         |> push_event("close-dialog", %{id: "add-shop-dialog"})}
 
       {:error, changeset} ->
         {:noreply, assign(socket, :changeset, changeset)}

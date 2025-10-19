@@ -372,7 +372,7 @@ msgstr ""
 msgid "Shop Name"
 msgstr ""
 
-#: lib/antonia_web/live/business_live.ex:68
+#: lib/antonia_web/live/business_live.ex:73
 #, elixir-autogen, elixir-format
 msgid "Shop created successfully!"
 msgstr ""
@@ -392,7 +392,7 @@ msgstr ""
 msgid "shop@example.com"
 msgstr ""
 
-#: lib/antonia_web/live/business_live.ex:32
+#: lib/antonia_web/live/business_live.ex:33
 #, elixir-autogen, elixir-format
 msgid "Building not found"
 msgstr ""
@@ -533,7 +533,7 @@ msgstr ""
 msgid "Enter store name"
 msgstr ""
 
-#: lib/antonia_web/live/building_live.ex:91
+#: lib/antonia_web/live/building_live.ex:92
 #, elixir-autogen, elixir-format
 msgid "Excel export functionality coming soon"
 msgstr ""
@@ -749,7 +749,7 @@ msgstr ""
 msgid "Area (sq m)"
 msgstr ""
 
-#: lib/antonia_web/live/reporting_live.ex:54
+#: lib/antonia_web/live/reporting_live.ex:57
 #, elixir-autogen, elixir-format
 msgid "Created building"
 msgstr ""

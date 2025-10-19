@@ -19,18 +19,18 @@
     </p>
 
     <div class="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-      <button
-        phx-click="navigate-to-app"
+      <.link
+        href={~p"/app"}
         class="px-8 py-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
       >
         {gettext("Get Started Free")}
-      </button>
-      <button
-        phx-click="navigate-to-app"
+      </.link>
+      <.link
+        href={~p"/app"}
         class="px-8 py-4 bg-white text-blue-600 font-semibold rounded-lg border-2 border-blue-600 hover:bg-blue-50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
       >
         {gettext("Sign In")}
-      </button>
+      </.link>
     </div>
   </div>
   

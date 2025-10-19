@@ -49,12 +49,18 @@ defmodule AntoniaWeb.ReportingLive do
          |> Building.changeset(formatted_params)
          |> Repo.insert() do
       {:ok, building} ->
+        # Reload buildings to include the new one
+        buildings = load_buildings_with_stats(socket.assigns.group.id)
+
         socket =
           socket
           |> put_flash(:info, gettext("Created building") <> " '" <> building.name <> "'")
-          |> push_navigate(
-            to: ~p"/app/groups/#{socket.assigns.group.id}/buildings/#{building.id}"
+          |> assign(:buildings, buildings)
+          |> assign(
+            :form,
+            to_form(Building.changeset(%Building{}, %{group_id: socket.assigns.group.id}))
           )
+          |> push_event("close-dialog", %{id: "add-building-dialog"})
 
         {:noreply, socket}
 

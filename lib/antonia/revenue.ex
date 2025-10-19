@@ -24,12 +24,12 @@ defmodule Antonia.Revenue do
 
   ##### Groups #####
 
-  @doc "Lists groups for a user."
+  @doc "Lists groups for a user, ordered alphabetically by name."
   @spec list_groups(binary()) :: [Group.t()]
   def list_groups(user_id) do
     Group
     |> where([g], g.created_by_user_id == ^user_id)
-    |> order_by([g], asc: g.id)
+    |> order_by([g], asc: g.name)
     |> Repo.all()
   end
 
@@ -58,7 +58,7 @@ defmodule Antonia.Revenue do
 
   ##### Buildings #####
 
-  @doc "Lists buildings for a group."
+  @doc "Lists buildings for a group, ordered alphabetically by name."
   @spec list_buildings(binary(), binary()) :: [Building.t()]
   def list_buildings(user_id, group_id) do
     # Ensure user owns the group before listing buildings
@@ -69,7 +69,7 @@ defmodule Antonia.Revenue do
       {:ok, _group} ->
         Building
         |> where([b], b.group_id == ^group_id)
-        |> order_by([b], asc: b.id)
+        |> order_by([b], asc: b.name)
         |> Repo.all()
     end
   end
@@ -113,7 +113,7 @@ defmodule Antonia.Revenue do
 
   ##### Stores #####
 
-  @doc "Lists stores for a building."
+  @doc "Lists stores for a building, ordered alphabetically by name."
   @spec list_stores(binary(), binary(), binary()) :: [Store.t()]
   def list_stores(user_id, group_id, building_id) do
     # Ensure user owns the group before listing stores
@@ -125,7 +125,7 @@ defmodule Antonia.Revenue do
         Store
         |> join(:inner, [s], b in assoc(s, :building))
         |> where([s, b], b.group_id == ^group_id and b.id == ^building_id)
-        |> order_by([s], asc: s.id)
+        |> order_by([s], asc: s.name)
         |> Repo.all()
     end
   end

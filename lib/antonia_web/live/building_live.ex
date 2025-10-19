@@ -61,6 +61,7 @@ defmodule AntoniaWeb.BuildingLive do
             to_form(Store.changeset(%Store{}, %{building_id: socket.assigns.building.id}))
           )
           |> put_flash(:info, gettext("Created store") <> " '" <> store.name <> "'")
+          |> push_event("close-dialog", %{id: "add-store-dialog"})
 
         {:noreply, socket}
 
@@ -99,6 +100,7 @@ defmodule AntoniaWeb.BuildingLive do
 
     Store
     |> where([s], s.building_id == ^building_id)
+    |> order_by([s], asc: s.name)
     |> preload([s], reports: ^reports_query)
     |> Repo.all()
     |> Enum.map(&add_store_revenue_stats/1)

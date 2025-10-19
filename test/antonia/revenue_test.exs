@@ -8,14 +8,14 @@ defmodule Antonia.RevenueTest do
   alias Antonia.Revenue.Store
 
   describe "list_groups/1" do
-    test "returns all groups" do
+    test "returns groups ordered alphabetically by name" do
       user = insert(:user)
-      group1 = insert(:group, created_by_user_id: user.id)
-      group2 = insert(:group, created_by_user_id: user.id)
+      insert(:group, created_by_user_id: user.id, name: "Charlie Group")
+      insert(:group, created_by_user_id: user.id, name: "Alpha Group")
+      insert(:group, created_by_user_id: user.id, name: "Beta Group")
 
       groups = Revenue.list_groups(user.id)
-      assert length(groups) == 2
-      assert groups |> Enum.map(& &1.id) |> Enum.sort() == [group1.id, group2.id]
+      assert Enum.map(groups, & &1.name) == ["Alpha Group", "Beta Group", "Charlie Group"]
     end
 
     test "returns empty list when no groups exist" do
@@ -60,18 +60,20 @@ defmodule Antonia.RevenueTest do
   end
 
   describe "list_buildings/2" do
-    test "returns all buildings for a group" do
+    test "returns buildings ordered alphabetically by name" do
       user = insert(:user)
       group = insert(:group, created_by_user_id: user.id)
-      building1 = insert(:building, group: group)
-      building2 = insert(:building, group: group)
-      # Create a building for a different group
-      other_group = insert(:group)
-      _other_building = insert(:building, group: other_group)
+      insert(:building, group: group, name: "Charlie Building")
+      insert(:building, group: group, name: "Alpha Building")
+      insert(:building, group: group, name: "Beta Building")
 
       buildings = Revenue.list_buildings(user.id, group.id)
-      assert length(buildings) == 2
-      assert buildings |> Enum.map(& &1.id) |> Enum.sort() == [building1.id, building2.id]
+
+      assert Enum.map(buildings, & &1.name) == [
+               "Alpha Building",
+               "Beta Building",
+               "Charlie Building"
+             ]
     end
 
     test "returns empty list when group has no buildings" do
@@ -139,19 +141,16 @@ defmodule Antonia.RevenueTest do
   end
 
   describe "list_stores/3" do
-    test "returns all stores for a building" do
+    test "returns stores ordered alphabetically by name" do
       user = insert(:user)
       group = insert(:group, created_by_user_id: user.id)
       building = insert(:building, group: group)
-      store1 = insert(:store, building: building)
-      store2 = insert(:store, building: building)
-      # Create a store for a different building
-      other_building = insert(:building, group: group)
-      _other_store = insert(:store, building: other_building)
+      insert(:store, building: building, name: "Charlie Store")
+      insert(:store, building: building, name: "Alpha Store")
+      insert(:store, building: building, name: "Beta Store")
 
       stores = Revenue.list_stores(user.id, group.id, building.id)
-      assert length(stores) == 2
-      assert stores |> Enum.map(& &1.id) |> Enum.sort() == [store1.id, store2.id]
+      assert Enum.map(stores, & &1.name) == ["Alpha Store", "Beta Store", "Charlie Store"]
     end
 
     test "returns empty list when building has no stores" do
