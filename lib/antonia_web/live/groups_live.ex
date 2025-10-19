@@ -5,33 +5,39 @@ defmodule AntoniaWeb.GroupsLive do
   use AntoniaWeb, :live_view
 
   import AntoniaWeb.SharedComponents
+  import AntoniaWeb.FormHelpers, only: [format_params: 1]
 
-  alias Antonia.Repo
-  alias Antonia.Revenue.Group
+  alias Antonia.Revenue
 
   @impl Phoenix.LiveView
   def mount(_params, %{"auth" => auth}, socket) do
-    groups = Repo.all(Group)
+    user_id = auth.uid
+    send(self(), {:fetch_groups, user_id})
 
-    socket =
-      socket
-      |> assign(:groups, groups)
-      |> assign(:form, to_form(Group.changeset(%Group{}, %{})))
-      |> assign(:user, auth.info)
+    {:ok,
+     assign(socket,
+       user: auth.info,
+       user_id: user_id,
+       groups: [],
+       form: to_form(Revenue.change_group())
+     )}
+  end
 
-    {:ok, socket}
+  @impl Phoenix.LiveView
+  def handle_info({:fetch_groups, user_id}, socket) do
+    groups = Revenue.list_groups(user_id)
+    {:noreply, assign(socket, groups: groups)}
   end
 
   @impl Phoenix.LiveView
   def handle_event("create_group", %{"group" => group_params}, socket) do
-    result = %Group{} |> Group.changeset(group_params) |> Repo.insert()
-
-    case result do
+    case Revenue.create_group(socket.assigns.user_id, format_params(group_params)) do
       {:ok, group} ->
         socket =
           socket
           |> put_flash(:info, gettext("Created group") <> " '" <> group.name <> "'")
-          |> push_navigate(to: ~p"/app/groups/#{group.id}")
+          |> assign(groups: [group | socket.assigns.groups])
+          |> assign(form: to_form(Revenue.change_group()))
 
         {:noreply, socket}
 
@@ -48,9 +54,7 @@ defmodule AntoniaWeb.GroupsLive do
   @impl Phoenix.LiveView
   def handle_event("dialog_closed", _params, socket) do
     # Reset form when dialog closes
-    socket = socket
-    socket = assign(socket, :form, to_form(Group.changeset(%Group{}, %{})))
-
+    socket = assign(socket, :form, to_form(Revenue.change_group()))
     {:noreply, socket}
   end
 

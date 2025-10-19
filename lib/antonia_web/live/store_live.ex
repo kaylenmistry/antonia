@@ -5,8 +5,7 @@ defmodule AntoniaWeb.StoreLive do
   use AntoniaWeb, :live_view
 
   alias Antonia.Repo
-  alias Antonia.Revenue.Building
-  alias Antonia.Revenue.Group
+  alias Antonia.Revenue
   alias Antonia.Revenue.Report
   alias Antonia.Revenue.Store
 
@@ -16,63 +15,97 @@ defmodule AntoniaWeb.StoreLive do
         %{"auth" => auth},
         socket
       ) do
-    case load_store_data(group_id, building_id, store_id, params) do
+    user_id = auth.uid
+    send(self(), {:fetch_store_data, user_id, group_id, building_id, store_id, params})
+
+    {:ok,
+     assign(socket,
+       user: auth.info,
+       user_id: user_id,
+       group_id: group_id,
+       building_id: building_id,
+       store_id: store_id,
+       group: %{name: ""},
+       building: %{name: ""},
+       store: %{name: ""},
+       year: Date.utc_today().year,
+       month: Date.utc_today().month,
+       current_report: nil,
+       historical_data: [],
+       loading?: true,
+       is_editing: false,
+       edited_revenue: 0,
+       note: "",
+       selected_file: nil
+     )}
+  end
+
+  @impl Phoenix.LiveView
+  def handle_info({:fetch_store_data, user_id, group_id, building_id, store_id, params}, socket) do
+    case load_store_data(user_id, group_id, building_id, store_id, params) do
       {:ok, data} ->
-        socket = assign_store_data(socket, data, auth.info)
-        {:ok, socket}
+        {:noreply,
+         assign(socket,
+           group: data.group,
+           building: data.building,
+           store: data.store,
+           year: data.year,
+           month: data.month,
+           current_report: data.current_report,
+           historical_data: data.historical_data,
+           loading?: false
+         )}
 
       {:error, reason} ->
-        {:ok, handle_mount_error(socket, reason, group_id)}
+        {:noreply, handle_mount_error(socket, reason, group_id)}
     end
   end
 
-  defp load_store_data(group_id, building_id, store_id, params) do
-    with {:ok, group} <- get_group(group_id),
-         {:ok, building} <- get_building(building_id),
-         {:ok, store} <- get_store(store_id),
+  defp load_store_data(user_id, group_id, building_id, store_id, params) do
+    with {:ok, group} <- get_group(user_id, group_id),
+         {:ok, building} <- get_building(user_id, group_id, building_id),
+         {:ok, store} <- get_store(user_id, group_id, building_id, store_id),
          {:ok, year_month} <- parse_year_month(params) do
-      if valid_store_access?(group, building, store) do
-        current_report = find_report_for_period(store.reports, year_month.year, year_month.month)
-        historical_data = generate_historical_data(store, year_month.month, year_month.year)
-        area = calculate_store_area(store)
-        store_with_area = Map.put(store, :area, area)
+      current_report =
+        Revenue.find_report_for_period(store.reports, year_month.year, year_month.month)
 
-        {:ok,
-         %{
-           group: group,
-           building: building,
-           store: store_with_area,
-           year: year_month.year,
-           month: year_month.month,
-           current_report: current_report,
-           historical_data: historical_data
-         }}
-      else
-        {:error, :invalid_access}
-      end
+      historical_data = generate_historical_data(store, year_month.month, year_month.year)
+      area = Revenue.calculate_store_area(store)
+      store_with_area = Map.put(store, :area, area)
+
+      {:ok,
+       %{
+         group: group,
+         building: building,
+         store: store_with_area,
+         year: year_month.year,
+         month: year_month.month,
+         current_report: current_report,
+         historical_data: historical_data
+       }}
     else
-      _ -> {:error, :not_found}
+      {:error, reason} -> {:error, reason}
     end
   end
 
-  defp get_group(group_id) do
-    case Repo.get(Group, group_id) do
-      nil -> {:error, :group_not_found}
-      group -> {:ok, group}
+  defp get_group(user_id, group_id) do
+    case Revenue.get_group(user_id, group_id) do
+      {:error, :group_not_found} -> {:error, :group_not_found}
+      {:ok, group} -> {:ok, group}
     end
   end
 
-  defp get_building(building_id) do
-    case Repo.get(Building, building_id) do
+  defp get_building(user_id, group_id, building_id) do
+    case Revenue.get_building(user_id, group_id, building_id) do
       nil -> {:error, :building_not_found}
-      building -> {:ok, Repo.preload(building, [:group])}
+      building -> {:ok, building}
     end
   end
 
-  defp get_store(store_id) do
-    case Repo.get(Store, store_id) do
+  defp get_store(user_id, group_id, building_id, store_id) do
+    case Revenue.get_store(user_id, group_id, building_id, store_id) do
       nil -> {:error, :store_not_found}
-      store -> {:ok, Repo.preload(store, [:reports])}
+      store -> {:ok, store}
     end
   end
 
@@ -85,44 +118,23 @@ defmodule AntoniaWeb.StoreLive do
     {:ok, %{year: year, month: month}}
   end
 
-  defp valid_store_access?(group, building, store) do
-    group && building && store && building.group_id == group.id &&
-      store.building_id == building.id
-  end
+  defp handle_mount_error(socket, reason, group_id) do
+    case reason do
+      :group_not_found ->
+        socket
+        |> put_flash(:error, "Group not found")
+        |> push_navigate(to: ~p"/app")
 
-  defp assign_store_data(socket, data, user) do
-    revenue =
-      if data.current_report && data.current_report.revenue,
-        do: Decimal.to_float(data.current_report.revenue),
-        else: 0
+      :building_not_found ->
+        socket
+        |> put_flash(:error, "Building not found")
+        |> push_navigate(to: ~p"/app/groups/#{group_id}")
 
-    note = if data.current_report, do: data.current_report.note, else: ""
-
-    socket
-    |> assign(:group, data.group)
-    |> assign(:building, data.building)
-    |> assign(:store, data.store)
-    |> assign(:year, data.year)
-    |> assign(:month, data.month)
-    |> assign(:current_report, data.current_report)
-    |> assign(:historical_data, data.historical_data)
-    |> assign(:is_editing, false)
-    |> assign(:edited_revenue, revenue)
-    |> assign(:note, note)
-    |> assign(:selected_file, nil)
-    |> assign(:user, user)
-  end
-
-  defp handle_mount_error(socket, :invalid_access, group_id) do
-    socket
-    |> put_flash(:error, "Store not found")
-    |> push_navigate(to: ~p"/app/groups/#{group_id}")
-  end
-
-  defp handle_mount_error(socket, :not_found, group_id) do
-    socket
-    |> put_flash(:error, "Store not found")
-    |> push_navigate(to: ~p"/app/groups/#{group_id}")
+      :store_not_found ->
+        socket
+        |> put_flash(:error, "Store not found")
+        |> push_navigate(to: ~p"/app/groups/#{group_id}")
+    end
   end
 
   @impl Phoenix.LiveView

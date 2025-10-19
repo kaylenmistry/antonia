@@ -3,6 +3,7 @@ defmodule AntoniaWeb.ReportingLive do
   use AntoniaWeb, :live_view
 
   import Ecto.Query
+  import AntoniaWeb.FormHelpers, only: [format_params: 1]
 
   alias Antonia.Repo
   alias Antonia.Revenue.Building
@@ -41,11 +42,11 @@ defmodule AntoniaWeb.ReportingLive do
 
   @impl Phoenix.LiveView
   def handle_event("create_building", %{"building" => params}, socket) do
-    building_params = params
-    building_params = Map.put(building_params, "group_id", socket.assigns.group.id)
+    formatted_params = format_params(params)
+    formatted_params = Map.put(formatted_params, :group_id, socket.assigns.group.id)
 
     case %Building{}
-         |> Building.changeset(building_params)
+         |> Building.changeset(formatted_params)
          |> Repo.insert() do
       {:ok, building} ->
         socket =

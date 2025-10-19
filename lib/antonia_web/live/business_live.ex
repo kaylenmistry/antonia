@@ -5,6 +5,7 @@ defmodule AntoniaWeb.BusinessLive do
   use AntoniaWeb, :live_view
 
   import AntoniaWeb.SharedComponents
+  import AntoniaWeb.FormHelpers, only: [format_params: 1]
   import Ecto.Query
 
   alias Antonia.Repo
@@ -47,11 +48,11 @@ defmodule AntoniaWeb.BusinessLive do
   @impl Phoenix.LiveView
   def handle_event("save", %{"store" => params}, socket) do
     # Use all fields that exist in the current schema
-    store_params = Map.take(params, ["name", "email", "area"])
-    store_params = Map.put(store_params, "building_id", socket.assigns.building.id)
+    formatted_params = format_params(params)
+    formatted_params = Map.put(formatted_params, :building_id, socket.assigns.building.id)
 
     case %Store{}
-         |> Store.changeset(store_params)
+         |> Store.changeset(formatted_params)
          |> Repo.insert() do
       {:ok, _store} ->
         stores =
@@ -74,12 +75,12 @@ defmodule AntoniaWeb.BusinessLive do
   @impl Phoenix.LiveView
   def handle_event("validate", %{"store" => params}, socket) do
     # Validate all fields that exist in the current schema
-    store_params = Map.take(params, ["name", "email", "area"])
-    store_params = Map.put(store_params, "building_id", socket.assigns.building.id)
+    formatted_params = format_params(params)
+    formatted_params = Map.put(formatted_params, :building_id, socket.assigns.building.id)
 
     changeset =
       %Store{}
-      |> Store.changeset(store_params)
+      |> Store.changeset(formatted_params)
       |> Map.put(:action, :validate)
 
     {:noreply, assign(socket, :changeset, changeset)}

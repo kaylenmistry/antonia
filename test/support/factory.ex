@@ -16,16 +16,24 @@ defmodule Antonia.Factory do
       id: Uniq.UUID.uuid7(),
       uid: sequence(:uid, &"user-#{&1}"),
       provider: :kinde,
-      first_name: "A",
-      last_name: "Head",
-      email: sequence(:email, &"user-#{&1}@mistry.co")
+      email: sequence(:email, &"user-#{&1}@revenue.com"),
+      first_name: "Test",
+      last_name: "User",
+      location: "Test City",
+      image: "https://example.com/avatar.jpg"
     }
   end
 
-  def group_factory do
-    %Group{
-      name: sequence(:name, &"Test Group #{&1}")
+  @spec group_factory :: Group.t()
+  def group_factory(attrs \\ %{}) do
+    user = Map.get_lazy(attrs, :created_by_user, fn -> insert(:user) end)
+
+    group = %Group{
+      name: sequence(:name, &"Test Group #{&1}"),
+      created_by_user_id: user.id
     }
+
+    merge_attributes(group, attrs)
   end
 
   def building_factory do
@@ -50,10 +58,10 @@ defmodule Antonia.Factory do
       store: build(:store),
       status: :pending,
       currency: "AUD",
-      revenue: 1000.00,
-      period_start: Date.new!(2025, 1, 1),
-      period_end: Date.new!(2025, 1, 31),
-      due_date: Date.new!(2025, 2, 7)
+      revenue: sequence(:revenue, &(&1 * 1000.0 + 500.0)),
+      period_start: sequence(:period_start, &Date.new!(2025, rem(&1, 12) + 1, 1)),
+      period_end: sequence(:period_end, &Date.new!(2025, rem(&1, 12) + 1, 28)),
+      due_date: sequence(:due_date, &Date.new!(2025, rem(&1, 12) + 1, 7))
     }
   end
 
