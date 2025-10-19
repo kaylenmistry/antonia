@@ -7,7 +7,8 @@ defmodule Antonia.Revenue.Group do
   alias Antonia.Revenue.Building
 
   @fields [
-    :name
+    :name,
+    :created_by_user_id
   ]
 
   @required_fields [:name]
@@ -15,6 +16,7 @@ defmodule Antonia.Revenue.Group do
   typed_schema "groups" do
     field(:name, :string)
 
+    belongs_to(:created_by_user, Antonia.Accounts.User)
     has_many(:buildings, Building)
 
     timestamps()
@@ -27,5 +29,6 @@ defmodule Antonia.Revenue.Group do
     |> cast(attrs, @fields)
     |> validate_required(@required_fields)
     |> validate_length(:name, min: 1, max: 255)
+    |> foreign_key_constraint(:created_by_user_id)
   end
 end

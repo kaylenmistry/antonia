@@ -1,198 +1,211 @@
 <div class="min-h-screen bg-gray-50">
   <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <!-- Header -->
-    <div class="mb-8">
-      <button
-        phx-click="back_to_building"
-        class="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors mb-4"
-      >
-        <.icon name="hero-arrow-left" class="w-4 h-4" />
-        <span>{gettext("Back to Building Details")}</span>
-      </button>
-
-      <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-        <h1 class="text-2xl font-bold text-gray-900 mb-2">
-          {@building.name} - {@store.name} - {gettext("Revenue")} {month_name(@month)}
-        </h1>
-        <p class="text-gray-600">
-          {gettext("Revenue details for %{month} %{year}", month: month_name(@month), year: @year)}
-        </p>
-      </div>
-    </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-      <!-- Left Column - Revenue Data -->
-      <div class="space-y-6">
-        <!-- Historical Revenue -->
-        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-          <h2 class="text-lg font-semibold text-gray-900 mb-4">
-            {gettext("Historical Revenue")} - {month_name(@month)}
-          </h2>
-
-          <div class="space-y-3">
-            <%= for data <- @historical_data do %>
-              <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <span class="font-medium text-gray-700">{data.year}</span>
-                <span class="font-semibold text-gray-900">
-                  <%= if data.is_current do %>
-                    <%= if @is_editing do %>
-                      <input
-                        type="number"
-                        value={@edited_revenue}
-                        phx-change="update_revenue"
-                        name="revenue"
-                        class="w-24 px-2 py-1 border border-gray-300 rounded text-right"
-                      />
-                    <% else %>
-                      <span class="text-blue-600">{format_currency(data.revenue)}</span>
-                    <% end %>
-                  <% else %>
-                    {format_currency(data.revenue)}
-                  <% end %>
-                </span>
-              </div>
-            <% end %>
-          </div>
-
-          <div class="mt-6 flex space-x-3">
-            <%= if not @is_editing do %>
-              <button
-                phx-click="start_editing"
-                class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                <.icon name="hero-pencil" class="h-4 w-4" />
-                <span>{gettext("Edit")}</span>
-              </button>
-            <% else %>
-              <div class="flex space-x-2">
-                <button
-                  phx-click="save_revenue"
-                  class="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                >
-                  <.icon name="hero-check" class="h-4 w-4" />
-                  <span>{gettext("Save")}</span>
-                </button>
-                <button
-                  phx-click="cancel_editing"
-                  class="flex items-center space-x-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-                >
-                  <.icon name="hero-x-mark" class="h-4 w-4" />
-                  <span>{gettext("Cancel")}</span>
-                </button>
-              </div>
-            <% end %>
-          </div>
+    <%= if @loading? do %>
+      <!-- Loading State -->
+      <div class="flex items-center justify-center min-h-[400px]">
+        <div class="text-center">
+          <.icon name="hero-arrow-path" class="h-8 w-8 animate-spin text-blue-600 mx-auto mb-4" />
+          <p class="text-gray-600">{gettext("Loading store data...")}</p>
         </div>
-        
-<!-- Attachment Section -->
-        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-          <h2 class="text-lg font-semibold text-gray-900 mb-4">{gettext("Attachment")}</h2>
+      </div>
+    <% else %>
+      <!-- Header -->
+      <div class="mb-8">
+        <button
+          phx-click="back_to_building"
+          class="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors mb-4"
+        >
+          <.icon name="hero-arrow-left" class="w-4 h-4" />
+          <span>{gettext("Back to Building Details")}</span>
+        </button>
 
-          <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-            <%= if @current_report && @current_report.attachment_url || @selected_file do %>
-              <div class="space-y-4">
-                <.icon name="hero-document-text" class="h-12 w-12 text-blue-600 mx-auto" />
-                <div>
-                  <p class="text-sm font-medium text-gray-900">
-                    <%= if @selected_file do %>
-                      {@selected_file.name}
+        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+          <h1 class="text-2xl font-bold text-gray-900 mb-2">
+            {@building.name} - {@store.name} - {gettext("Revenue")} {month_name(@month)}
+          </h1>
+          <p class="text-gray-600">
+            {gettext("Revenue details for %{month} %{year}",
+              month: month_name(@month),
+              year: @year
+            )}
+          </p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Left Column - Revenue Data -->
+        <div class="space-y-6">
+          <!-- Historical Revenue -->
+          <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">
+              {gettext("Historical Revenue")} - {month_name(@month)}
+            </h2>
+
+            <div class="space-y-3">
+              <%= for data <- @historical_data do %>
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <span class="font-medium text-gray-700">{data.year}</span>
+                  <span class="font-semibold text-gray-900">
+                    <%= if data.is_current do %>
+                      <%= if @is_editing do %>
+                        <input
+                          type="number"
+                          value={@edited_revenue}
+                          phx-change="update_revenue"
+                          name="revenue"
+                          class="w-24 px-2 py-1 border border-gray-300 rounded text-right"
+                        />
+                      <% else %>
+                        <span class="text-blue-600">{format_currency(data.revenue)}</span>
+                      <% end %>
                     <% else %>
-                      revenue_report.pdf
+                      {format_currency(data.revenue)}
                     <% end %>
-                  </p>
-                  <p class="text-xs text-gray-500">
-                    <%= if @selected_file do %>
-                      {gettext("New file selected")}
-                    <% else %>
-                      {gettext("Uploaded via email")}
-                    <% end %>
-                  </p>
+                  </span>
                 </div>
-                <%= if @current_report && @current_report.attachment_url && not @selected_file do %>
-                  <button class="text-blue-600 hover:text-blue-700 text-sm font-medium">
-                    {gettext("View Document")}
+              <% end %>
+            </div>
+
+            <div class="mt-6 flex space-x-3">
+              <%= if not @is_editing do %>
+                <button
+                  phx-click="start_editing"
+                  class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  <.icon name="hero-pencil" class="h-4 w-4" />
+                  <span>{gettext("Edit")}</span>
+                </button>
+              <% else %>
+                <div class="flex space-x-2">
+                  <button
+                    phx-click="save_revenue"
+                    class="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                  >
+                    <.icon name="hero-check" class="h-4 w-4" />
+                    <span>{gettext("Save")}</span>
                   </button>
-                <% end %>
-              </div>
-            <% else %>
-              <div class="space-y-4">
-                <.icon name="hero-arrow-up-tray" class="h-12 w-12 text-gray-400 mx-auto" />
-                <div>
-                  <p class="text-sm text-gray-600">{gettext("No attachment available")}</p>
-                  <p class="text-xs text-gray-500">{gettext("Upload a supporting document")}</p>
+                  <button
+                    phx-click="cancel_editing"
+                    class="flex items-center space-x-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                  >
+                    <.icon name="hero-x-mark" class="h-4 w-4" />
+                    <span>{gettext("Cancel")}</span>
+                  </button>
                 </div>
-              </div>
-            <% end %>
+              <% end %>
+            </div>
           </div>
+          
+<!-- Attachment Section -->
+          <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">{gettext("Attachment")}</h2>
 
-          <div class="mt-4">
-            <label class="block">
-              <input type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" class="hidden" />
-              <span class="flex items-center justify-center space-x-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors cursor-pointer">
-                <.icon name="hero-arrow-up-tray" class="h-4 w-4" />
-                <span>{gettext("Upload New Document")}</span>
-              </span>
-            </label>
+            <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+              <%= if @current_report && @current_report.attachment_url || @selected_file do %>
+                <div class="space-y-4">
+                  <.icon name="hero-document-text" class="h-12 w-12 text-blue-600 mx-auto" />
+                  <div>
+                    <p class="text-sm font-medium text-gray-900">
+                      <%= if @selected_file do %>
+                        {@selected_file.name}
+                      <% else %>
+                        revenue_report.pdf
+                      <% end %>
+                    </p>
+                    <p class="text-xs text-gray-500">
+                      <%= if @selected_file do %>
+                        {gettext("New file selected")}
+                      <% else %>
+                        {gettext("Uploaded via email")}
+                      <% end %>
+                    </p>
+                  </div>
+                  <%= if @current_report && @current_report.attachment_url && not @selected_file do %>
+                    <button class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                      {gettext("View Document")}
+                    </button>
+                  <% end %>
+                </div>
+              <% else %>
+                <div class="space-y-4">
+                  <.icon name="hero-arrow-up-tray" class="h-12 w-12 text-gray-400 mx-auto" />
+                  <div>
+                    <p class="text-sm text-gray-600">{gettext("No attachment available")}</p>
+                    <p class="text-xs text-gray-500">{gettext("Upload a supporting document")}</p>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+
+            <div class="mt-4">
+              <label class="block">
+                <input type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" class="hidden" />
+                <span class="flex items-center justify-center space-x-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors cursor-pointer">
+                  <.icon name="hero-arrow-up-tray" class="h-4 w-4" />
+                  <span>{gettext("Upload New Document")}</span>
+                </span>
+              </label>
+            </div>
           </div>
-        </div>
-      </div>
-      
-<!-- Right Column - Notes and Email -->
-      <div class="space-y-6">
-        <!-- Notes Section -->
-        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-          <h2 class="text-lg font-semibold text-gray-900 mb-4">{gettext("Note")}</h2>
-
-          <textarea
-            value={@note}
-            phx-change="update_note"
-            name="note"
-            placeholder={gettext("Add notes about this revenue report...")}
-            class="w-full h-32 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
-          ></textarea>
         </div>
         
-<!-- Email Section -->
-        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-          <h2 class="text-lg font-semibold text-gray-900 mb-4">{gettext("Email Sent")}</h2>
+<!-- Right Column - Notes and Email -->
+        <div class="space-y-6">
+          <!-- Notes Section -->
+          <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">{gettext("Note")}</h2>
 
-          <div class="border border-gray-200 rounded-lg p-4 bg-gray-50 min-h-[200px]">
-            <%= if @current_report && @current_report.email_content do %>
-              <div class="space-y-3">
-                <div class="flex items-center space-x-2 text-sm text-gray-600">
-                  <.icon name="hero-envelope" class="h-4 w-4" />
-                  <span>{gettext("From")}: {@store.email}</span>
+            <textarea
+              value={@note}
+              phx-change="update_note"
+              name="note"
+              placeholder={gettext("Add notes about this revenue report...")}
+              class="w-full h-32 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+            ></textarea>
+          </div>
+          
+<!-- Email Section -->
+          <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">{gettext("Email Sent")}</h2>
+
+            <div class="border border-gray-200 rounded-lg p-4 bg-gray-50 min-h-[200px]">
+              <%= if @current_report && @current_report.email_content do %>
+                <div class="space-y-3">
+                  <div class="flex items-center space-x-2 text-sm text-gray-600">
+                    <.icon name="hero-envelope" class="h-4 w-4" />
+                    <span>{gettext("From")}: {@store.email}</span>
+                  </div>
+                  <div class="text-sm text-gray-600">
+                    <span>
+                      {gettext("Date")}: {Calendar.strftime(
+                        @current_report.inserted_at,
+                        "%B %d, %Y"
+                      )}
+                    </span>
+                  </div>
+                  <div class="text-sm text-gray-600">
+                    <span>
+                      {gettext("Subject")}: {gettext("Revenue Report")} - {month_name(@month)} {@year}
+                    </span>
+                  </div>
+                  <hr class="border-gray-300" />
+                  <div class="text-sm text-gray-800 whitespace-pre-wrap">
+                    {@current_report.email_content}
+                  </div>
                 </div>
-                <div class="text-sm text-gray-600">
-                  <span>
-                    {gettext("Date")}: {Calendar.strftime(
-                      @current_report.inserted_at,
-                      "%B %d, %Y"
-                    )}
-                  </span>
+              <% else %>
+                <div class="flex items-center justify-center h-full text-gray-500">
+                  <div class="text-center">
+                    <.icon name="hero-envelope" class="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                    <p class="text-sm">{gettext("No email content available")}</p>
+                    <p class="text-xs">{gettext("Revenue may have been entered manually")}</p>
+                  </div>
                 </div>
-                <div class="text-sm text-gray-600">
-                  <span>
-                    {gettext("Subject")}: {gettext("Revenue Report")} - {month_name(@month)} {@year}
-                  </span>
-                </div>
-                <hr class="border-gray-300" />
-                <div class="text-sm text-gray-800 whitespace-pre-wrap">
-                  {@current_report.email_content}
-                </div>
-              </div>
-            <% else %>
-              <div class="flex items-center justify-center h-full text-gray-500">
-                <div class="text-center">
-                  <.icon name="hero-envelope" class="h-8 w-8 mx-auto mb-2 text-gray-400" />
-                  <p class="text-sm">{gettext("No email content available")}</p>
-                  <p class="text-xs">{gettext("Revenue may have been entered manually")}</p>
-                </div>
-              </div>
-            <% end %>
+              <% end %>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    <% end %>
   </div>
 </div>

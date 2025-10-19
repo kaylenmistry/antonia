@@ -172,7 +172,7 @@ msgstr ""
 
 #: lib/antonia_web/live/building_live.html.heex:92
 #: lib/antonia_web/live/reporting_live.html.heex:114
-#: lib/antonia_web/live/store_live.html.heex:80
+#: lib/antonia_web/live/store_live.html.heex:92
 #, elixir-autogen, elixir-format
 msgid "Cancel"
 msgstr ""
@@ -372,7 +372,7 @@ msgstr ""
 msgid "Shop Name"
 msgstr ""
 
-#: lib/antonia_web/live/business_live.ex:67
+#: lib/antonia_web/live/business_live.ex:68
 #, elixir-autogen, elixir-format
 msgid "Shop created successfully!"
 msgstr ""
@@ -392,7 +392,7 @@ msgstr ""
 msgid "shop@example.com"
 msgstr ""
 
-#: lib/antonia_web/live/business_live.ex:31
+#: lib/antonia_web/live/business_live.ex:32
 #, elixir-autogen, elixir-format
 msgid "Building not found"
 msgstr ""
@@ -423,7 +423,7 @@ msgstr ""
 msgid "Add a new store to %{building_name}"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:150
+#: lib/antonia_web/live/store_live.html.heex:162
 #, elixir-autogen, elixir-format
 msgid "Add notes about this revenue report..."
 msgstr ""
@@ -443,7 +443,7 @@ msgstr ""
 msgid "Area"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:89
+#: lib/antonia_web/live/store_live.html.heex:101
 #, elixir-autogen, elixir-format
 msgid "Attachment"
 msgstr ""
@@ -453,7 +453,7 @@ msgstr ""
 msgid "Back to %{group_name}"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:10
+#: lib/antonia_web/live/store_live.html.heex:19
 #, elixir-autogen, elixir-format
 msgid "Back to Building Details"
 msgstr ""
@@ -503,17 +503,17 @@ msgstr ""
 msgid "Create your first group to get started"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:168
+#: lib/antonia_web/live/store_live.html.heex:180
 #, elixir-autogen, elixir-format
 msgid "Date"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:64
+#: lib/antonia_web/live/store_live.html.heex:76
 #, elixir-autogen, elixir-format
 msgid "Edit"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:157
+#: lib/antonia_web/live/store_live.html.heex:169
 #, elixir-autogen, elixir-format
 msgid "Email Sent"
 msgstr ""
@@ -533,7 +533,7 @@ msgstr ""
 msgid "Enter store name"
 msgstr ""
 
-#: lib/antonia_web/live/building_live.ex:89
+#: lib/antonia_web/live/building_live.ex:91
 #, elixir-autogen, elixir-format
 msgid "Excel export functionality coming soon"
 msgstr ""
@@ -543,12 +543,12 @@ msgstr ""
 msgid "Export to Excel"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.ex:236
+#: lib/antonia_web/live/store_live.ex:248
 #, elixir-autogen, elixir-format
 msgid "Failed to update revenue"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:164
+#: lib/antonia_web/live/store_live.html.heex:176
 #, elixir-autogen, elixir-format
 msgid "From"
 msgstr ""
@@ -563,7 +563,7 @@ msgstr ""
 msgid "Group Name"
 msgstr ""
 
-#: lib/antonia_web/live/reporting_live.ex:31
+#: lib/antonia_web/live/reporting_live.ex:32
 #, elixir-autogen, elixir-format
 msgid "Group not found"
 msgstr ""
@@ -573,7 +573,7 @@ msgstr ""
 msgid "Groups"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:29
+#: lib/antonia_web/live/store_live.html.heex:41
 #, elixir-autogen, elixir-format
 msgid "Historical Revenue"
 msgstr ""
@@ -588,17 +588,17 @@ msgstr ""
 msgid "Monthly revenue breakdown by store (%{years})"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:105
+#: lib/antonia_web/live/store_live.html.heex:117
 #, elixir-autogen, elixir-format
 msgid "New file selected"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:121
+#: lib/antonia_web/live/store_live.html.heex:133
 #, elixir-autogen, elixir-format
 msgid "No attachment available"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:188
+#: lib/antonia_web/live/store_live.html.heex:200
 #, elixir-autogen, elixir-format
 msgid "No email content available"
 msgstr ""
@@ -613,7 +613,7 @@ msgstr ""
 msgid "No stores yet"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:144
+#: lib/antonia_web/live/store_live.html.heex:156
 #, elixir-autogen, elixir-format
 msgid "Note"
 msgstr ""
@@ -633,32 +633,32 @@ msgstr ""
 msgid "Reporting Dashboard"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:15
+#: lib/antonia_web/live/store_live.html.heex:24
 #, elixir-autogen, elixir-format
 msgid "Revenue"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:176
+#: lib/antonia_web/live/store_live.html.heex:188
 #, elixir-autogen, elixir-format
 msgid "Revenue Report"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:18
+#: lib/antonia_web/live/store_live.html.heex:27
 #, elixir-autogen, elixir-format
 msgid "Revenue details for %{month} %{year}"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:189
+#: lib/antonia_web/live/store_live.html.heex:201
 #, elixir-autogen, elixir-format
 msgid "Revenue may have been entered manually"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.ex:231
+#: lib/antonia_web/live/store_live.ex:243
 #, elixir-autogen, elixir-format
 msgid "Revenue updated successfully"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:73
+#: lib/antonia_web/live/store_live.html.heex:85
 #, elixir-autogen, elixir-format
 msgid "Save"
 msgstr ""
@@ -673,7 +673,7 @@ msgstr ""
 msgid "Store Revenue Details"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:176
+#: lib/antonia_web/live/store_live.html.heex:188
 #, elixir-autogen, elixir-format
 msgid "Subject"
 msgstr ""
@@ -708,22 +708,22 @@ msgstr ""
 msgid "Unreported shops"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:133
+#: lib/antonia_web/live/store_live.html.heex:145
 #, elixir-autogen, elixir-format
 msgid "Upload New Document"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:122
+#: lib/antonia_web/live/store_live.html.heex:134
 #, elixir-autogen, elixir-format
 msgid "Upload a supporting document"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:107
+#: lib/antonia_web/live/store_live.html.heex:119
 #, elixir-autogen, elixir-format
 msgid "Uploaded via email"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:113
+#: lib/antonia_web/live/store_live.html.heex:125
 #, elixir-autogen, elixir-format
 msgid "View Document"
 msgstr ""
@@ -749,17 +749,22 @@ msgstr ""
 msgid "Area (sq m)"
 msgstr ""
 
-#: lib/antonia_web/live/reporting_live.ex:53
+#: lib/antonia_web/live/reporting_live.ex:54
 #, elixir-autogen, elixir-format
 msgid "Created building"
 msgstr ""
 
-#: lib/antonia_web/live/groups_live.ex:33
+#: lib/antonia_web/live/groups_live.ex:38
 #, elixir-autogen, elixir-format
 msgid "Created group"
 msgstr ""
 
-#: lib/antonia_web/live/building_live.ex:61
+#: lib/antonia_web/live/building_live.ex:63
 #, elixir-autogen, elixir-format
 msgid "Created store"
+msgstr ""
+
+#: lib/antonia_web/live/store_live.html.heex:8
+#, elixir-autogen, elixir-format
+msgid "Loading store data..."
 msgstr ""

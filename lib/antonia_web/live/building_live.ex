@@ -5,6 +5,7 @@ defmodule AntoniaWeb.BuildingLive do
   use AntoniaWeb, :live_view
 
   import AntoniaWeb.SharedComponents
+  import AntoniaWeb.FormHelpers, only: [format_params: 1]
   import Ecto.Query
 
   alias Antonia.Repo
@@ -43,9 +44,10 @@ defmodule AntoniaWeb.BuildingLive do
 
   @impl Phoenix.LiveView
   def handle_event("create_store", %{"store" => store_params}, socket) do
-    store_params = Map.put(store_params, "building_id", socket.assigns.building.id)
+    formatted_params = format_params(store_params)
+    formatted_params = Map.put(formatted_params, :building_id, socket.assigns.building.id)
 
-    case Repo.insert(Store.changeset(%Store{}, store_params)) do
+    case Repo.insert(Store.changeset(%Store{}, formatted_params)) do
       {:ok, store} ->
         stores = load_stores_with_revenue_data(socket.assigns.building.id)
         revenue_data = build_revenue_table_data(stores)

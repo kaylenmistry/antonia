@@ -1,6 +1,12 @@
 defmodule Antonia.Accounts do
   @moduledoc """
   The Accounts context.
+
+  This module provides a contract-based interface for all account-related operations.
+  The web layer should only interact with this module and never directly access
+  inner modules like Antonia.Accounts.User.
+
+  All functions require user_id and account_id parameters for authentication and authorization.
   """
 
   import Ecto.Query, warn: false
@@ -24,15 +30,6 @@ defmodule Antonia.Accounts do
   @spec get_user(binary()) :: User.t() | nil
   def get_user(id) do
     Repo.get(User, id)
-  end
-
-  @doc "Gets a user's custom prompt. Returns nil if no user is found."
-  @spec get_user_custom_prompt(binary()) :: String.t() | nil
-  def get_user_custom_prompt(user_id) do
-    case get_user(user_id) do
-      nil -> nil
-      user -> user.custom_prompt
-    end
   end
 
   # Creates a new user with a default personal account.
@@ -60,5 +57,11 @@ defmodule Antonia.Accounts do
     user
     |> User.changeset(attrs)
     |> Repo.update()
+  end
+
+  @doc "Changes a user."
+  @spec change_user(User.t()) :: Ecto.Changeset.t()
+  def change_user(user \\ %User{}) do
+    User.changeset(user, %{})
   end
 end
