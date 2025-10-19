@@ -19,17 +19,17 @@ defmodule AntoniaWeb.SplashLive do
 
   @impl Phoenix.LiveView
   def handle_event("navigate-to-app", _, socket) do
-    {:noreply, push_navigate(socket, to: ~p"/auth")}
+    {:noreply, push_navigate(socket, to: ~p"/app")}
   end
 
   @impl Phoenix.LiveView
   def handle_event("navigate-to-login", _, socket) do
-    {:noreply, push_navigate(socket, to: ~p"/auth")}
+    {:noreply, push_navigate(socket, to: ~p"/auth/login")}
   end
 
   @impl Phoenix.LiveView
   def handle_event("navigate-to-signup", _, socket) do
-    {:noreply, push_navigate(socket, to: ~p"/auth")}
+    {:noreply, push_navigate(socket, to: ~p"/auth/register")}
   end
 
   @impl Phoenix.LiveView

@@ -768,3 +768,9 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "Loading store data..."
 msgstr ""
+
+#: lib/antonia_web/controllers/auth_controller.ex:89
+#: lib/antonia_web/controllers/auth_controller.ex:96
+#, elixir-autogen, elixir-format
+msgid "An error occurred, please try again."
+msgstr ""

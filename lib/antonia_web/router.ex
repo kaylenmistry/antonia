@@ -37,7 +37,6 @@ defmodule AntoniaWeb.Router do
 
     get "/login", AuthController, :login
     get "/register", AuthController, :register
-    get "/", AuthController, :index
     get "/:provider", AuthController, :request
     get "/:provider/callback", AuthController, :callback
   end

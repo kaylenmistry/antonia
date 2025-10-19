@@ -741,13 +741,13 @@ defmodule AntoniaWeb.CoreComponents do
               <!-- Guest user buttons -->
               <div class="flex items-center space-x-2">
                 <.link
-                  href={~p"/auth"}
+                  href={~p"/auth/register"}
                   class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                 >
                   {gettext("Sign-up")}
                 </.link>
                 <.link
-                  href={~p"/auth"}
+                  href={~p"/auth/login"}
                   class="px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                 >
                   {gettext("Log-in")}

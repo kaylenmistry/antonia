@@ -14,6 +14,7 @@ defmodule Antonia.MixProject do
         plt_file: {:no_warn, "priv/plts/dialyzer.plt"},
         plt_add_apps: [:mix, :credo]
       ],
+      listeners: [Phoenix.CodeReloader],
       # Coveralls
       test_coverage: [tool: ExCoveralls],
       # ExDocs
