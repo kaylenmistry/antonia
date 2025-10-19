@@ -3,6 +3,11 @@ defmodule AntoniaWeb.Plugs.RedirectAuthenticatedUser do
 
   @behaviour Plug
 
+  use Phoenix.VerifiedRoutes,
+    endpoint: AntoniaWeb.Endpoint,
+    router: AntoniaWeb.Router,
+    statics: AntoniaWeb.static_paths()
+
   import Phoenix.Controller, only: [redirect: 2]
   import Plug.Conn
 
@@ -16,7 +21,7 @@ defmodule AntoniaWeb.Plugs.RedirectAuthenticatedUser do
     conn = fetch_cookies(conn)
 
     case get_session(conn, :auth) do
-      %Auth{} -> conn |> redirect(to: "/app") |> halt()
+      %Auth{} -> conn |> redirect(to: ~p"/app") |> halt()
       _ -> conn
     end
   end

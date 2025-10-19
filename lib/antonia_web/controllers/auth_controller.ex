@@ -1,18 +1,45 @@
 defmodule AntoniaWeb.AuthController do
   @moduledoc false
   use AntoniaWeb, :controller
+
   plug Ueberauth
+
+  require Logger
 
   alias Antonia.Accounts
   alias Antonia.Accounts.User
+  alias Antonia.Services.Kinde
+
+  @doc """
+  Redirects to Kinde login page with nonce parameter.
+  """
+  def login(conn, _params) do
+    nonce = generate_nonce()
+
+    conn
+    |> put_session(:oauth_nonce, nonce)
+    |> redirect(to: "/auth/kinde?prompt=login&nonce=#{nonce}")
+  end
+
+  @doc """
+  Redirects to Kinde registration page with nonce parameter.
+  """
+  def register(conn, _params) do
+    nonce = generate_nonce()
+
+    conn
+    |> put_session(:oauth_nonce, nonce)
+    |> redirect(to: "/auth/kinde?prompt=create&nonce=#{nonce}")
+  end
 
   @doc false
   def index(conn, _params) do
     render(conn, "index.html", layout: false, no_footer: true)
   end
 
-  # TODO: logout from underlying provider, i.e. Google or Apple
-  @doc false
+  @doc """
+  Logs out from both local session and Kinde, then redirects to home page.
+  """
   def logout(conn, _params) do
     if live_socket_id = get_session(conn, :live_socket_id) do
       AntoniaWeb.Endpoint.broadcast(live_socket_id, "disconnect", %{})
@@ -20,7 +47,7 @@ defmodule AntoniaWeb.AuthController do
 
     conn
     |> renew_session()
-    |> redirect(to: "/")
+    |> redirect(external: Kinde.get_logout_url())
   end
 
   @doc false
@@ -36,20 +63,18 @@ defmodule AntoniaWeb.AuthController do
 
     {:ok, %User{id: user_id}} = maybe_register_user(auth)
 
-    # Use local user id and remove extra claims
+    # Use local user id and remove extra claims and large tokens
     auth =
       auth
       |> Map.put(:uid, user_id)
       |> Map.put(:extra, nil)
+      |> Map.put(:credentials, %{auth.credentials | other: %{}})
 
     conn
     |> renew_session()
     |> put_session(:auth, auth)
     |> put_session(:account_id, account_id)
-    |> put_session(
-      :live_socket_id,
-      "users_sessions:#{Base.url_encode64(auth.credentials.token)}"
-    )
+    |> put_session(:live_socket_id, "users_sessions:#{user_id}")
     |> redirect(to: user_return_to || ~p"/app")
   end
 
@@ -74,5 +99,9 @@ defmodule AntoniaWeb.AuthController do
     }
     |> Map.filter(fn {_k, v} -> !is_nil(v) end)
     |> Accounts.create_or_update_user()
+  end
+
+  defp generate_nonce do
+    16 |> :crypto.strong_rand_bytes() |> Base.url_encode64(padding: false)
   end
 end

@@ -114,7 +114,7 @@ config :logger, level: :info
 
 config :ueberauth, Ueberauth,
   providers: [
-    google: {Ueberauth.Strategy.Google, default_scope: "email openid profile"}
+    kinde: {Ueberauth.Strategy.Kinde, default_scope: "openid profile email offline"}
   ]
 
 # Import environment specific config. This must remain at the bottom

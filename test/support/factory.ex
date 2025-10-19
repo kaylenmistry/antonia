@@ -3,11 +3,24 @@ defmodule Antonia.Factory do
 
   use ExMachina.Ecto, repo: Antonia.Repo
 
+  alias Antonia.Accounts.User
   alias Antonia.Revenue.Building
   alias Antonia.Revenue.EmailLog
   alias Antonia.Revenue.Group
   alias Antonia.Revenue.Report
   alias Antonia.Revenue.Store
+
+  @spec user_factory :: User.t()
+  def user_factory do
+    %User{
+      id: Uniq.UUID.uuid7(),
+      uid: sequence(:uid, &"user-#{&1}"),
+      provider: :kinde,
+      first_name: "A",
+      last_name: "Head",
+      email: sequence(:email, &"user-#{&1}@mistry.co")
+    }
+  end
 
   def group_factory do
     %Group{

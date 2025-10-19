@@ -26,7 +26,7 @@ defmodule AntoniaWeb.Router do
   end
 
   scope "/auth", AntoniaWeb do
-    pipe_through :browser
+    pipe_through [:browser, RequireAuthenticatedUser]
 
     get "/logout", AuthController, :logout
   end
@@ -35,6 +35,8 @@ defmodule AntoniaWeb.Router do
   scope "/auth", AntoniaWeb do
     pipe_through [:browser, RedirectAuthenticatedUser]
 
+    get "/login", AuthController, :login
+    get "/register", AuthController, :register
     get "/", AuthController, :index
     get "/:provider", AuthController, :request
     get "/:provider/callback", AuthController, :callback

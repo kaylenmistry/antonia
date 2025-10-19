@@ -3,8 +3,15 @@ defmodule AntoniaWeb.Plugs.RequireAuthenticatedUser do
 
   @behaviour Plug
 
+  use Phoenix.VerifiedRoutes,
+    endpoint: AntoniaWeb.Endpoint,
+    router: AntoniaWeb.Router,
+    statics: AntoniaWeb.static_paths()
+
   import Plug.Conn
   import Phoenix.Controller, only: [redirect: 2, current_path: 1]
+
+  alias Antonia.Services.Kinde
   alias Ueberauth.Auth
 
   @impl Plug
@@ -14,22 +21,15 @@ defmodule AntoniaWeb.Plugs.RequireAuthenticatedUser do
   def call(conn, _) do
     conn = fetch_cookies(conn)
 
-    case get_session(conn, :auth) do
-      %Auth{provider: provider, credentials: %Auth.Credentials{expires_at: expires_at}} ->
-        if DateTime.compare(DateTime.utc_now(), DateTime.from_unix!(expires_at)) == :lt do
-          conn
-        else
-          conn
-          |> clear_session()
-          |> maybe_store_return_to()
-          |> redirect(to: "/auth/#{provider}")
-          |> halt()
-        end
-
+    with %Auth{} = auth <- get_session(conn, :auth),
+         {:ok, refreshed_auth} <- Kinde.maybe_refresh_token(auth) do
+      put_session(conn, :auth, refreshed_auth)
+    else
       _ ->
         conn
+        |> clear_session()
         |> maybe_store_return_to()
-        |> redirect(to: "/auth")
+        |> redirect(to: ~p"/auth/login")
         |> halt()
     end
   end

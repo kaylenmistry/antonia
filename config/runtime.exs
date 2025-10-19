@@ -38,12 +38,13 @@ config :antonia, AntoniaWeb.O11Y.Endpoint,
 config :antonia, Antonia.Mailer,
   api_key: get_string("RESEND_API_KEY", "re_JToSkskJ_4oQcGmUfxtCKDkaR9Q2QsXYu")
 
-config :ueberauth, Ueberauth.Strategy.Google.OAuth,
-  client_id:
-    get_string(
-      "GOOGLE_CLIENT_ID",
-      "1057577530329-8sfaa8mvnvrcri6l4dktsg1bp39ujdf2.apps.googleusercontent.com"
-    ),
-  client_secret: get_string("GOOGLE_CLIENT_SECRET", "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")
+config :ueberauth, Ueberauth.Strategy.Kinde.OAuth,
+  client_id: get_string("KINDE_CLIENT_ID", "80fad74fe4cb4b6f849f2f0fe7ea4f28"),
+  client_secret:
+    get_string("KINDE_CLIENT_SECRET", "ATIf4EX0i2oN6HlFNOqWegMMJ4Ct86nBj1rzP21YniwAJzBaPXm"),
+  domain: get_string("KINDE_DOMAIN", "https://ahead-local.eu.kinde.com")
+
+config :antonia, Antonia.Services.Kinde,
+  domain: get_string("KINDE_DOMAIN", "https://ahead-local.eu.kinde.com")
 
 config :antonia, Antonia.Accounts.UserNotifier, base_url: base_url

@@ -89,7 +89,7 @@ defmodule Antonia.MixProject do
       {:telemetry_metrics, "~> 1.0"},
       {:telemetry_poller, "~> 1.0"},
       {:tesla, "~> 1.4"},
-      {:ueberauth_google, "~> 0.10"},
+      {:oauth2, "~> 2.0"},
       {:ueberauth, "~> 0.10"},
       {:uniq, "~> 0.1"},
       {:number, "~> 1.0.1"},
