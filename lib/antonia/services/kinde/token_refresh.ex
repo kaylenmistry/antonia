@@ -77,14 +77,10 @@ defmodule Antonia.Services.Kinde.TokenRefresh do
     # Reuse the existing OAuth client configuration
     base_client = OAuth.client()
 
-    # Create a new client with refresh strategy
-    OAuth2.Client.new(base_client,
-      strategy: OAuth2.Strategy.Refresh,
-      client_id: base_client.client_id,
-      client_secret: base_client.client_secret,
-      site: base_client.site,
-      params: %{"refresh_token" => refresh_token}
-    )
+    # Create a new client with refresh strategy, preserving serializers
+    base_client
+    |> Map.put(:strategy, OAuth2.Strategy.Refresh)
+    |> Map.put(:params, %{"refresh_token" => refresh_token})
   end
 
   @spec perform_refresh(OAuth2.Client.t()) :: {:ok, OAuth2.AccessToken.t()} | {:error, any()}
@@ -123,16 +119,16 @@ defmodule Antonia.Services.Kinde.TokenRefresh do
 
   @spec build_auth_from_token(OAuth2.AccessToken.t(), Auth.t()) :: Auth.t()
   def build_auth_from_token(token, auth) do
-    # Decode the JSON access_token and create a proper OAuth2.AccessToken
-    decoded_token = token.access_token |> Jason.decode!() |> OAuth2.AccessToken.new()
+    # Extract scopes from other_params
+    scopes = token.other_params |> Map.get("scope", "") |> String.split(" ")
 
     credentials = %Credentials{
-      expires: true,
-      expires_at: decoded_token.expires_at,
-      scopes: decoded_token.other_params |> Map.get("scope", "") |> String.split(" "),
-      token_type: Map.get(decoded_token, :token_type),
-      refresh_token: decoded_token.refresh_token,
-      token: decoded_token.access_token,
+      expires: !!token.expires_at,
+      expires_at: token.expires_at,
+      scopes: scopes,
+      token_type: token.token_type,
+      refresh_token: token.refresh_token,
+      token: token.access_token,
       other: %{}
     }
 
