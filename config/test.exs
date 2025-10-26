@@ -38,3 +38,11 @@ config :antonia, Oban, testing: :manual
 
 # Disable scheduler in test environment
 config :antonia, Antonia.Scheduler, jobs: []
+
+# Use Finch adapter for Kinde modules to allow testing with Bypass
+for module <- [
+      Antonia.Services.Kinde.Portal,
+      Antonia.Services.Kinde.CreateOrganisation
+    ] do
+  config :tesla, module, adapter: Tesla.Adapter.Finch, name: Antonia.Finch
+end

@@ -20,6 +20,12 @@ defmodule Antonia.AccountsTest do
     test "returns nil if the user does not exist" do
       assert nil == Accounts.get_user_by_email("nonexistent@example.com")
     end
+
+    test "returns nil if email is not a binary" do
+      assert nil == Accounts.get_user_by_email(nil)
+      assert nil == Accounts.get_user_by_email(123)
+      assert nil == Accounts.get_user_by_email(%{})
+    end
   end
 
   describe "get_user/1" do

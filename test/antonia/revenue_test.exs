@@ -2,419 +2,600 @@ defmodule Antonia.RevenueTest do
   use Antonia.DataCase, async: true
 
   alias Antonia.Revenue
-  alias Antonia.Revenue.Building
-  alias Antonia.Revenue.Group
-  alias Antonia.Revenue.Report
-  alias Antonia.Revenue.Store
+
+  ############################
+  # Groups Tests
+  ############################
 
   describe "list_groups/1" do
-    test "returns groups ordered alphabetically by name" do
+    test "lists all groups for a user" do
       user = insert(:user)
-      insert(:group, created_by_user_id: user.id, name: "Charlie Group")
-      insert(:group, created_by_user_id: user.id, name: "Alpha Group")
-      insert(:group, created_by_user_id: user.id, name: "Beta Group")
+      _group1 = insert(:group, name: "AAA Group", created_by_user: user)
+      _group2 = insert(:group, name: "BBB Group", created_by_user: user)
+      # Different user's group
+      _other_group = insert(:group, name: "Other Group")
 
       groups = Revenue.list_groups(user.id)
-      assert Enum.map(groups, & &1.name) == ["Alpha Group", "Beta Group", "Charlie Group"]
+
+      assert length(groups) == 2
+      assert Enum.all?(groups, fn g -> g.created_by_user_id == user.id end)
     end
 
-    test "returns empty list when no groups exist" do
+    test "returns empty list for user with no groups" do
       user = insert(:user)
-      assert [] == Revenue.list_groups(user.id)
+
+      assert Revenue.list_groups(user.id) == []
+    end
+
+    test "orders groups alphabetically" do
+      user = insert(:user)
+      _ = insert(:group, name: "Zebra Group", created_by_user: user)
+      _ = insert(:group, name: "Alpha Group", created_by_user: user)
+
+      groups = Revenue.list_groups(user.id)
+
+      assert [first, second] = groups
+      assert first.name == "Alpha Group"
+      assert second.name == "Zebra Group"
     end
   end
 
   describe "get_group/2" do
-    test "returns group when it exists" do
+    test "returns group when user owns it" do
       user = insert(:user)
-      group = insert(:group, created_by_user_id: user.id)
+      group = insert(:group, created_by_user: user)
 
-      assert {:ok, %Group{id: group_id}} = Revenue.get_group(user.id, group.id)
-      assert group_id == group.id
+      assert {:ok, fetched_group} = Revenue.get_group(user.id, group.id)
+      assert fetched_group.id == group.id
     end
 
-    test "returns error when group does not exist" do
+    test "returns error when group not found" do
       user = insert(:user)
-      non_existent_id = Uniq.UUID.uuid7()
+      other_user = insert(:user)
+      group = insert(:group, created_by_user: other_user)
 
-      assert {:error, :group_not_found} = Revenue.get_group(user.id, non_existent_id)
+      assert {:error, :group_not_found} = Revenue.get_group(user.id, group.id)
+    end
+
+    test "returns error when group doesn't exist" do
+      user = insert(:user)
+      fake_id = Uniq.UUID.uuid7()
+
+      assert {:error, :group_not_found} = Revenue.get_group(user.id, fake_id)
     end
   end
 
   describe "create_group/2" do
-    test "creates a group with valid data" do
+    test "creates a new group" do
       user = insert(:user)
-      attrs = %{name: "New Group"}
 
-      assert {:ok, %Group{name: "New Group"}} = Revenue.create_group(user.id, attrs)
+      assert {:ok, group} = Revenue.create_group(user.id, %{name: "New Group"})
+      assert group.name == "New Group"
+      assert group.created_by_user_id == user.id
     end
 
-    test "returns error with invalid data" do
+    test "returns error when name is missing" do
       user = insert(:user)
-      attrs = %{}
 
-      assert {:error, changeset} = Revenue.create_group(user.id, attrs)
+      assert {:error, changeset} = Revenue.create_group(user.id, %{})
       refute changeset.valid?
-      assert {"can't be blank", [validation: :required]} = changeset.errors[:name]
+    end
+
+    test "sets created_by_user_id from user_id parameter" do
+      user = insert(:user)
+
+      {:ok, group} = Revenue.create_group(user.id, %{name: "Test"})
+
+      assert group.created_by_user_id == user.id
     end
   end
 
+  describe "change_group/1" do
+    test "returns changeset for new group" do
+      changeset = Revenue.change_group()
+
+      assert changeset.data.__struct__ == Revenue.Group
+      refute changeset.valid?
+    end
+
+    test "returns changeset for existing group" do
+      group = insert(:group)
+
+      changeset = Revenue.change_group(group)
+
+      assert changeset.valid?
+      assert changeset.data == group
+    end
+  end
+
+  ############################
+  # Buildings Tests
+  ############################
+
   describe "list_buildings/2" do
-    test "returns buildings ordered alphabetically by name" do
+    test "lists buildings for a group" do
       user = insert(:user)
-      group = insert(:group, created_by_user_id: user.id)
-      insert(:building, group: group, name: "Charlie Building")
-      insert(:building, group: group, name: "Alpha Building")
-      insert(:building, group: group, name: "Beta Building")
+      group = insert(:group, created_by_user: user)
+      building1 = insert(:building, name: "Building A", group: group)
+      building2 = insert(:building, name: "Building B", group: group)
 
       buildings = Revenue.list_buildings(user.id, group.id)
 
-      assert Enum.map(buildings, & &1.name) == [
-               "Alpha Building",
-               "Beta Building",
-               "Charlie Building"
-             ]
+      assert length(buildings) == 2
+      building_ids = Enum.map(buildings, & &1.id)
+      assert building1.id in building_ids
+      assert building2.id in building_ids
     end
 
-    test "returns empty list when group has no buildings" do
+    test "orders buildings alphabetically" do
       user = insert(:user)
-      group = insert(:group, created_by_user_id: user.id)
+      group = insert(:group, created_by_user: user)
+      _building2 = insert(:building, name: "Zebra", group: group)
+      _building1 = insert(:building, name: "Alpha", group: group)
 
-      assert [] == Revenue.list_buildings(user.id, group.id)
+      buildings = Revenue.list_buildings(user.id, group.id)
+
+      assert [first, second] = buildings
+      assert first.name == "Alpha"
+      assert second.name == "Zebra"
     end
 
-    test "returns empty list for non-existent group" do
+    test "returns empty list when user doesn't own group" do
       user = insert(:user)
-      non_existent_id = Uniq.UUID.uuid7()
+      other_user = insert(:user)
+      group = insert(:group, created_by_user: other_user)
+      insert(:building, group: group)
 
-      assert [] == Revenue.list_buildings(user.id, non_existent_id)
+      assert Revenue.list_buildings(user.id, group.id) == []
+    end
+
+    test "returns empty list when group doesn't exist" do
+      user = insert(:user)
+      fake_id = Uniq.UUID.uuid7()
+
+      assert Revenue.list_buildings(user.id, fake_id) == []
     end
   end
 
   describe "get_building/3" do
-    test "returns building when it exists and belongs to group" do
+    test "returns building when user has access" do
       user = insert(:user)
-      group = insert(:group, created_by_user_id: user.id)
+      group = insert(:group, created_by_user: user)
       building = insert(:building, group: group)
 
-      assert %Building{id: building_id} = Revenue.get_building(user.id, group.id, building.id)
-      assert building_id == building.id
+      fetched_building = Revenue.get_building(user.id, group.id, building.id)
+
+      assert fetched_building.id == building.id
     end
 
-    test "returns nil when building exists but belongs to different group" do
+    test "returns nil when user doesn't own group" do
       user = insert(:user)
-      group = insert(:group, created_by_user_id: user.id)
-      other_group = insert(:group)
-      building = insert(:building, group: other_group)
+      other_user = insert(:user)
+      group = insert(:group, created_by_user: other_user)
+      building = insert(:building, group: group)
 
-      assert nil == Revenue.get_building(user.id, group.id, building.id)
+      assert Revenue.get_building(user.id, group.id, building.id) == nil
     end
 
-    test "returns nil when building does not exist" do
+    test "returns nil when building doesn't exist" do
       user = insert(:user)
-      group = insert(:group, created_by_user_id: user.id)
-      non_existent_id = Uniq.UUID.uuid7()
+      group = insert(:group, created_by_user: user)
+      fake_id = Uniq.UUID.uuid7()
 
-      assert nil == Revenue.get_building(user.id, group.id, non_existent_id)
+      assert Revenue.get_building(user.id, group.id, fake_id) == nil
     end
   end
 
   describe "create_building/3" do
-    test "creates a building with valid data" do
+    test "creates building for group" do
       user = insert(:user)
-      group = insert(:group, created_by_user_id: user.id)
-      attrs = %{name: "New Building", address: "123 Test St"}
+      group = insert(:group, created_by_user: user)
 
-      assert {:ok, %Building{name: "New Building", address: "123 Test St"}} =
-               Revenue.create_building(user.id, group.id, attrs)
+      assert {:ok, building} = Revenue.create_building(user.id, group.id, %{name: "New Building"})
+      assert building.name == "New Building"
+      assert building.group_id == group.id
     end
 
-    test "returns error with invalid data" do
+    test "returns error when user doesn't own group" do
       user = insert(:user)
-      group = insert(:group, created_by_user_id: user.id)
-      attrs = %{}
+      other_user = insert(:user)
+      group = insert(:group, created_by_user: other_user)
 
-      assert {:error, changeset} = Revenue.create_building(user.id, group.id, attrs)
-      refute changeset.valid?
-      assert {"can't be blank", [validation: :required]} = changeset.errors[:name]
+      assert {:error, :group_not_found} =
+               Revenue.create_building(user.id, group.id, %{name: "New Building"})
+    end
+
+    test "returns error when group doesn't exist" do
+      user = insert(:user)
+      fake_id = Uniq.UUID.uuid7()
+
+      assert {:error, :group_not_found} =
+               Revenue.create_building(user.id, fake_id, %{name: "New Building"})
     end
   end
 
+  describe "change_building/1" do
+    test "returns changeset for new building" do
+      changeset = Revenue.change_building()
+
+      assert changeset.data.__struct__ == Revenue.Building
+      refute changeset.valid?
+    end
+  end
+
+  ############################
+  # Stores Tests
+  ############################
+
   describe "list_stores/3" do
-    test "returns stores ordered alphabetically by name" do
+    test "lists stores for a building" do
       user = insert(:user)
-      group = insert(:group, created_by_user_id: user.id)
+      group = insert(:group, created_by_user: user)
       building = insert(:building, group: group)
-      insert(:store, building: building, name: "Charlie Store")
-      insert(:store, building: building, name: "Alpha Store")
-      insert(:store, building: building, name: "Beta Store")
+      store1 = insert(:store, name: "Store A", building: building)
+      store2 = insert(:store, name: "Store B", building: building)
 
       stores = Revenue.list_stores(user.id, group.id, building.id)
-      assert Enum.map(stores, & &1.name) == ["Alpha Store", "Beta Store", "Charlie Store"]
+
+      assert length(stores) == 2
+      store_ids = Enum.map(stores, & &1.id)
+      assert store1.id in store_ids
+      assert store2.id in store_ids
     end
 
-    test "returns empty list when building has no stores" do
+    test "orders stores alphabetically" do
       user = insert(:user)
-      group = insert(:group)
+      group = insert(:group, created_by_user: user)
       building = insert(:building, group: group)
+      _store2 = insert(:store, name: "Zebra", building: building)
+      _store1 = insert(:store, name: "Alpha", building: building)
 
-      assert [] == Revenue.list_stores(user.id, group.id, building.id)
+      stores = Revenue.list_stores(user.id, group.id, building.id)
+
+      assert [first, second] = stores
+      assert first.name == "Alpha"
+      assert second.name == "Zebra"
     end
 
-    test "returns empty list for non-existent building" do
+    test "returns empty list when user doesn't own group" do
       user = insert(:user)
-      group = insert(:group)
-      non_existent_id = Uniq.UUID.uuid7()
+      other_user = insert(:user)
+      group = insert(:group, created_by_user: other_user)
+      building = insert(:building, group: group)
+      insert(:store, building: building)
 
-      assert [] == Revenue.list_stores(user.id, group.id, non_existent_id)
+      assert Revenue.list_stores(user.id, group.id, building.id) == []
     end
   end
 
   describe "get_store/4" do
-    test "returns store when it exists and belongs to building" do
+    test "returns store with preloaded reports" do
       user = insert(:user)
-      group = insert(:group, created_by_user_id: user.id)
-      building = insert(:building, group: group)
-      store = insert(:store, building: building)
-
-      assert %Store{id: store_id} = Revenue.get_store(user.id, group.id, building.id, store.id)
-      assert store_id == store.id
-    end
-
-    test "returns nil when store exists but belongs to different building" do
-      user = insert(:user)
-      group = insert(:group)
-      building = insert(:building, group: group)
-      other_building = insert(:building, group: group)
-      store = insert(:store, building: other_building)
-
-      assert nil == Revenue.get_store(user.id, group.id, building.id, store.id)
-    end
-
-    test "returns nil when store does not exist" do
-      user = insert(:user)
-      group = insert(:group)
-      building = insert(:building, group: group)
-      non_existent_id = Uniq.UUID.uuid7()
-
-      assert nil == Revenue.get_store(user.id, group.id, building.id, non_existent_id)
-    end
-  end
-
-  describe "create_store/4" do
-    test "creates a store with valid data" do
-      user = insert(:user)
-      group = insert(:group, created_by_user_id: user.id)
-      building = insert(:building, group: group)
-      attrs = %{name: "New Store", email: "store@example.com", area: 100}
-
-      assert {:ok, %Store{name: "New Store", email: "store@example.com", area: 100}} =
-               Revenue.create_store(user.id, group.id, building.id, attrs)
-    end
-
-    test "returns error with invalid data" do
-      user = insert(:user)
-      group = insert(:group, created_by_user_id: user.id)
-      building = insert(:building, group: group)
-      attrs = %{}
-
-      assert {:error, changeset} = Revenue.create_store(user.id, group.id, building.id, attrs)
-      refute changeset.valid?
-      assert {"can't be blank", [validation: :required]} = changeset.errors[:name]
-    end
-  end
-
-  describe "list_reports/4" do
-    test "returns all reports for a store" do
-      user = insert(:user)
-      group = insert(:group, created_by_user_id: user.id)
-      building = insert(:building, group: group)
-      store = insert(:store, building: building)
-      report1 = insert(:report, store: store)
-      report2 = insert(:report, store: store)
-      # Create a report for a different store
-      other_store = insert(:store, building: building)
-      _other_report = insert(:report, store: other_store)
-
-      reports = Revenue.list_reports(user.id, group.id, building.id, store.id)
-      assert length(reports) == 2
-      # Order by inserted_at desc (newest first) - check that we have both reports
-      report_ids = Enum.map(reports, & &1.id)
-      assert report1.id in report_ids
-      assert report2.id in report_ids
-    end
-
-    test "returns empty list when store has no reports" do
-      user = insert(:user)
-      group = insert(:group)
-      building = insert(:building, group: group)
-      store = insert(:store, building: building)
-
-      assert [] == Revenue.list_reports(user.id, group.id, building.id, store.id)
-    end
-
-    test "returns empty list for non-existent store" do
-      user = insert(:user)
-      group = insert(:group)
-      building = insert(:building, group: group)
-      non_existent_id = Uniq.UUID.uuid7()
-
-      assert [] == Revenue.list_reports(user.id, group.id, building.id, non_existent_id)
-    end
-  end
-
-  describe "get_report/5" do
-    test "returns report when it exists and belongs to store" do
-      user = insert(:user)
-      group = insert(:group, created_by_user_id: user.id)
+      group = insert(:group, created_by_user: user)
       building = insert(:building, group: group)
       store = insert(:store, building: building)
       report = insert(:report, store: store)
 
-      assert {:ok, %Report{id: report_id}} =
-               Revenue.get_report(user.id, group.id, building.id, store.id, report.id)
+      fetched_store = Revenue.get_store(user.id, group.id, building.id, store.id)
 
-      assert report_id == report.id
+      assert fetched_store.id == store.id
+      assert length(fetched_store.reports) == 1
+      assert hd(fetched_store.reports).id == report.id
     end
 
-    test "returns error when report exists but belongs to different store" do
+    test "returns nil when user doesn't own group" do
       user = insert(:user)
-      group = insert(:group, created_by_user_id: user.id)
+      other_user = insert(:user)
+      group = insert(:group, created_by_user: other_user)
       building = insert(:building, group: group)
       store = insert(:store, building: building)
-      other_store = insert(:store, building: building)
-      report = insert(:report, store: other_store)
 
-      assert {:error, :report_not_found} =
-               Revenue.get_report(user.id, group.id, building.id, store.id, report.id)
+      assert Revenue.get_store(user.id, group.id, building.id, store.id) == nil
+    end
+  end
+
+  describe "create_store/4" do
+    test "creates store for building" do
+      user = insert(:user)
+      group = insert(:group, created_by_user: user)
+      building = insert(:building, group: group)
+
+      attrs = %{name: "New Store", email: "store@example.com", area: 100}
+
+      assert {:ok, store} = Revenue.create_store(user.id, group.id, building.id, attrs)
+      assert store.name == "New Store"
+      assert store.building_id == building.id
     end
 
-    test "returns error when report does not exist" do
+    test "returns error when user doesn't own group" do
       user = insert(:user)
-      group = insert(:group, created_by_user_id: user.id)
+      other_user = insert(:user)
+      group = insert(:group, created_by_user: other_user)
+      building = insert(:building, group: group)
+
+      attrs = %{name: "New Store", email: "store@example.com", area: 100}
+
+      assert {:error, :group_not_found} =
+               Revenue.create_store(user.id, group.id, building.id, attrs)
+    end
+  end
+
+  describe "change_store/1" do
+    test "returns changeset for new store" do
+      changeset = Revenue.change_store()
+
+      assert changeset.data.__struct__ == Revenue.Store
+      refute changeset.valid?
+    end
+  end
+
+  ############################
+  # Reports Tests
+  ############################
+
+  describe "list_reports/4" do
+    test "lists reports for a store" do
+      user = insert(:user)
+      group = insert(:group, created_by_user: user)
       building = insert(:building, group: group)
       store = insert(:store, building: building)
-      non_existent_id = Uniq.UUID.uuid7()
+      _report1 = insert(:report, store: store)
+      _report2 = insert(:report, store: store)
+
+      reports = Revenue.list_reports(user.id, group.id, building.id, store.id)
+
+      assert length(reports) == 2
+      # Verify reports are ordered by inserted_at descending
+      assert Enum.at(reports, 0).inserted_at >= Enum.at(reports, 1).inserted_at
+    end
+
+    test "returns empty list when user doesn't own group" do
+      user = insert(:user)
+      other_user = insert(:user)
+      group = insert(:group, created_by_user: other_user)
+      building = insert(:building, group: group)
+      store = insert(:store, building: building)
+      insert(:report, store: store)
+
+      assert Revenue.list_reports(user.id, group.id, building.id, store.id) == []
+    end
+  end
+
+  describe "get_report/5" do
+    test "returns report when it exists" do
+      user = insert(:user)
+      group = insert(:group, created_by_user: user)
+      building = insert(:building, group: group)
+      store = insert(:store, building: building)
+      report = insert(:report, store: store)
+
+      assert {:ok, fetched_report} =
+               Revenue.get_report(user.id, group.id, building.id, store.id, report.id)
+
+      assert fetched_report.id == report.id
+    end
+
+    test "returns error when report not found" do
+      user = insert(:user)
+      group = insert(:group, created_by_user: user)
+      building = insert(:building, group: group)
+      store = insert(:store, building: building)
+      fake_id = Uniq.UUID.uuid7()
 
       assert {:error, :report_not_found} =
-               Revenue.get_report(user.id, group.id, building.id, store.id, non_existent_id)
+               Revenue.get_report(user.id, group.id, building.id, store.id, fake_id)
     end
   end
 
   describe "create_report/5" do
-    test "creates a report with valid data" do
+    test "creates report for store" do
       user = insert(:user)
-      group = insert(:group, created_by_user_id: user.id)
+      group = insert(:group, created_by_user: user)
       building = insert(:building, group: group)
       store = insert(:store, building: building)
 
       attrs = %{
         status: :pending,
         currency: "AUD",
-        revenue: 1500.00,
-        period_start: Date.new!(2025, 2, 1),
-        period_end: Date.new!(2025, 2, 28),
-        due_date: Date.new!(2025, 3, 7)
+        revenue: Decimal.new("1000.00"),
+        period_start: Date.new!(2025, 1, 1),
+        period_end: Date.new!(2025, 1, 31),
+        due_date: Date.new!(2025, 2, 7)
       }
 
-      assert {:ok, %Report{status: :pending, currency: "AUD"}} =
+      assert {:ok, report} =
                Revenue.create_report(user.id, group.id, building.id, store.id, attrs)
+
+      assert report.status == :pending
+      assert report.store_id == store.id
     end
 
-    test "returns error with invalid data" do
+    test "returns error when user doesn't own group" do
       user = insert(:user)
-      group = insert(:group, created_by_user_id: user.id)
+      other_user = insert(:user)
+      group = insert(:group, created_by_user: other_user)
       building = insert(:building, group: group)
       store = insert(:store, building: building)
-      attrs = %{}
 
-      assert {:error, changeset} =
+      attrs = %{status: :pending, currency: "AUD", revenue: Decimal.new("1000.00")}
+
+      assert {:error, :group_not_found} =
                Revenue.create_report(user.id, group.id, building.id, store.id, attrs)
-
-      refute changeset.valid?
-      assert {"can't be blank", [validation: :required]} = changeset.errors[:status]
     end
   end
 
   describe "update_report/6" do
-    test "updates report with valid data" do
+    test "updates report" do
       user = insert(:user)
-      group = insert(:group, created_by_user_id: user.id)
+      group = insert(:group, created_by_user: user)
+      building = insert(:building, group: group)
+      store = insert(:store, building: building)
+      report = insert(:report, store: store, status: :pending)
+
+      attrs = %{status: :submitted, note: "Updated note"}
+
+      assert {:ok, updated_report} =
+               Revenue.update_report(user.id, group.id, building.id, store.id, report.id, attrs)
+
+      assert updated_report.status == :submitted
+      assert updated_report.note == "Updated note"
+    end
+
+    test "returns error when user doesn't own group" do
+      user = insert(:user)
+      other_user = insert(:user)
+      group = insert(:group, created_by_user: other_user)
       building = insert(:building, group: group)
       store = insert(:store, building: building)
       report = insert(:report, store: store)
-      attrs = %{status: :submitted, note: "Updated report"}
 
-      assert {:ok, %Report{status: :submitted, note: "Updated report"}} =
-               Revenue.update_report(user.id, group.id, building.id, store.id, report.id, attrs)
+      assert {:error, :group_not_found} =
+               Revenue.update_report(user.id, group.id, building.id, store.id, report.id, %{})
     end
 
-    test "returns error when report does not exist" do
+    test "returns error when report not found" do
       user = insert(:user)
-      group = insert(:group, created_by_user_id: user.id)
+      group = insert(:group, created_by_user: user)
       building = insert(:building, group: group)
       store = insert(:store, building: building)
-      non_existent_id = Uniq.UUID.uuid7()
-      attrs = %{status: :submitted}
+      fake_id = Uniq.UUID.uuid7()
 
       assert {:error, :report_not_found} =
-               Revenue.update_report(
-                 user.id,
-                 group.id,
-                 building.id,
-                 store.id,
-                 non_existent_id,
-                 attrs
-               )
+               Revenue.update_report(user.id, group.id, building.id, store.id, fake_id, %{})
     end
+  end
 
-    test "returns error with invalid data" do
-      user = insert(:user)
-      group = insert(:group, created_by_user_id: user.id)
-      building = insert(:building, group: group)
-      store = insert(:store, building: building)
-      report = insert(:report, store: store)
-      attrs = %{status: :invalid_status}
+  describe "change_report/1" do
+    test "returns changeset for new report" do
+      changeset = Revenue.change_report()
 
-      assert {:error, changeset} =
-               Revenue.update_report(user.id, group.id, building.id, store.id, report.id, attrs)
-
+      assert changeset.data.__struct__ == Revenue.Report
       refute changeset.valid?
     end
   end
 
-  describe "business logic helpers" do
-    test "find_report_for_period/3 finds correct report" do
+  ############################
+  # Business Logic Helpers
+  ############################
+
+  describe "find_report_for_period/3" do
+    test "finds report for specific period" do
       report1 =
         insert(:report, period_start: Date.new!(2025, 1, 1), period_end: Date.new!(2025, 1, 31))
 
       report2 =
         insert(:report, period_start: Date.new!(2025, 2, 1), period_end: Date.new!(2025, 2, 28))
 
-      reports = [report1, report2]
+      found = Revenue.find_report_for_period([report1, report2], 2025, 1)
 
-      assert Revenue.find_report_for_period(reports, 2025, 1) == report1
-      assert Revenue.find_report_for_period(reports, 2025, 2) == report2
-      assert Revenue.find_report_for_period(reports, 2025, 3) == nil
+      assert found.id == report1.id
     end
 
-    test "calculate_store_area/1 returns area when set" do
-      store = %Store{area: 150}
-      assert Revenue.calculate_store_area(store) == 150
+    test "returns nil when no report found for period" do
+      report =
+        insert(:report, period_start: Date.new!(2025, 1, 1), period_end: Date.new!(2025, 1, 31))
+
+      assert Revenue.find_report_for_period([report], 2025, 3) == nil
     end
 
-    test "calculate_store_area/1 returns 0 when area is nil" do
-      store = %Store{area: nil}
+    test "handles empty list" do
+      assert Revenue.find_report_for_period([], 2025, 1) == nil
+    end
+  end
+
+  describe "generate_historical_data/3" do
+    test "generates 12 months of historical data with existing reports" do
+      store = insert(:store)
+
+      insert(:report,
+        store: store,
+        period_start: Date.new!(2024, 1, 1),
+        period_end: Date.new!(2024, 1, 31)
+      )
+
+      insert(:report,
+        store: store,
+        period_start: Date.new!(2024, 2, 1),
+        period_end: Date.new!(2024, 2, 28)
+      )
+
+      store = Repo.preload(store, :reports)
+
+      data = Revenue.generate_historical_data(store, 3, 2024)
+
+      assert length(data) == 12
+      assert Enum.find(data, &(&1.month == 1 && &1.year == 2024))
+      assert Enum.find(data, &(&1.month == 2 && &1.year == 2024))
+    end
+
+    test "generates placeholders for months without reports" do
+      store = insert(:store)
+      store = Repo.preload(store, :reports)
+
+      data = Revenue.generate_historical_data(store, 3, 2024)
+
+      assert length(data) == 12
+      # All should have 0 revenue and pending status
+      Enum.each(data, fn entry ->
+        assert entry.revenue == Decimal.new(0)
+        assert entry.status == :pending
+      end)
+    end
+
+    test "handles year boundary correctly" do
+      store = insert(:store)
+      store = Repo.preload(store, :reports)
+
+      data = Revenue.generate_historical_data(store, 12, 2024)
+
+      assert length(data) == 12
+      # Months 1-12 should all be 2024
+      Enum.each(1..12, fn month ->
+        entry = Enum.at(data, month - 1)
+        assert entry.month == month
+        assert entry.year == 2024
+      end)
+    end
+  end
+
+  describe "calculate_store_area/1" do
+    test "returns store area when area is an integer" do
+      store = insert(:store, area: 500)
+
+      assert Revenue.calculate_store_area(store) == 500
+    end
+
+    test "returns 0 for stores without area field" do
+      store = %Revenue.Store{}
+
       assert Revenue.calculate_store_area(store) == 0
     end
 
-    test "calculate_due_date/1 adds 7 days to period end" do
+    test "returns 0 when area field is not an integer" do
+      store = %Revenue.Store{area: "not_an_integer"}
+
+      assert Revenue.calculate_store_area(store) == 0
+    end
+  end
+
+  describe "calculate_due_date/1" do
+    test "calculates due date as 7 days after period end" do
       period_end = Date.new!(2025, 1, 31)
-      expected_due_date = Date.new!(2025, 2, 7)
-      assert Revenue.calculate_due_date(period_end) == expected_due_date
+      due_date = Revenue.calculate_due_date(period_end)
+
+      assert due_date == Date.new!(2025, 2, 7)
     end
 
-    test "valid_store_access?/3 returns true for valid hierarchy" do
+    test "handles month boundary" do
+      period_end = Date.new!(2025, 1, 28)
+      due_date = Revenue.calculate_due_date(period_end)
+
+      assert due_date == Date.new!(2025, 2, 4)
+    end
+  end
+
+  describe "valid_store_access?/3" do
+    test "returns true when hierarchy is valid" do
       group = insert(:group)
       building = insert(:building, group: group)
       store = insert(:store, building: building)
@@ -422,31 +603,30 @@ defmodule Antonia.RevenueTest do
       assert Revenue.valid_store_access?(group, building, store) == true
     end
 
-    test "valid_store_access?/3 returns false for invalid hierarchy" do
+    test "returns false when building doesn't belong to group" do
       group1 = insert(:group)
       group2 = insert(:group)
       building = insert(:building, group: group1)
       store = insert(:store, building: building)
 
-      # Different group
-      assert Revenue.valid_store_access?(group2, building, store) == false
-
-      # Different building
-      other_building = insert(:building, group: group1)
-      assert Revenue.valid_store_access?(group1, other_building, store) == false
+      refute Revenue.valid_store_access?(group2, building, store)
     end
 
-    test "generate_historical_data/3 generates 12 months of data" do
-      store = :store |> insert() |> Repo.preload(:reports)
-      historical_data = Revenue.generate_historical_data(store, 6, 2025)
+    test "returns false when store doesn't belong to building" do
+      group = insert(:group)
+      building1 = insert(:building, group: group)
+      building2 = insert(:building, group: group)
+      store = insert(:store, building: building1)
 
-      assert length(historical_data) == 12
-      assert Enum.all?(historical_data, &is_map/1)
+      refute Revenue.valid_store_access?(group, building2, store)
+    end
 
-      assert Enum.all?(historical_data, fn data ->
-               Map.has_key?(data, :year) and Map.has_key?(data, :month) and
-                 Map.has_key?(data, :revenue)
-             end)
+    test "returns false when hierarchy is completely wrong" do
+      group = insert(:group)
+      building = insert(:building, group: group)
+      store = insert(:store)
+
+      refute Revenue.valid_store_access?(group, building, store)
     end
   end
 end

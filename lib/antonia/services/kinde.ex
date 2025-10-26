@@ -3,6 +3,8 @@ defmodule Antonia.Services.Kinde do
   Kinde API client
   """
 
+  alias Antonia.Services.Kinde.CreateOrganisation
+  alias Antonia.Services.Kinde.Portal
   alias Antonia.Services.Kinde.TokenRefresh
 
   @doc "Kinde configuration."
@@ -13,20 +15,14 @@ defmodule Antonia.Services.Kinde do
 
   @doc "Generate a portal link for the given sub_nav."
   @spec generate_portal_link(String.t(), keyword()) :: {:ok, String.t()} | {:error, atom()}
-  def generate_portal_link(_access_token, opts \\ []) do
-    domain = config()[:domain]
-    sub_nav = Keyword.get(opts, :sub_nav, "profile")
-
-    portal_url = "#{domain}/portal/#{sub_nav}"
-
-    {:ok, portal_url}
+  def generate_portal_link(access_token, opts \\ []) do
+    Portal.generate_link(access_token, opts)
   end
 
-  @doc "Get logout URL for Kinde."
-  @spec get_logout_url() :: String.t()
-  def get_logout_url do
-    domain = config()[:domain]
-    "#{domain}/logout"
+  @doc "Create a new organisation."
+  @spec create_organisation(String.t(), map()) :: {:ok, String.t()} | {:error, atom()}
+  def create_organisation(access_token, organisation_params) do
+    CreateOrganisation.create_organisation(access_token, organisation_params)
   end
 
   @doc "Maybe refresh an Auth struct if needed."

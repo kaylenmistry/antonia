@@ -95,6 +95,7 @@ defmodule Antonia.MixProject do
       {:uniq, "~> 0.1"},
       {:number, "~> 1.0.1"},
       # Dev and test dependencies
+      {:bypass, "~> 2.1", only: :test},
       {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.1", only: :dev, runtime: false},
       {:doctor, "~> 0.22.0", only: :dev, runtime: false},
