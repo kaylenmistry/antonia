@@ -17,7 +17,6 @@ defmodule AntoniaApp do
       Antonia.Repo,
       {Phoenix.PubSub, name: Antonia.PubSub},
       {Oban, Application.fetch_env!(:antonia, Oban)},
-      Antonia.Scheduler,
       {Finch, name: Antonia.Finch},
       AntoniaWeb.Endpoint,
       AntoniaWeb.O11Y.Endpoint
