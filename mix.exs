@@ -76,7 +76,7 @@ defmodule Antonia.MixProject do
       {:logger_backends, "~> 1.0"},
       {:mjml, "~> 5.0"},
       {:oban, "~> 2.19"},
-      {:quantum, "~> 3.0"},
+      {:oban_web, "~> 2.11"},
       {:phoenix_ecto, "~> 4.5"},
       {:phoenix_html, "~> 4.1"},
       {:phoenix_live_dashboard, "~> 0.8.3"},

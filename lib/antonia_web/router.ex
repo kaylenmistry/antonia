@@ -61,6 +61,15 @@ defmodule AntoniaWeb.Router do
     live "/groups/:id/buildings/:building_id/stores/:store_id", StoreLive
   end
 
+  # Admin routes (authenticated users only)
+  scope "/admin", AntoniaWeb do
+    pipe_through [:browser, RequireAuthenticatedUser]
+
+    import Oban.Web.Router
+
+    oban_dashboard("/oban")
+  end
+
   # Enable LiveDashboard and Swoosh mailbox preview in development
   if Application.compile_env(:antonia, :dev_routes) do
     # If you want to use the LiveDashboard in production, you should put

@@ -34,10 +34,10 @@ config :phoenix, :plug_init_mode, :runtime
 config :phoenix_live_view,
   enable_expensive_runtime_checks: true
 
-config :antonia, Oban, testing: :manual
-
-# Disable scheduler in test environment
-config :antonia, Antonia.Scheduler, jobs: []
+config :antonia, Oban,
+  testing: :manual,
+  # Disable cron plugin in test environment
+  plugins: false
 
 # Use Finch adapter for Kinde modules to allow testing with Bypass
 for module <- [
