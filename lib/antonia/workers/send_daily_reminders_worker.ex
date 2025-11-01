@@ -7,23 +7,13 @@ defmodule Antonia.Workers.SendDailyRemindersWorker do
 
   use Oban.Worker, queue: :default
 
-  require Logger
-
   alias Antonia.Revenue.ReportService
   alias Antonia.Workers.WorkerHelpers
 
   @impl Oban.Worker
   def perform(_job) do
-    case WorkerHelpers.timed("send_daily_reminders", fn ->
-           ReportService.send_daily_reminders()
-         end) do
-      {:ok, count} ->
-        Logger.info("Successfully scheduled #{count} overdue reminder emails")
-        :ok
-
-      {:error, reason} ->
-        Logger.error("Failed to send daily reminders: #{inspect(reason)}")
-        {:error, reason}
-    end
+    WorkerHelpers.timed("send_daily_reminders", fn ->
+      ReportService.send_daily_reminders()
+    end)
   end
 end
