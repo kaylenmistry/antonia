@@ -96,18 +96,19 @@ config :tesla, :adapter, {Tesla.Adapter.Finch, name: Antonia.Finch, request_time
 config :antonia, Oban,
   engine: Oban.Engines.Basic,
   notifier: Oban.Notifiers.Postgres,
-  queues: [mailers: 20],
-  repo: Antonia.Repo
-
-# Configure Quantum scheduler
-config :antonia, Antonia.Scheduler,
-  jobs: [
-    # # Create monthly reports on 1st of each month at 8 AM
-    # {"0 8 1 * *", {Antonia.Revenue.ReportService, :create_monthly_reports, []}},
-    # # Send initial monthly reminders on 1st of each month at 9 AM
-    # {"0 9 1 * *", {Antonia.Revenue.ReportService, :send_initial_reminders, []}},
-    # # Check for follow-up reminders daily at 10 AM
-    # {"0 10 * * *", {Antonia.Revenue.ReportService, :send_daily_reminders, []}}
+  queues: [mailers: 20, default: 10],
+  repo: Antonia.Repo,
+  plugins: [
+    # Cron plugin for scheduled jobs
+    {Oban.Plugins.Cron,
+     crontab: [
+       # Create monthly reports on 1st of each month at 8 AM
+       {"0 8 1 * *", Antonia.Workers.CreateMonthlyReportsWorker},
+       # Send initial monthly reminders on 1st of each month at 9 AM
+       {"0 9 1 * *", Antonia.Workers.SendInitialRemindersWorker},
+       # Check for follow-up reminders daily at 10 AM
+       {"0 10 * * *", Antonia.Workers.SendDailyRemindersWorker}
+     ]}
   ]
 
 config :logger, level: :info

@@ -14,27 +14,30 @@ defmodule Antonia.MailerWorker do
 
   alias Antonia.Mailer.Notifier
   alias Antonia.Revenue.Report
+  alias Antonia.Workers.WorkerHelpers
 
   alias Antonia.Repo
 
   @impl Oban.Worker
   def perform(%Oban.Job{args: %{"report_id" => report_id, "email_type" => email_type}}) do
-    Logger.info("Processing #{email_type} email for report #{report_id}")
+    WorkerHelpers.timed("send_email", [report_id: report_id, email_type: email_type], fn ->
+      with {:ok, report} <- get_report_with_store(report_id),
+           {:ok, _email} <- send_email(email_type, report.store, report) do
+        :ok
+      else
+        error ->
+          Logger.error(
+            "operation=send_email message=error_sending_email report_id=#{report_id} email_type=#{email_type} error=#{inspect(error)}"
+          )
 
-    with {:ok, report} <- get_report_with_store(report_id),
-         {:ok, _email} <- send_email(email_type, report.store, report) do
-      Logger.info("Email sent successfully for report #{report_id}")
-      :ok
-    else
-      error ->
-        Logger.error("Failed to send email for report #{report_id}: #{inspect(error)}")
-        {:error, error}
-    end
+          {:error, error}
+      end
+    end)
   end
 
   @impl Oban.Worker
   def perform(%Oban.Job{args: args}) do
-    Logger.error("Unknown job type: #{inspect(args)}")
+    Logger.error("operation=send_email message=unknown_job_type args=#{inspect(args)}")
     {:error, :unknown_job_type}
   end
 
