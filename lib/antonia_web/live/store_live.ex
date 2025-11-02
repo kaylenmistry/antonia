@@ -4,6 +4,8 @@ defmodule AntoniaWeb.StoreLive do
   """
   use AntoniaWeb, :live_view
 
+  import AntoniaWeb.SharedComponents
+
   alias Antonia.Repo
   alias Antonia.Revenue
   alias Antonia.Revenue.Report
@@ -44,6 +46,16 @@ defmodule AntoniaWeb.StoreLive do
   def handle_info({:fetch_store_data, user_id, group_id, building_id, store_id, params}, socket) do
     case load_store_data(user_id, group_id, building_id, store_id, params) do
       {:ok, data} ->
+        # Set initial edited_revenue and note from current_report if it exists
+        edited_revenue =
+          if data.current_report && data.current_report.revenue do
+            Decimal.to_float(data.current_report.revenue)
+          else
+            0
+          end
+
+        note = (data.current_report && data.current_report.note) || ""
+
         {:noreply,
          assign(socket,
            group: data.group,
@@ -53,6 +65,8 @@ defmodule AntoniaWeb.StoreLive do
            month: data.month,
            current_report: data.current_report,
            historical_data: data.historical_data,
+           edited_revenue: edited_revenue,
+           note: note,
            loading?: false
          )}
 
@@ -69,7 +83,7 @@ defmodule AntoniaWeb.StoreLive do
       current_report =
         Revenue.find_report_for_period(store.reports, year_month.year, year_month.month)
 
-      historical_data = generate_historical_data(store, year_month.month, year_month.year)
+      historical_data = Revenue.generate_historical_data(store, year_month.month, year_month.year)
       area = Revenue.calculate_store_area(store)
       store_with_area = Map.put(store, :area, area)
 
@@ -81,7 +95,12 @@ defmodule AntoniaWeb.StoreLive do
          year: year_month.year,
          month: year_month.month,
          current_report: current_report,
-         historical_data: historical_data
+         historical_data:
+           format_historical_data_for_template(
+             historical_data,
+             year_month.month,
+             year_month.year
+           )
        }}
     else
       {:error, reason} -> {:error, reason}
@@ -138,14 +157,6 @@ defmodule AntoniaWeb.StoreLive do
   end
 
   @impl Phoenix.LiveView
-  def handle_event("back_to_building", _params, socket) do
-    {:noreply,
-     push_navigate(socket,
-       to: ~p"/app/groups/#{socket.assigns.group.id}/buildings/#{socket.assigns.building.id}"
-     )}
-  end
-
-  @impl Phoenix.LiveView
   def handle_event("start_editing", _params, socket) do
     {:noreply, assign(socket, :is_editing, true)}
   end
@@ -192,52 +203,27 @@ defmodule AntoniaWeb.StoreLive do
       year: year,
       month: month,
       edited_revenue: revenue,
-      note: note,
-      current_report: current_report
+      note: note
     } = socket.assigns
 
-    # Create period dates
-    period_start = Date.new!(year, month, 1)
-    period_end = Date.end_of_month(period_start)
-
-    report_params = %{
-      store_id: store.id,
-      revenue: Decimal.new(revenue),
-      period_start: period_start,
-      period_end: period_end,
-      currency: "EUR",
-      status: :submitted,
-      note: note
-    }
-
-    result =
-      if current_report do
-        # Update existing report
-        current_report
-        |> Report.changeset(report_params)
-        |> Repo.update()
-      else
-        # Create new report
-        %Report{}
-        |> Report.changeset(report_params)
-        |> Repo.insert()
-      end
-
-    case result do
+    case upsert_report_for_period(store, year, month, revenue, note) do
       {:ok, updated_report} ->
         # Reload store with updated reports
         store = Repo.get(Store, store.id)
         store = Repo.preload(store, [:reports])
         # Re-add the area field
-        area = calculate_store_area(store)
+        area = Revenue.calculate_store_area(store)
         store_with_area = Map.put(store, :area, area)
-        historical_data = generate_historical_data(store_with_area, month, year)
+        historical_data = Revenue.generate_historical_data(store_with_area, month, year)
 
         socket =
           socket
           |> assign(:store, store_with_area)
           |> assign(:current_report, updated_report)
-          |> assign(:historical_data, historical_data)
+          |> assign(
+            :historical_data,
+            format_historical_data_for_template(historical_data, month, year)
+          )
           |> assign(:is_editing, false)
           |> assign(:selected_file, nil)
           |> put_flash(:info, gettext("Revenue updated successfully"))
@@ -251,81 +237,106 @@ defmodule AntoniaWeb.StoreLive do
 
   # Private helper functions
 
+  defp upsert_report_for_period(store, year, month, revenue, note) do
+    period_start = Date.new!(year, month, 1)
+    period_end = Date.end_of_month(period_start)
+
+    # Check if report exists for this period
+    existing_report =
+      Revenue.find_report_for_period(store.reports, year, month)
+
+    report_params = %{
+      store_id: store.id,
+      revenue: Decimal.new(revenue),
+      period_start: period_start,
+      period_end: period_end,
+      currency: "AUD",
+      status: :pending,
+      note: note
+    }
+
+    if existing_report do
+      # Update existing report
+      existing_report
+      |> Report.changeset(report_params)
+      |> Repo.update()
+    else
+      # Create new report
+      %Report{}
+      |> Report.changeset(report_params)
+      |> Repo.insert()
+    end
+  end
+
   defp find_report_for_period(reports, year, month) do
     Enum.find(reports, fn report ->
       report.period_start.year == year and report.period_start.month == month
     end)
   end
 
-  defp generate_historical_data(store, month, year) do
+  defp format_historical_data_for_template(historical_data, selected_month, selected_year) do
+    # Convert context module's historical data format to template format
+    # Group by year and get data for the selected month across different years
     current_year = Date.utc_today().year
     years = [current_year, current_year - 1, current_year - 2]
 
     historical_data =
-      Enum.map(years, fn hist_year ->
-        if hist_year == year do
-          build_current_year_data(store, hist_year, month)
-        else
-          build_mock_historical_data(store, hist_year, month, current_year)
-        end
+      Enum.map(years, fn year ->
+        # Find data for this year and selected month
+        month_data =
+          Enum.find(historical_data, fn data ->
+            data.year == year && data.month == selected_month
+          end)
+
+        revenue =
+          if month_data && month_data.revenue do
+            Decimal.to_float(month_data.revenue)
+          else
+            0
+          end
+
+        %{year: year, revenue: revenue, is_current: year == selected_year}
       end)
 
     Enum.sort_by(historical_data, & &1.year, :desc)
   end
 
-  defp build_current_year_data(store, hist_year, month) do
-    report = find_report_for_period(store.reports, hist_year, month)
-    revenue = if report && report.revenue, do: Decimal.to_float(report.revenue), else: 0
-    %{year: hist_year, revenue: revenue, is_current: true}
-  end
-
-  defp build_mock_historical_data(store, hist_year, month, current_year) do
-    base_revenue = (store.area || 100) * 50
-    variations = [0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 0.7, 0.85, 1.15, 0.95, 1.05, 1.25]
-    variation = Enum.at(variations, month - 1, 1.0)
-    seasonal_multiplier = if month >= 11 or month <= 2, do: 1.3, else: 1.0
-    year_growth = calculate_year_growth(hist_year, current_year)
-
-    revenue = base_revenue * variation * seasonal_multiplier * year_growth
-    revenue = round(revenue)
-    %{year: hist_year, revenue: revenue, is_current: false}
-  end
-
-  defp calculate_year_growth(hist_year, current_year) do
-    case hist_year do
-      y when y == current_year - 1 -> 1.05
-      y when y == current_year -> 1.08
-      _ -> 1.0
-    end
-  end
-
-  defp calculate_store_area(store) do
-    # Use the actual area from the database, fallback to 100 if not set
-    store.area || 100
-  end
-
-  defp format_currency(amount) when is_number(amount) do
+  defp format_currency(amount, currency) when is_number(amount) do
+    currency = currency || "AUD"
     amount = :erlang.float_to_binary(amount * 1.0, decimals: 0)
     amount = String.replace(amount, ~r/\B(?=(\d{3})+(?!\d))/, ",")
-    "€#{amount}"
+
+    symbol =
+      case currency do
+        "EUR" -> "€"
+        "AUD" -> "A$"
+        "USD" -> "$"
+        _ -> currency
+      end
+
+    "#{symbol}#{amount}"
   end
 
-  defp format_currency(_), do: "€0"
+  defp format_currency(amount, _) when is_number(amount), do: format_currency(amount, "AUD")
+  defp format_currency(_, _), do: "A$0"
+
+  defp format_currency(amount) when is_number(amount), do: format_currency(amount, "AUD")
+  defp format_currency(_), do: "A$0"
 
   defp month_name(month) do
     month_names = [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
+      "January",
+      "February",
+      "March",
+      "April",
       "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec"
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December"
     ]
 
     Enum.at(month_names, month - 1, "Unknown")

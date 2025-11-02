@@ -4,6 +4,7 @@ defmodule AntoniaWeb.ReportingLive do
 
   import Ecto.Query
   import AntoniaWeb.FormHelpers, only: [format_params: 1]
+  import AntoniaWeb.SharedComponents
 
   alias Antonia.Repo
   alias Antonia.Revenue.Building
@@ -16,14 +17,13 @@ defmodule AntoniaWeb.ReportingLive do
     group = Repo.get(Group, group_id)
 
     if group do
-      buildings = load_buildings_with_stats(group_id)
-      dashboard_stats = calculate_group_stats(group_id)
+      send(self(), {:fetch_data, group_id})
 
       {:ok,
        socket
        |> assign(:group, group)
-       |> assign(:buildings, buildings)
-       |> assign(:dashboard_stats, dashboard_stats)
+       |> assign(:buildings, nil)
+       |> assign(:dashboard_stats, nil)
        |> assign(:form, to_form(Building.changeset(%Building{}, %{group_id: group_id})))
        |> assign(:user, auth.info)}
     else
@@ -32,6 +32,17 @@ defmodule AntoniaWeb.ReportingLive do
        |> put_flash(:error, gettext("Group not found"))
        |> push_navigate(to: ~p"/app")}
     end
+  end
+
+  @impl Phoenix.LiveView
+  def handle_info({:fetch_data, group_id}, socket) do
+    buildings = load_buildings_with_stats(group_id)
+    dashboard_stats = calculate_group_stats(group_id)
+
+    {:noreply,
+     socket
+     |> assign(:buildings, buildings)
+     |> assign(:dashboard_stats, dashboard_stats)}
   end
 
   @impl Phoenix.LiveView
@@ -49,13 +60,12 @@ defmodule AntoniaWeb.ReportingLive do
          |> Building.changeset(formatted_params)
          |> Repo.insert() do
       {:ok, building} ->
-        # Reload buildings to include the new one
-        buildings = load_buildings_with_stats(socket.assigns.group.id)
+        # Reload buildings and stats to include the new one
+        send(self(), {:fetch_data, socket.assigns.group.id})
 
         socket =
           socket
           |> put_flash(:info, gettext("Created building") <> " '" <> building.name <> "'")
-          |> assign(:buildings, buildings)
           |> assign(
             :form,
             to_form(Building.changeset(%Building{}, %{group_id: socket.assigns.group.id}))

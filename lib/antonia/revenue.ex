@@ -33,6 +33,83 @@ defmodule Antonia.Revenue do
     |> Repo.all()
   end
 
+  @doc """
+  Lists groups for a user with aggregated statistics.
+
+  Returns a list of groups, each enriched with a `:stats` map containing:
+  - `buildings_count`: Total number of buildings in the group
+  - `stores_count`: Total number of stores in the group
+  - `pending_reports_count`: Number of stores without a submitted/approved report for the current month
+
+  Groups are ordered alphabetically by name.
+
+  ## Examples
+
+      iex> Revenue.list_groups_with_stats(user_id)
+      [
+        %Group{
+          name: "My Group",
+          stats: %{
+            buildings_count: 2,
+            stores_count: 5,
+            pending_reports_count: 3
+          }
+        }
+      ]
+  """
+  @spec list_groups_with_stats(binary()) :: [map()]
+  def list_groups_with_stats(user_id) do
+    current_month = Date.beginning_of_month(Date.utc_today())
+    next_month = current_month |> Date.add(32) |> Date.beginning_of_month()
+
+    Group
+    |> where([g], g.created_by_user_id == ^user_id)
+    |> order_by([g], asc: g.name)
+    |> Repo.all()
+    |> Enum.map(fn group ->
+      stats = calculate_group_stats(group.id, current_month, next_month)
+      Map.put(group, :stats, stats)
+    end)
+  end
+
+  # Private helper to calculate stats for a single group
+  defp calculate_group_stats(group_id, current_month, next_month) do
+    buildings_count =
+      Building
+      |> where([b], b.group_id == ^group_id)
+      |> Repo.aggregate(:count, :id)
+
+    stores_count =
+      Store
+      |> join(:inner, [s], b in Building, on: s.building_id == b.id)
+      |> where([s, b], b.group_id == ^group_id)
+      |> Repo.aggregate(:count, :id)
+
+    # Count stores that have submitted/approved reports for current month
+    stores_query =
+      from(s in Store,
+        join: b in Building,
+        on: s.building_id == b.id,
+        join: r in Report,
+        on: r.store_id == s.id,
+        where:
+          b.group_id == ^group_id and r.period_start >= ^current_month and
+            r.period_start < ^next_month and r.status in [:submitted, :approved],
+        distinct: s.id
+      )
+
+    stores_with_reports_count = Repo.aggregate(stores_query, :count, :id)
+
+    # Pending = total stores - stores that have completed reports
+    pending_reports_count = max(0, stores_count - stores_with_reports_count)
+
+    %{
+      buildings_count: buildings_count,
+      stores_count: stores_count,
+      pending_reports_count: pending_reports_count
+    }
+  end
+
   @doc "Gets a group by user ID and group ID."
   @spec get_group(binary(), binary()) :: {:ok, Group.t()} | {:error, :group_not_found}
   def get_group(user_id, group_id) do
