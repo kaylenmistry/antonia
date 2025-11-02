@@ -34,32 +34,13 @@ defmodule Antonia.Revenue.ReportTest do
       assert Keyword.has_key?(changeset.errors, :store_id)
     end
 
-    test "validates revenue is greater than 0" do
+    test "validates revenue is greater than or equal to 0" do
       store = insert(:store)
 
       attrs = %{
         status: :pending,
         currency: "AUD",
         revenue: -100,
-        period_start: Date.new!(2025, 1, 1),
-        period_end: Date.new!(2025, 1, 31),
-        store_id: store.id,
-        due_date: Date.new!(2025, 2, 7)
-      }
-
-      changeset = Report.changeset(%Report{}, attrs)
-
-      refute changeset.valid?
-      assert Keyword.has_key?(changeset.errors, :revenue)
-    end
-
-    test "validates revenue is greater than 0 when zero" do
-      store = insert(:store)
-
-      attrs = %{
-        status: :pending,
-        currency: "AUD",
-        revenue: 0,
         period_start: Date.new!(2025, 1, 1),
         period_end: Date.new!(2025, 1, 31),
         store_id: store.id,

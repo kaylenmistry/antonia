@@ -80,6 +80,63 @@ defmodule AntoniaWeb.SharedComponents do
   end
 
   @doc """
+  A reusable breadcrumb navigation component.
+
+  ## Examples
+
+      <.breadcrumb items={[
+        %{label: "Groups", navigate: ~p"/app"},
+        %{label: "My Group", navigate: ~p"/app/groups/123"},
+        %{label: "Current Page", current: true}
+      ]} />
+
+  """
+  attr :items, :list,
+    required: true,
+    doc: "List of breadcrumb items with :label and optionally :navigate or :current"
+
+  def breadcrumb(assigns) do
+    ~H"""
+    <nav aria-label="Breadcrumb" class="flex">
+      <ol role="list" class="flex items-center space-x-4">
+        <!-- Home icon -->
+        <li>
+          <div>
+            <.link navigate={~p"/app"} class="text-gray-400 hover:text-gray-500">
+              <.icon name="hero-home" class="size-5 shrink-0" />
+              <span class="sr-only">{gettext("Home")}</span>
+            </.link>
+          </div>
+        </li>
+        <!-- Breadcrumb items -->
+        <%= for item <- @items do %>
+          <li>
+            <div class="flex items-center">
+              <.icon name="hero-chevron-right" class="size-5 shrink-0 text-gray-400" />
+              <%= if item[:current] do %>
+                <span
+                  aria-current="page"
+                  class="ml-4 text-sm font-medium text-gray-500"
+                >
+                  {item.label}
+                </span>
+              <% else %>
+                <.link
+                  navigate={item.navigate}
+                  class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700"
+                >
+                  {item.label}
+                </.link>
+              <% end %>
+            </div>
+          </li>
+        <% end %>
+      </ol>
+    </nav>
+    """
+  end
+
+  @doc """
   A reusable empty state component.
   """
   attr :icon, :string, required: true

@@ -71,11 +71,6 @@ defmodule AntoniaWeb.BuildingLive do
   end
 
   @impl Phoenix.LiveView
-  def handle_event("back_to_group", _params, socket) do
-    {:noreply, push_navigate(socket, to: ~p"/app/groups/#{socket.assigns.group.id}")}
-  end
-
-  @impl Phoenix.LiveView
   def handle_event("dialog_closed", _params, socket) do
     {:noreply,
      assign(

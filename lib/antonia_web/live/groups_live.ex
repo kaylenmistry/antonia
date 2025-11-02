@@ -18,14 +18,14 @@ defmodule AntoniaWeb.GroupsLive do
      assign(socket,
        user: auth.info,
        user_id: user_id,
-       groups: [],
+       groups: nil,
        form: to_form(Revenue.change_group())
      )}
   end
 
   @impl Phoenix.LiveView
   def handle_info({:fetch_groups, user_id}, socket) do
-    groups = Revenue.list_groups(user_id)
+    groups = Revenue.list_groups_with_stats(user_id)
     {:noreply, assign(socket, groups: groups)}
   end
 
@@ -33,10 +33,13 @@ defmodule AntoniaWeb.GroupsLive do
   def handle_event("create_group", %{"group" => group_params}, socket) do
     case Revenue.create_group(socket.assigns.user_id, format_params(group_params)) do
       {:ok, group} ->
+        # Reload all groups with stats to include the new one
+        groups = Revenue.list_groups_with_stats(socket.assigns.user_id)
+
         socket =
           socket
           |> put_flash(:info, gettext("Created group") <> " '" <> group.name <> "'")
-          |> assign(groups: [group | socket.assigns.groups])
+          |> assign(groups: groups)
           |> assign(form: to_form(Revenue.change_group()))
           |> push_event("close-dialog", %{id: "add-group-dialog"})
 

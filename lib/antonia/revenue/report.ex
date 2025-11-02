@@ -53,10 +53,10 @@ defmodule Antonia.Revenue.Report do
   def changeset(report, attrs) do
     report
     |> cast(attrs, @fields)
-    |> validate_required(@required_fields)
-    |> validate_number(:revenue, greater_than: 0)
-    |> validate_period_dates()
     |> maybe_set_due_date()
+    |> validate_required(@required_fields)
+    |> validate_number(:revenue, greater_than_or_equal_to: 0)
+    |> validate_period_dates()
     |> foreign_key_constraint(:store_id)
   end
 
@@ -71,6 +71,7 @@ defmodule Antonia.Revenue.Report do
     end
   end
 
+  @spec maybe_set_due_date(Ecto.Changeset.t()) :: Ecto.Changeset.t()
   defp maybe_set_due_date(changeset) do
     with nil <- get_field(changeset, :due_date),
          period_end when not is_nil(period_end) <- get_field(changeset, :period_end) do

@@ -1,4 +1,4 @@
-<div class="max-w-4xl mx-auto p-6">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
   <div class="flex justify-between items-center mb-8">
     <h1 class="text-3xl font-bold text-gray-900">{gettext("Groups")}</h1>
     <.form_dialog
@@ -19,26 +19,68 @@
     />
   </div>
 
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    <%= for group <- @groups do %>
-      <div class="cursor-pointer" phx-click="select_group" phx-value-id={group.id}>
-        <.entity_card
-          entity={group}
-          title={group.name}
-          subtitle={gettext("Click to view dashboard")}
-          stats={[
-            %{icon: "hero-cursor-arrow-rays", label: gettext("Click to manage"), value: ""}
-          ]}
-        />
+  <%= if is_nil(@groups) do %>
+    <!-- Loading State -->
+    <div class="flex items-center justify-center min-h-[400px]">
+      <div class="text-center">
+        <.icon name="hero-arrow-path" class="h-8 w-8 animate-spin text-blue-600 mx-auto mb-4" />
+        <p class="text-gray-600">{gettext("Loading groups...")}</p>
       </div>
-    <% end %>
-  </div>
+    </div>
+  <% else %>
+    <ul role="list" class="grid grid-cols-1 gap-x-6 gap-y-6 lg:grid-cols-3 xl:gap-x-8">
+      <%= for group <- @groups do %>
+        <li
+          class="overflow-hidden rounded-xl border border-gray-200 hover:shadow-lg transition-shadow cursor-pointer"
+          phx-click="select_group"
+          phx-value-id={group.id}
+        >
+          <div class="border-b border-gray-900/5 bg-gray-50 px-4 py-3">
+            <div class="text-sm font-medium text-gray-900">
+              {group.name}
+            </div>
+          </div>
+          <dl class="-my-2 divide-y divide-gray-100 px-4 py-3 text-sm/6">
+            <div class="flex justify-between gap-x-4 py-2">
+              <dt class="text-gray-500">{gettext("Buildings")}</dt>
+              <dd class="font-medium text-gray-900">
+                {group.stats.buildings_count}
+              </dd>
+            </div>
+            <div class="flex justify-between gap-x-4 py-2">
+              <dt class="text-gray-500">{gettext("Stores")}</dt>
+              <dd class="font-medium text-gray-900">
+                {group.stats.stores_count}
+              </dd>
+            </div>
+            <div class="flex justify-between gap-x-4 py-2">
+              <dt class="text-gray-500">{gettext("Pending Reports")}</dt>
+              <dd class="flex items-start gap-x-2">
+                <div class="font-medium text-gray-900">
+                  {group.stats.pending_reports_count}
+                </div>
+                <%= if group.stats.pending_reports_count > 0 do %>
+                  <div class="rounded-md bg-orange-50 px-2 py-1 text-xs font-medium text-orange-700 ring-1 ring-orange-600/20 ring-inset">
+                    {gettext("Pending")}
+                  </div>
+                <% else %>
+                  <div class="rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-green-600/20 ring-inset">
+                    {gettext("Complete")}
+                  </div>
+                <% end %>
+              </dd>
+            </div>
+          </dl>
+        </li>
+      <% end %>
+    </ul>
 
-  <%= if Enum.empty?(@groups) do %>
-    <.empty_state
-      icon="hero-building-office-2"
-      title={gettext("No groups yet")}
-      description={gettext("Create your first group to get started")}
-    />
+    <%= if Enum.empty?(@groups) do %>
+      <.empty_state
+        icon="hero-building-office-2"
+        title={gettext("No groups yet")}
+        description={gettext("Create your first group to get started")}
+      />
+    <% end %>
   <% end %>
 </div>

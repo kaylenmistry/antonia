@@ -54,10 +54,28 @@ const SafeSaladUIHook = {
   }
 };
 
+// AutoDismiss hook for flash messages
+const AutoDismiss = {
+  mounted() {
+    let timeout = this.el.dataset.timeout;
+    if (timeout) {
+      setTimeout(() => {
+        this.el.classList.add("fade-out");
+        setTimeout(() => {
+          this.pushEventTo(this.el, "lv:clear-flash", { key: this.el.dataset.kind });
+        }, 300);
+      }, parseInt(timeout));
+    }
+  }
+};
+
 let liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: { _csrf_token: csrfToken },
-  hooks: { SaladUI: SafeSaladUIHook }
+  hooks: { 
+    SaladUI: SafeSaladUIHook,
+    AutoDismiss: AutoDismiss
+  }
 })
 
 // Show progress bar on live navigation and form submits

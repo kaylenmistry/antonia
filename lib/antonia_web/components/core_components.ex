@@ -132,6 +132,7 @@ defmodule AntoniaWeb.CoreComponents do
           phx-click={JS.push("lv:clear-flash", value: %{key: @kind}) |> hide("##{@id}")}
           phx-hook="AutoDismiss"
           data-timeout={@timeout}
+          data-kind={@kind}
           role="alert"
           class="pointer-events-auto w-full max-w-sm overflow-hidden rounded-lg bg-white p-3 shadow-lg ring-1 ring-black ring-opacity-5 alert-card"
           {@rest}
