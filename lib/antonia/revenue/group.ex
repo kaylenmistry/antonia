@@ -8,13 +8,15 @@ defmodule Antonia.Revenue.Group do
 
   @fields [
     :name,
-    :created_by_user_id
+    :created_by_user_id,
+    :default_currency
   ]
 
   @required_fields [:name]
 
   typed_schema "groups" do
     field(:name, :string)
+    field(:default_currency, :string, default: "EUR")
 
     belongs_to(:created_by_user, Antonia.Accounts.User)
     has_many(:buildings, Building)
@@ -29,6 +31,14 @@ defmodule Antonia.Revenue.Group do
     |> cast(attrs, @fields)
     |> validate_required(@required_fields)
     |> validate_length(:name, min: 1, max: 255)
+    |> put_default_currency()
     |> foreign_key_constraint(:created_by_user_id)
+  end
+
+  defp put_default_currency(changeset) do
+    case get_field(changeset, :default_currency) do
+      nil -> put_change(changeset, :default_currency, "EUR")
+      _ -> changeset
+    end
   end
 end

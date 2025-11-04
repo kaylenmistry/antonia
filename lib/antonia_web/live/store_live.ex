@@ -57,7 +57,7 @@ defmodule AntoniaWeb.StoreLive do
 
         note = (data.current_report && data.current_report.note) || ""
 
-        timeline_events = generate_timeline_events(data.current_report)
+        timeline_events = Report.timeline_events(data.current_report)
 
         {:noreply,
          assign(socket,
@@ -90,7 +90,6 @@ defmodule AntoniaWeb.StoreLive do
       current_report =
         Revenue.find_report_for_period(store.reports, year_month.year, year_month.month)
 
-      historical_data = Revenue.generate_historical_data(store, year_month.month, year_month.year)
       area = Revenue.calculate_store_area(store)
       store_with_area = Map.put(store, :area, area)
 
@@ -104,7 +103,7 @@ defmodule AntoniaWeb.StoreLive do
          current_report: current_report,
          historical_data:
            format_historical_data_for_template(
-             historical_data,
+             store.reports,
              year_month.month,
              year_month.year
            )
@@ -129,10 +128,7 @@ defmodule AntoniaWeb.StoreLive do
   end
 
   defp get_store(user_id, group_id, building_id, store_id) do
-    case Revenue.get_store(user_id, group_id, building_id, store_id) do
-      nil -> {:error, :store_not_found}
-      store -> {:ok, store}
-    end
+    Revenue.get_store(user_id, group_id, building_id, store_id)
   end
 
   defp parse_year_month(params) do
@@ -204,135 +200,107 @@ defmodule AntoniaWeb.StoreLive do
   end
 
   @impl Phoenix.LiveView
-  def handle_event("save_revenue", _params, socket) do
-    %{
-      store: store,
-      year: year,
-      month: month,
-      edited_revenue: revenue,
-      note: note
-    } = socket.assigns
+  def handle_event("save_revenue", params, socket) do
+    attrs = prepare_revenue_attrs(params, socket.assigns)
 
-    case upsert_report_for_period(store, year, month, revenue, note) do
-      {:ok, _updated_report} ->
-        # Reload store with updated reports and email_logs
-        store = Repo.get(Store, store.id)
-        store = Repo.preload(store, reports: [:email_logs])
-        # Re-add the area field
-        area = Revenue.calculate_store_area(store)
-        store_with_area = Map.put(store, :area, area)
+    case save_revenue_upsert(socket.assigns, attrs) do
+      {:ok, _report} ->
+        socket = update_socket_after_save(socket, attrs.note)
+        {:noreply, put_flash(socket, :info, gettext("Revenue updated successfully"))}
 
-        # Find the updated report from the reloaded store to ensure we have fresh data
-        current_report = Revenue.find_report_for_period(store_with_area.reports, year, month)
-
-        historical_data = Revenue.generate_historical_data(store_with_area, month, year)
-
-        # Update edited_revenue to reflect the new value
-        updated_revenue =
-          if current_report && current_report.revenue do
-            Decimal.to_float(current_report.revenue)
-          else
-            0
-          end
-
-        timeline_events = generate_timeline_events(current_report)
-
-        socket =
-          socket
-          |> assign(:store, store_with_area)
-          |> assign(:current_report, current_report)
-          |> assign(:edited_revenue, updated_revenue)
-          |> assign(:note, note)
-          |> assign(:timeline_events, timeline_events)
-          |> assign(
-            :historical_data,
-            format_historical_data_for_template(historical_data, month, year)
-          )
-          |> assign(:is_editing, false)
-          |> assign(:selected_file, nil)
-          |> put_flash(:info, gettext("Revenue updated successfully"))
-
-        {:noreply, socket}
-
-      {:error, changeset} ->
+      {:error, changeset} when is_struct(changeset) ->
         error_message = build_error_message(changeset)
+        {:noreply, put_flash(socket, :error, error_message)}
+
+      {:error, reason} when is_atom(reason) ->
+        error_message = gettext("Failed to save revenue: %{reason}", reason: reason)
         {:noreply, put_flash(socket, :error, error_message)}
     end
   end
 
-  # Private helper functions
+  defp prepare_revenue_attrs(params, assigns) do
+    revenue_str = params["revenue"] || params[:revenue] || "0"
+    note = params["note"] || params[:note] || assigns.note || ""
 
-  defp upsert_report_for_period(store, year, month, revenue, note) do
-    period_start = Date.new!(year, month, 1)
-    period_end = Date.end_of_month(period_start)
-
-    # Check if report exists for this period
-    existing_report =
-      Revenue.find_report_for_period(store.reports, year, month)
-
-    # Convert float to Decimal - Decimal.new/1 works with strings or integers
-    # For floats, we convert to string first to avoid precision issues
-    revenue_decimal =
-      case revenue do
-        revenue when is_float(revenue) ->
-          # Convert float to string with sufficient precision, then to Decimal
-          revenue |> :erlang.float_to_binary(decimals: 2) |> Decimal.new()
-
-        revenue when is_integer(revenue) ->
-          Decimal.new(revenue)
-
-        revenue when is_binary(revenue) ->
-          Decimal.new(revenue)
-
-        %Decimal{} = revenue ->
-          revenue
-
-        _ ->
-          Decimal.new("0")
-      end
-
-    report_params = %{
-      store_id: store.id,
-      revenue: revenue_decimal,
-      period_start: period_start,
-      period_end: period_end,
-      currency: "AUD",
-      status: if(existing_report, do: existing_report.status, else: :pending),
-      note: note
+    %{
+      revenue: revenue_str,
+      note: note,
+      year: assigns.year,
+      month: assigns.month
     }
-
-    if existing_report do
-      # Update existing report - only update revenue and note, preserve status
-      existing_report
-      |> Report.changeset(report_params)
-      |> Repo.update()
-    else
-      # Create new report
-      %Report{}
-      |> Report.changeset(report_params)
-      |> Repo.insert()
-    end
   end
 
-  defp format_historical_data_for_template(historical_data, selected_month, selected_year) do
-    # Convert context module's historical data format to template format
+  defp save_revenue_upsert(assigns, attrs) do
+    existing_report =
+      Revenue.find_report_for_period(assigns.store.reports || [], attrs.year, attrs.month)
+
+    Revenue.upsert_report(
+      assigns.user_id,
+      assigns.group_id,
+      assigns.building_id,
+      assigns.store_id,
+      existing_report,
+      attrs
+    )
+  end
+
+  defp update_socket_after_save(socket, note) do
+    %{store_id: store_id, year: year, month: month} = socket.assigns
+
+    store = reload_store_with_associations(store_id)
+    current_report = Revenue.find_report_for_period(store.reports, year, month)
+
+    socket
+    |> assign(:store, store)
+    |> assign(:current_report, current_report)
+    |> assign(:edited_revenue, extract_revenue_float(current_report))
+    |> assign(:note, note || "")
+    |> assign(:timeline_events, Report.timeline_events(current_report))
+    |> assign(
+      :historical_data,
+      format_historical_data_for_template(
+        store.reports,
+        month,
+        year
+      )
+    )
+    |> assign(:is_editing, false)
+    |> assign(:selected_file, nil)
+  end
+
+  defp reload_store_with_associations(store_id) do
+    Store
+    |> Repo.get(store_id)
+    |> Repo.preload(reports: [:email_logs])
+    |> add_area_field()
+  end
+
+  defp add_area_field(store) do
+    area = Revenue.calculate_store_area(store)
+    Map.put(store, :area, area)
+  end
+
+  defp extract_revenue_float(nil), do: 0.0
+  defp extract_revenue_float(report), do: Decimal.to_float(report.revenue || Decimal.new("0"))
+
+  # Private helper functions
+
+  defp format_historical_data_for_template(reports, selected_month, selected_year) do
+    # Convert reports to template format
     # Group by year and get data for the selected month across different years
     current_year = Date.utc_today().year
     years = [current_year, current_year - 1, current_year - 2]
 
     historical_data =
       Enum.map(years, fn year ->
-        # Find data for this year and selected month
-        month_data =
-          Enum.find(historical_data, fn data ->
-            data.year == year && data.month == selected_month
-          end)
+        # Find report for this year and selected month
+        report = Revenue.find_report_for_period(reports, year, selected_month)
 
         revenue =
-          if month_data && month_data.revenue do
-            Decimal.to_float(month_data.revenue)
+          if report && report.revenue do
+            Decimal.to_float(report.revenue)
           else
-            0
+            0.0
           end
 
         %{year: year, revenue: revenue, is_current: year == selected_year}
@@ -342,8 +310,8 @@ defmodule AntoniaWeb.StoreLive do
   end
 
   defp format_currency(amount, currency) when is_number(amount) do
-    currency = currency || "AUD"
-    amount = :erlang.float_to_binary(amount * 1.0, decimals: 0)
+    currency = currency || "EUR"
+    amount = :erlang.float_to_binary(amount * 1.0, decimals: 2)
     amount = String.replace(amount, ~r/\B(?=(\d{3})+(?!\d))/, ",")
 
     symbol =
@@ -357,8 +325,8 @@ defmodule AntoniaWeb.StoreLive do
     "#{symbol}#{amount}"
   end
 
-  defp format_currency(amount, _) when is_number(amount), do: format_currency(amount, "AUD")
-  defp format_currency(_, _), do: "A$0"
+  defp format_currency(amount, _) when is_number(amount), do: format_currency(amount, "EUR")
+  defp format_currency(_, _), do: "€0"
 
   defp month_name(month) do
     month_names = [
@@ -377,102 +345,6 @@ defmodule AntoniaWeb.StoreLive do
     ]
 
     Enum.at(month_names, month - 1, "Unknown")
-  end
-
-  defp generate_timeline_events(nil), do: []
-
-  defp generate_timeline_events(report) do
-    report
-    |> build_report_events()
-    |> add_email_events(report)
-    |> sort_events_by_timestamp()
-  end
-
-  defp build_report_events(report) do
-    base_events = [build_created_event(report)]
-
-    if report_was_updated?(report) do
-      base_events ++ [build_updated_event(report)]
-    else
-      base_events
-    end
-  end
-
-  defp build_created_event(report) do
-    %{
-      type: :created,
-      title: gettext("Report created"),
-      description: gettext("Revenue report was created"),
-      timestamp: report.inserted_at,
-      is_complete: true
-    }
-  end
-
-  defp build_updated_event(report) do
-    %{
-      type: :updated,
-      title: gettext("Report updated"),
-      description: gettext("Revenue information was modified"),
-      timestamp: report.updated_at,
-      is_complete: true
-    }
-  end
-
-  defp report_was_updated?(report) do
-    NaiveDateTime.compare(report.inserted_at, report.updated_at) != :eq
-  end
-
-  defp add_email_events(events, report) do
-    if email_logs_available?(report) do
-      email_events = build_email_events(report.email_logs)
-      events ++ email_events
-    else
-      events
-    end
-  end
-
-  defp email_logs_available?(report) do
-    Ecto.assoc_loaded?(report.email_logs) && report.email_logs
-  end
-
-  defp build_email_events(email_logs) do
-    email_logs
-    |> Enum.filter(fn log -> log.status == :sent && log.sent_at end)
-    |> Enum.map(&build_email_event/1)
-  end
-
-  defp build_email_event(log) do
-    email_type_label = get_email_type_label(log.email_type)
-
-    %{
-      type: :email,
-      title: gettext("Email sent"),
-      description: "#{email_type_label} - #{log.recipient_email}",
-      timestamp: log.sent_at,
-      is_complete: true
-    }
-  end
-
-  defp get_email_type_label(:monthly_reminder), do: gettext("Monthly reminder")
-  defp get_email_type_label(:overdue_reminder), do: gettext("Overdue reminder")
-  defp get_email_type_label(:initial_request), do: gettext("Initial request")
-  defp get_email_type_label(email_type), do: to_string(email_type)
-
-  defp sort_events_by_timestamp(events) do
-    Enum.sort_by(events, &timestamp_to_unix/1, :asc)
-  end
-
-  defp timestamp_to_unix(event) do
-    case event.timestamp do
-      %NaiveDateTime{} = dt ->
-        dt |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix()
-
-      %DateTime{} = dt ->
-        DateTime.to_unix(dt)
-
-      _ ->
-        0
-    end
   end
 
   defp build_error_message(changeset) do

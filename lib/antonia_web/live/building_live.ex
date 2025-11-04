@@ -199,7 +199,9 @@ defmodule AntoniaWeb.BuildingLive do
   defp calculate_yearly_totals(stores, years) do
     Enum.reduce(years, %{}, fn year, acc ->
       year_total = calculate_year_total(stores, year)
-      prev_year_total = Map.get(acc, year - 1, 0)
+      # Calculate previous year total directly from stores data instead of accumulator
+      # since years are processed in descending order
+      prev_year_total = calculate_year_total(stores, year - 1)
       yoy_change = calculate_percentage_change(year_total, prev_year_total)
       Map.put(acc, year, %{total: year_total, yoy_change: yoy_change})
     end)

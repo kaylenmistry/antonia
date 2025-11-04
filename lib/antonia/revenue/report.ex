@@ -58,6 +58,7 @@ defmodule Antonia.Revenue.Report do
     |> validate_number(:revenue, greater_than_or_equal_to: 0)
     |> validate_period_dates()
     |> foreign_key_constraint(:store_id)
+    |> unique_constraint([:store_id, :period_start])
   end
 
   defp validate_period_dates(changeset) do
@@ -123,5 +124,113 @@ defmodule Antonia.Revenue.Report do
   @spec days_since_last_reminder(EmailLog.t()) :: integer()
   defp days_since_last_reminder(last_email) do
     Date.diff(Date.utc_today(), DateTime.to_date(last_email.sent_at))
+  end
+
+  @doc """
+  Generates timeline events for a report.
+
+  Returns a list of timeline events sorted chronologically (oldest first).
+  Each event contains:
+  - `type`: `:created`, `:updated`, or `:email`
+  - `title`: Event title
+  - `description`: Event description
+  - `timestamp`: When the event occurred
+  - `is_complete`: Whether the event is complete (always true for historical events)
+  """
+  @spec timeline_events(__MODULE__.t() | nil) :: [map()]
+  def timeline_events(nil), do: []
+
+  def timeline_events(report) do
+    report
+    |> build_report_events()
+    |> add_email_events(report)
+    |> sort_events_by_timestamp()
+  end
+
+  defp build_report_events(report) do
+    base_events = [build_created_event(report)]
+
+    if report_was_updated?(report) do
+      base_events ++ [build_updated_event(report)]
+    else
+      base_events
+    end
+  end
+
+  defp build_created_event(report) do
+    %{
+      type: :created,
+      title: "Report created",
+      description: "Revenue report was created",
+      timestamp: report.inserted_at,
+      is_complete: true
+    }
+  end
+
+  defp build_updated_event(report) do
+    %{
+      type: :updated,
+      title: "Report updated",
+      description: "Revenue information was modified",
+      timestamp: report.updated_at,
+      is_complete: true
+    }
+  end
+
+  defp report_was_updated?(report) do
+    NaiveDateTime.compare(report.inserted_at, report.updated_at) != :eq
+  end
+
+  defp add_email_events(events, report) do
+    if email_logs_available?(report) do
+      email_events = build_email_events(report.email_logs)
+      events ++ email_events
+    else
+      events
+    end
+  end
+
+  defp email_logs_available?(report) do
+    Ecto.assoc_loaded?(report.email_logs) && report.email_logs
+  end
+
+  defp build_email_events(email_logs) do
+    email_logs
+    |> Enum.filter(fn log -> log.status == :sent && log.sent_at end)
+    |> Enum.map(&build_email_event/1)
+  end
+
+  defp build_email_event(log) do
+    email_type_label = get_email_type_label(log.email_type)
+
+    %{
+      type: :email,
+      title: "Email sent",
+      description: "#{email_type_label} - #{log.recipient_email}",
+      timestamp: log.sent_at,
+      is_complete: true
+    }
+  end
+
+  defp get_email_type_label(:monthly_reminder), do: "Monthly reminder"
+  defp get_email_type_label(:overdue_reminder), do: "Overdue reminder"
+  defp get_email_type_label(:initial_request), do: "Initial request"
+  defp get_email_type_label(email_type), do: to_string(email_type)
+
+  defp sort_events_by_timestamp(events) do
+    Enum.sort_by(events, &timestamp_to_unix/1, :asc)
+  end
+
+  defp timestamp_to_unix(event) do
+    case event.timestamp do
+      %NaiveDateTime{} = dt ->
+        dt |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix()
+
+      %DateTime{} = dt ->
+        DateTime.to_unix(dt)
+
+      _ ->
+        0
+    end
   end
 end

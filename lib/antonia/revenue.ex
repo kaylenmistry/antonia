@@ -188,6 +188,176 @@ defmodule Antonia.Revenue do
     Building.changeset(building, %{})
   end
 
+  @doc """
+  Lists buildings for a group with aggregated statistics.
+
+  Returns a list of buildings, each enriched with a `:stats` map containing:
+  - `total_stores`: Total number of stores in the building
+  - `reported_count`: Number of stores with submitted/approved reports for the current month
+  - `pending_count`: Number of stores without submitted/approved reports for the current month
+  - `completion_percentage`: Percentage of stores that have completed reports (0-100)
+  - `unreported_shops`: List of up to 3 store names that don't have reports
+  - `status`: Either `:complete` or `:pending` based on whether all stores have reports
+
+  Buildings are ordered alphabetically by name.
+  Stores are preloaded with their reports.
+
+  ## Examples
+
+      iex> Revenue.list_buildings_with_stats(user_id, group_id)
+      [
+        %Building{
+          name: "Building A",
+          stats: %{
+            total_stores: 5,
+            reported_count: 3,
+            pending_count: 2,
+            completion_percentage: 60,
+            unreported_shops: ["Store X", "Store Y"],
+            status: :pending
+          }
+        }
+      ]
+  """
+  @spec list_buildings_with_stats(binary(), binary()) :: [map()]
+  def list_buildings_with_stats(user_id, group_id) do
+    # Ensure user owns the group before listing buildings
+    case get_group(user_id, group_id) do
+      {:error, :group_not_found} ->
+        []
+
+      {:ok, _group} ->
+        current_month = Date.beginning_of_month(Date.utc_today())
+
+        Building
+        |> where([b], b.group_id == ^group_id)
+        |> preload([b], stores: [:reports])
+        |> order_by([b], asc: b.name)
+        |> Repo.all()
+        |> Enum.map(&add_building_stats(&1, current_month))
+    end
+  end
+
+  @doc """
+  Gets dashboard statistics for a group.
+
+  Returns a map containing:
+  - `buildings_count`: Total number of buildings in the group
+  - `stores_count`: Total number of stores in the group
+  - `reported_count`: Number of reports with submitted/approved status for the current month
+  - `pending_count`: Number of reports with pending status for the current month
+
+  ## Examples
+
+      iex> Revenue.get_group_dashboard_stats(user_id, group_id)
+      %{
+        buildings_count: 3,
+        stores_count: 10,
+        reported_count: 7,
+        pending_count: 3
+      }
+  """
+  @spec get_group_dashboard_stats(binary(), binary()) ::
+          {:ok, map()} | {:error, :group_not_found}
+  def get_group_dashboard_stats(user_id, group_id) do
+    case get_group(user_id, group_id) do
+      {:error, :group_not_found} = error ->
+        error
+
+      {:ok, _group} ->
+        current_month = Date.beginning_of_month(Date.utc_today())
+        next_month = current_month |> Date.add(32) |> Date.beginning_of_month()
+
+        stats = calculate_dashboard_stats(group_id, current_month, next_month)
+        {:ok, stats}
+    end
+  end
+
+  # Private helper to calculate stats for a single building
+  defp add_building_stats(building, current_month) do
+    stores = building.stores
+    total_stores = length(stores)
+
+    {reported_stores, pending_stores} =
+      Enum.split_with(stores, fn store ->
+        has_current_month_report?(store, current_month)
+      end)
+
+    reported_count = length(reported_stores)
+    pending_count = length(pending_stores)
+
+    completion_percentage =
+      if total_stores > 0, do: round(reported_count / total_stores * 100), else: 0
+
+    unreported_shops =
+      pending_stores
+      |> Enum.take(3)
+      |> Enum.map(& &1.name)
+
+    Map.put(building, :stats, %{
+      total_stores: total_stores,
+      reported_count: reported_count,
+      pending_count: pending_count,
+      completion_percentage: completion_percentage,
+      unreported_shops: unreported_shops,
+      status: if(pending_count == 0, do: :complete, else: :pending)
+    })
+  end
+
+  # Private helper to check if a store has a current month report
+  defp has_current_month_report?(store, current_month) do
+    next_month = current_month |> Date.add(32) |> Date.beginning_of_month()
+
+    Enum.any?(store.reports, fn report ->
+      Date.compare(report.period_start, current_month) != :lt and
+        Date.compare(report.period_end, next_month) == :lt and
+        report.status in [:submitted, :approved]
+    end)
+  end
+
+  # Private helper to calculate dashboard stats for a group
+  defp calculate_dashboard_stats(group_id, current_month, next_month) do
+    buildings_count =
+      Building
+      |> where([b], b.group_id == ^group_id)
+      |> Repo.aggregate(:count, :id)
+
+    stores_count =
+      Store
+      |> join(:inner, [s], b in Building, on: s.building_id == b.id)
+      |> where([s, b], b.group_id == ^group_id)
+      |> Repo.aggregate(:count, :id)
+
+    # Count reports for current month in this group
+    current_month_reports =
+      from(r in Report,
+        join: s in Store,
+        on: r.store_id == s.id,
+        join: b in Building,
+        on: s.building_id == b.id,
+        where:
+          b.group_id == ^group_id and r.period_start >= ^current_month and
+            r.period_start < ^next_month
+      )
+
+    reported_count =
+      current_month_reports
+      |> where([r], r.status in [:submitted, :approved])
+      |> Repo.aggregate(:count, :id)
+
+    pending_count =
+      current_month_reports
+      |> where([r], r.status == :pending)
+      |> Repo.aggregate(:count, :id)
+
+    %{
+      buildings_count: buildings_count,
+      stores_count: stores_count,
+      reported_count: reported_count,
+      pending_count: pending_count
+    }
+  end
+
   ##### Stores #####
 
   @doc "Lists stores for a building, ordered alphabetically by name."
@@ -208,19 +378,26 @@ defmodule Antonia.Revenue do
   end
 
   @doc "Gets a store by user ID, group ID, building ID, and store ID."
-  @spec get_store(binary(), binary(), binary(), binary()) :: Store.t() | nil
+  @spec get_store(binary(), binary(), binary(), binary()) ::
+          {:ok, Store.t()} | {:error, :store_not_found | :group_not_found}
   def get_store(user_id, group_id, building_id, store_id) do
     # Ensure user owns the group before getting store
     case get_group(user_id, group_id) do
       {:error, :group_not_found} ->
-        nil
+        {:error, :group_not_found}
 
       {:ok, _group} ->
-        Store
-        |> join(:inner, [s], b in assoc(s, :building))
-        |> where([s, b], b.group_id == ^group_id and b.id == ^building_id and s.id == ^store_id)
-        |> preload(:reports)
-        |> Repo.one()
+        store =
+          Store
+          |> join(:inner, [s], b in assoc(s, :building))
+          |> where([s, b], b.group_id == ^group_id and b.id == ^building_id and s.id == ^store_id)
+          |> preload(:reports)
+          |> Repo.one()
+
+        case store do
+          nil -> {:error, :store_not_found}
+          store -> {:ok, store}
+        end
     end
   end
 
@@ -325,6 +502,78 @@ defmodule Antonia.Revenue do
     Report.changeset(report, %{})
   end
 
+  @doc "Upserts a report. Creates new if nil, updates if exists."
+  @spec upsert_report(binary(), binary(), binary(), binary(), Report.t() | nil, map()) ::
+          {:ok, Report.t()} | {:error, Changeset.t() | :group_not_found | :store_not_found}
+  def upsert_report(user_id, group_id, building_id, store_id, existing_report, attrs \\ %{}) do
+    with {:ok, group} <- get_group(user_id, group_id),
+         {:ok, store} <- get_store(user_id, group_id, building_id, store_id) do
+      report_params = build_report_params(existing_report, attrs, store, group)
+      changeset = Report.changeset(existing_report || %Report{}, report_params)
+
+      Repo.insert(changeset,
+        on_conflict:
+          {:replace_all_except, [:id, :inserted_at, :store_id, :period_start, :period_end]},
+        conflict_target: [:store_id, :period_start]
+      )
+    end
+  end
+
+  defp build_report_params(existing_report, attrs, store, group) do
+    {period_start, period_end} = get_period(existing_report, attrs)
+    revenue_decimal = normalize_revenue(attrs[:revenue] || "0")
+    status = determine_status(existing_report, attrs)
+    currency = determine_currency(existing_report, attrs, group)
+
+    %{
+      store_id: store.id,
+      revenue: revenue_decimal,
+      period_start: period_start,
+      period_end: period_end,
+      currency: currency,
+      status: status,
+      note: attrs[:note]
+    }
+  end
+
+  defp determine_status(nil, attrs) do
+    attrs[:status] || :approved
+  end
+
+  defp determine_status(existing_report, attrs) do
+    attrs[:status] || existing_report.status || :approved
+  end
+
+  defp determine_currency(existing_report, attrs, group) do
+    cond do
+      not is_nil(attrs[:currency]) -> attrs[:currency]
+      is_nil(existing_report) -> group.default_currency || "EUR"
+      true -> existing_report.currency || group.default_currency || "EUR"
+    end
+  end
+
+  defp get_period(nil, attrs) do
+    year = attrs[:year] || Date.utc_today().year
+    month = attrs[:month] || Date.utc_today().month
+    start = Date.new!(year, month, 1)
+    {start, Date.end_of_month(start)}
+  end
+
+  defp get_period(existing_report, _attrs) do
+    {existing_report.period_start, existing_report.period_end}
+  end
+
+  @doc "Normalizes revenue value to Decimal."
+  @spec normalize_revenue(number() | binary() | Decimal.t()) :: Decimal.t()
+  def normalize_revenue(revenue) when is_float(revenue) do
+    revenue |> :erlang.float_to_binary(decimals: 2) |> Decimal.new()
+  end
+
+  def normalize_revenue(revenue) when is_integer(revenue), do: Decimal.new(revenue)
+  def normalize_revenue(revenue) when is_binary(revenue), do: Decimal.new(revenue)
+  def normalize_revenue(%Decimal{} = revenue), do: revenue
+  def normalize_revenue(_), do: Decimal.new("0")
+
   ##### Business Logic Helpers #####
 
   @doc "Finds a report for a specific period (year/month)."
@@ -342,12 +591,14 @@ defmodule Antonia.Revenue do
     Enum.map(1..12, fn month ->
       year = if month > current_month, do: current_year - 1, else: current_year
 
-      report = find_report_for_period(store.reports, year, month)
+      report = find_report_for_period(store.reports || [], year, month)
+
+      revenue = if report && report.revenue, do: report.revenue, else: Decimal.new("0")
 
       %{
         year: year,
         month: month,
-        revenue: if(report, do: report.revenue, else: Decimal.new(0)),
+        revenue: revenue,
         status: if(report, do: report.status, else: :pending),
         due_date:
           if(report, do: report.due_date, else: calculate_due_date(Date.new!(year, month, 1)))

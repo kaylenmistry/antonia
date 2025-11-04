@@ -43,59 +43,47 @@
             {gettext("Historical Revenue")}
           </h2>
 
-          <div class="space-y-3">
-            <%= for data <- @historical_data do %>
-              <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <span class="font-medium text-gray-700">{data.year}</span>
-                <span class="font-semibold text-gray-900">
-                  <%= if data.is_current do %>
-                    <%= if @is_editing do %>
-                      <form phx-change="update_revenue">
+          <%= if @is_editing do %>
+            <form phx-submit="save_revenue" phx-change="update_revenue">
+              <div class="space-y-3">
+                <%= for data <- @historical_data do %>
+                  <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <span class="font-medium text-gray-700">{data.year}</span>
+                    <span class="font-semibold text-gray-900">
+                      <%= if data.is_current do %>
                         <input
                           type="number"
                           value={@edited_revenue}
                           name="revenue"
+                          step="0.01"
                           class="w-24 px-2 py-1 border border-gray-300 rounded text-right"
                         />
-                      </form>
-                    <% else %>
-                      <span class="text-blue-600">
-                        {format_currency(
-                          data.revenue,
-                          if(@current_report, do: @current_report.currency, else: nil)
-                        )}
-                      </span>
-                    <% end %>
-                  <% else %>
-                    {format_currency(
-                      data.revenue,
-                      if(@current_report, do: @current_report.currency, else: nil)
-                    )}
-                  <% end %>
-                </span>
+                      <% else %>
+                        <span class="text-gray-600">
+                          {format_currency(
+                            data.revenue,
+                            if(@current_report,
+                              do: @current_report.currency,
+                              else: @group.default_currency
+                            )
+                          )}
+                        </span>
+                      <% end %>
+                    </span>
+                  </div>
+                <% end %>
               </div>
-            <% end %>
-          </div>
 
-          <div class="mt-6 flex space-x-3">
-            <%= if not @is_editing do %>
-              <button
-                phx-click="start_editing"
-                class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                <.icon name="hero-pencil" class="h-4 w-4" />
-                <span>{gettext("Edit")}</span>
-              </button>
-            <% else %>
-              <div class="flex space-x-2">
+              <div class="mt-6 flex space-x-2">
                 <button
-                  phx-click="save_revenue"
+                  type="submit"
                   class="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                 >
                   <.icon name="hero-check" class="h-4 w-4" />
                   <span>{gettext("Save")}</span>
                 </button>
                 <button
+                  type="button"
                   phx-click="cancel_editing"
                   class="flex items-center space-x-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
                 >
@@ -103,8 +91,47 @@
                   <span>{gettext("Cancel")}</span>
                 </button>
               </div>
-            <% end %>
-          </div>
+            </form>
+          <% else %>
+            <div class="space-y-3">
+              <%= for data <- @historical_data do %>
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <span class="font-medium text-gray-700">{data.year}</span>
+                  <span class="font-semibold text-gray-900">
+                    <%= if data.is_current do %>
+                      <span class="text-blue-600">
+                        {format_currency(
+                          data.revenue,
+                          if(@current_report,
+                            do: @current_report.currency,
+                            else: @group.default_currency
+                          )
+                        )}
+                      </span>
+                    <% else %>
+                      {format_currency(
+                        data.revenue,
+                        if(@current_report,
+                          do: @current_report.currency,
+                          else: @group.default_currency
+                        )
+                      )}
+                    <% end %>
+                  </span>
+                </div>
+              <% end %>
+            </div>
+
+            <div class="mt-6">
+              <button
+                phx-click="start_editing"
+                class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <.icon name="hero-pencil" class="h-4 w-4" />
+                <span>{gettext("Edit")}</span>
+              </button>
+            </div>
+          <% end %>
         </div>
         
 <!-- Attachment Section -->
@@ -158,6 +185,82 @@
             </label>
           </div>
         </div>
+        
+<!-- Timeline Section -->
+        <%= if @current_report && length(@timeline_events) > 0 do %>
+          <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">{gettext("Timeline")}</h2>
+
+            <nav aria-label="Progress">
+              <ol role="list" class="overflow-hidden">
+                <%= for {event, index} <- Enum.with_index(@timeline_events) do %>
+                  <% connector_class =
+                    if index < length(@timeline_events) - 1,
+                      do: if(event.is_complete, do: "bg-indigo-600", else: "bg-gray-300"),
+                      else: ""
+
+                  step_icon_class =
+                    if event.is_complete,
+                      do: "bg-indigo-600 group-hover:bg-indigo-800",
+                      else: "border-2 border-indigo-600 bg-white" %>
+                  <li class={
+                    if index < length(@timeline_events) - 1,
+                      do: "relative pb-10",
+                      else: "relative"
+                  }>
+                    <%= if index < length(@timeline_events) - 1 do %>
+                      <div
+                        aria-hidden="true"
+                        class={"absolute top-4 left-4 mt-0.5 -ml-px h-full w-0.5 #{connector_class}"}
+                      >
+                      </div>
+                    <% end %>
+                    
+<!-- Step -->
+                    <div class="group relative flex items-start">
+                      <span class="flex h-9 items-center">
+                        <span class={"relative z-10 flex size-8 items-center justify-center rounded-full #{step_icon_class}"}>
+                          <%= if event.is_complete do %>
+                            <svg
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                              data-slot="icon"
+                              aria-hidden="true"
+                              class="size-5 text-white"
+                            >
+                              <path
+                                d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z"
+                                clip-rule="evenodd"
+                                fill-rule="evenodd"
+                              />
+                            </svg>
+                          <% else %>
+                            <span class="size-2.5 rounded-full bg-indigo-600"></span>
+                          <% end %>
+                        </span>
+                      </span>
+                      <span class="ml-4 flex min-w-0 flex-col">
+                        <span class={
+                          if index == length(@timeline_events) - 1,
+                            do: "text-sm font-medium text-indigo-600",
+                            else: "text-sm font-medium text-gray-900"
+                        }>
+                          {event.title}
+                        </span>
+                        <span class="text-sm text-gray-500">
+                          {event.description}
+                        </span>
+                        <span class="text-xs text-gray-400 mt-1">
+                          {format_timestamp(event.timestamp)}
+                        </span>
+                      </span>
+                    </div>
+                  </li>
+                <% end %>
+              </ol>
+            </nav>
+          </div>
+        <% end %>
       </div>
       
 <!-- Right Column - Notes and Email -->
@@ -166,14 +269,13 @@
         <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
           <h2 class="text-lg font-semibold text-gray-900 mb-4">{gettext("Note")}</h2>
 
-          <form phx-change="update_note">
-            <textarea
-              value={@note}
-              name="note"
-              placeholder={gettext("Add notes about this revenue report...")}
-              class="w-full h-32 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
-            ></textarea>
-          </form>
+          <textarea
+            value={@note}
+            name="note"
+            phx-change="update_note"
+            placeholder={gettext("Add notes about this revenue report...")}
+            class="w-full h-32 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+          ></textarea>
         </div>
         
 <!-- Email Section -->

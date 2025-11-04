@@ -2,6 +2,7 @@ defmodule Antonia.Enums.AuthProvider do
   @moduledoc "Auth providers."
 
   @providers [
+    :google,
     :kinde
   ]
 
@@ -10,7 +11,7 @@ defmodule Antonia.Enums.AuthProvider do
 
   ## Examples
       iex> AuthProvider.values()
-      [:kinde]
+      [:google, :kinde]
   """
   def values, do: @providers
 end
