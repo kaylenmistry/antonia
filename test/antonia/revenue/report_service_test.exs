@@ -25,7 +25,7 @@ defmodule Antonia.Revenue.ReportServiceTest do
       assert report.period_end == Date.new!(2025, 1, 31)
       assert report.due_date == Date.new!(2025, 2, 7)
       assert report.status == :pending
-      assert report.currency == "AUD"
+      assert report.currency == "EUR"
     end
 
     test "doesn't create duplicate reports for existing periods" do

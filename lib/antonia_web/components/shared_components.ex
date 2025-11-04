@@ -405,7 +405,7 @@ defmodule AntoniaWeb.SharedComponents do
   end
 
   defp format_currency(amount) when is_number(amount) do
-    formatted_amount = :erlang.float_to_binary(amount, decimals: 0)
+    formatted_amount = :erlang.float_to_binary(amount * 1.0, decimals: 2)
     "€#{String.replace(formatted_amount, ~r/\B(?=(\d{3})+(?!\d))/, ",")}"
   end
 

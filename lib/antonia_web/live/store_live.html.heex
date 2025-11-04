@@ -43,59 +43,47 @@
             {gettext("Historical Revenue")}
           </h2>
 
-          <div class="space-y-3">
-            <%= for data <- @historical_data do %>
-              <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <span class="font-medium text-gray-700">{data.year}</span>
-                <span class="font-semibold text-gray-900">
-                  <%= if data.is_current do %>
-                    <%= if @is_editing do %>
-                      <form phx-change="update_revenue">
+          <%= if @is_editing do %>
+            <form phx-submit="save_revenue" phx-change="update_revenue">
+              <div class="space-y-3">
+                <%= for data <- @historical_data do %>
+                  <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <span class="font-medium text-gray-700">{data.year}</span>
+                    <span class="font-semibold text-gray-900">
+                      <%= if data.is_current do %>
                         <input
                           type="number"
                           value={@edited_revenue}
                           name="revenue"
+                          step="0.01"
                           class="w-24 px-2 py-1 border border-gray-300 rounded text-right"
                         />
-                      </form>
-                    <% else %>
-                      <span class="text-blue-600">
-                        {format_currency(
-                          data.revenue,
-                          if(@current_report, do: @current_report.currency, else: nil)
-                        )}
-                      </span>
-                    <% end %>
-                  <% else %>
-                    {format_currency(
-                      data.revenue,
-                      if(@current_report, do: @current_report.currency, else: nil)
-                    )}
-                  <% end %>
-                </span>
+                      <% else %>
+                        <span class="text-gray-600">
+                          {format_currency(
+                            data.revenue,
+                            if(@current_report,
+                              do: @current_report.currency,
+                              else: @group.default_currency
+                            )
+                          )}
+                        </span>
+                      <% end %>
+                    </span>
+                  </div>
+                <% end %>
               </div>
-            <% end %>
-          </div>
 
-          <div class="mt-6 flex space-x-3">
-            <%= if not @is_editing do %>
-              <button
-                phx-click="start_editing"
-                class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                <.icon name="hero-pencil" class="h-4 w-4" />
-                <span>{gettext("Edit")}</span>
-              </button>
-            <% else %>
-              <div class="flex space-x-2">
+              <div class="mt-6 flex space-x-2">
                 <button
-                  phx-click="save_revenue"
+                  type="submit"
                   class="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                 >
                   <.icon name="hero-check" class="h-4 w-4" />
                   <span>{gettext("Save")}</span>
                 </button>
                 <button
+                  type="button"
                   phx-click="cancel_editing"
                   class="flex items-center space-x-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
                 >
@@ -103,8 +91,47 @@
                   <span>{gettext("Cancel")}</span>
                 </button>
               </div>
-            <% end %>
-          </div>
+            </form>
+          <% else %>
+            <div class="space-y-3">
+              <%= for data <- @historical_data do %>
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <span class="font-medium text-gray-700">{data.year}</span>
+                  <span class="font-semibold text-gray-900">
+                    <%= if data.is_current do %>
+                      <span class="text-blue-600">
+                        {format_currency(
+                          data.revenue,
+                          if(@current_report,
+                            do: @current_report.currency,
+                            else: @group.default_currency
+                          )
+                        )}
+                      </span>
+                    <% else %>
+                      {format_currency(
+                        data.revenue,
+                        if(@current_report,
+                          do: @current_report.currency,
+                          else: @group.default_currency
+                        )
+                      )}
+                    <% end %>
+                  </span>
+                </div>
+              <% end %>
+            </div>
+
+            <div class="mt-6">
+              <button
+                phx-click="start_editing"
+                class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <.icon name="hero-pencil" class="h-4 w-4" />
+                <span>{gettext("Edit")}</span>
+              </button>
+            </div>
+          <% end %>
         </div>
         
 <!-- Attachment Section -->
@@ -166,14 +193,13 @@
         <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
           <h2 class="text-lg font-semibold text-gray-900 mb-4">{gettext("Note")}</h2>
 
-          <form phx-change="update_note">
-            <textarea
-              value={@note}
-              name="note"
-              placeholder={gettext("Add notes about this revenue report...")}
-              class="w-full h-32 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
-            ></textarea>
-          </form>
+          <textarea
+            value={@note}
+            name="note"
+            phx-change="update_note"
+            placeholder={gettext("Add notes about this revenue report...")}
+            class="w-full h-32 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+          ></textarea>
         </div>
         
 <!-- Email Section -->

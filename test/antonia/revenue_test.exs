@@ -381,6 +381,474 @@ defmodule Antonia.RevenueTest do
     end
   end
 
+  describe "list_buildings_with_stats/2" do
+    test "lists buildings with stats for a group" do
+      user = insert(:user)
+      group = insert(:group, created_by_user: user)
+      building = insert(:building, name: "Building A", group: group)
+      store1 = insert(:store, name: "Store 1", building: building)
+      store2 = insert(:store, name: "Store 2", building: building)
+      store3 = insert(:store, name: "Store 3", building: building)
+
+      current_month = Date.beginning_of_month(Date.utc_today())
+      period_end = Date.end_of_month(current_month)
+
+      # Store 1 has submitted report
+      insert(:report,
+        store: store1,
+        status: :submitted,
+        period_start: current_month,
+        period_end: period_end
+      )
+
+      # Store 2 has approved report
+      insert(:report,
+        store: store2,
+        status: :approved,
+        period_start: current_month,
+        period_end: period_end
+      )
+
+      # Store 3 has no report
+
+      buildings = Revenue.list_buildings_with_stats(user.id, group.id)
+
+      assert length(buildings) == 1
+      [building_with_stats] = buildings
+      assert building_with_stats.id == building.id
+      assert building_with_stats.name == "Building A"
+      assert %{stats: stats} = building_with_stats
+      assert stats.total_stores == 3
+      assert stats.reported_count == 2
+      assert stats.pending_count == 1
+      assert stats.completion_percentage == 67
+      assert stats.status == :pending
+      assert length(stats.unreported_shops) == 1
+      assert "Store 3" in stats.unreported_shops
+    end
+
+    test "calculates completion percentage correctly" do
+      user = insert(:user)
+      group = insert(:group, created_by_user: user)
+      building = insert(:building, group: group)
+      store1 = insert(:store, building: building)
+      store2 = insert(:store, building: building)
+      store3 = insert(:store, building: building)
+      store4 = insert(:store, building: building)
+      store5 = insert(:store, building: building)
+
+      current_month = Date.beginning_of_month(Date.utc_today())
+      period_end = Date.end_of_month(current_month)
+
+      # 3 out of 5 stores have reports
+      insert(:report,
+        store: store1,
+        status: :submitted,
+        period_start: current_month,
+        period_end: period_end
+      )
+
+      insert(:report,
+        store: store2,
+        status: :approved,
+        period_start: current_month,
+        period_end: period_end
+      )
+
+      insert(:report,
+        store: store3,
+        status: :submitted,
+        period_start: current_month,
+        period_end: period_end
+      )
+
+      [building_with_stats] = Revenue.list_buildings_with_stats(user.id, group.id)
+
+      assert building_with_stats.stats.completion_percentage == 60
+      assert building_with_stats.stats.reported_count == 3
+      assert building_with_stats.stats.pending_count == 2
+    end
+
+    test "returns complete status when all stores have reports" do
+      user = insert(:user)
+      group = insert(:group, created_by_user: user)
+      building = insert(:building, group: group)
+      store1 = insert(:store, building: building)
+      store2 = insert(:store, building: building)
+
+      current_month = Date.beginning_of_month(Date.utc_today())
+      period_end = Date.end_of_month(current_month)
+
+      insert(:report,
+        store: store1,
+        status: :submitted,
+        period_start: current_month,
+        period_end: period_end
+      )
+
+      insert(:report,
+        store: store2,
+        status: :approved,
+        period_start: current_month,
+        period_end: period_end
+      )
+
+      [building_with_stats] = Revenue.list_buildings_with_stats(user.id, group.id)
+
+      assert building_with_stats.stats.status == :complete
+      assert building_with_stats.stats.pending_count == 0
+      assert building_with_stats.stats.completion_percentage == 100
+    end
+
+    test "returns limited unreported shops list (max 3)" do
+      user = insert(:user)
+      group = insert(:group, created_by_user: user)
+      building = insert(:building, group: group)
+      store1 = insert(:store, name: "Store 1", building: building)
+      store2 = insert(:store, name: "Store 2", building: building)
+      store3 = insert(:store, name: "Store 3", building: building)
+      store4 = insert(:store, name: "Store 4", building: building)
+      store5 = insert(:store, name: "Store 5", building: building)
+
+      # No reports for any store
+
+      [building_with_stats] = Revenue.list_buildings_with_stats(user.id, group.id)
+
+      assert length(building_with_stats.stats.unreported_shops) == 3
+      assert building_with_stats.stats.pending_count == 5
+    end
+
+    test "handles building with no stores" do
+      user = insert(:user)
+      group = insert(:group, created_by_user: user)
+      building = insert(:building, group: group)
+
+      [building_with_stats] = Revenue.list_buildings_with_stats(user.id, group.id)
+
+      assert building_with_stats.stats.total_stores == 0
+      assert building_with_stats.stats.reported_count == 0
+      assert building_with_stats.stats.pending_count == 0
+      assert building_with_stats.stats.completion_percentage == 0
+      assert building_with_stats.stats.status == :complete
+      assert building_with_stats.stats.unreported_shops == []
+    end
+
+    test "ignores reports from previous months" do
+      user = insert(:user)
+      group = insert(:group, created_by_user: user)
+      building = insert(:building, group: group)
+      store = insert(:store, building: building)
+
+      previous_month =
+        Date.utc_today()
+        |> Date.beginning_of_month()
+        |> Date.add(-32)
+        |> Date.beginning_of_month()
+
+      previous_month_end = Date.end_of_month(previous_month)
+
+      # Has report for previous month, but not current month
+      insert(:report,
+        store: store,
+        status: :submitted,
+        period_start: previous_month,
+        period_end: previous_month_end
+      )
+
+      [building_with_stats] = Revenue.list_buildings_with_stats(user.id, group.id)
+
+      assert building_with_stats.stats.reported_count == 0
+      assert building_with_stats.stats.pending_count == 1
+      assert building_with_stats.stats.status == :pending
+    end
+
+    test "ignores pending reports when counting reported" do
+      user = insert(:user)
+      group = insert(:group, created_by_user: user)
+      building = insert(:building, group: group)
+      store = insert(:store, building: building)
+
+      current_month = Date.beginning_of_month(Date.utc_today())
+      period_end = Date.end_of_month(current_month)
+
+      # Pending report doesn't count as completed
+      insert(:report,
+        store: store,
+        status: :pending,
+        period_start: current_month,
+        period_end: period_end
+      )
+
+      [building_with_stats] = Revenue.list_buildings_with_stats(user.id, group.id)
+
+      assert building_with_stats.stats.reported_count == 0
+      assert building_with_stats.stats.pending_count == 1
+    end
+
+    test "orders buildings alphabetically" do
+      user = insert(:user)
+      group = insert(:group, created_by_user: user)
+      _building2 = insert(:building, name: "Zebra Building", group: group)
+      _building1 = insert(:building, name: "Alpha Building", group: group)
+
+      buildings = Revenue.list_buildings_with_stats(user.id, group.id)
+
+      assert [first, second] = buildings
+      assert first.name == "Alpha Building"
+      assert second.name == "Zebra Building"
+    end
+
+    test "returns empty list when user doesn't own group" do
+      user = insert(:user)
+      other_user = insert(:user)
+      group = insert(:group, created_by_user: other_user)
+      insert(:building, group: group)
+
+      assert Revenue.list_buildings_with_stats(user.id, group.id) == []
+    end
+
+    test "returns empty list when group doesn't exist" do
+      user = insert(:user)
+      fake_id = Uniq.UUID.uuid7()
+
+      assert Revenue.list_buildings_with_stats(user.id, fake_id) == []
+    end
+
+    test "preloads stores and reports" do
+      user = insert(:user)
+      group = insert(:group, created_by_user: user)
+      building = insert(:building, group: group)
+      store = insert(:store, building: building)
+
+      current_month = Date.beginning_of_month(Date.utc_today())
+      period_end = Date.end_of_month(current_month)
+
+      report =
+        insert(:report,
+          store: store,
+          status: :submitted,
+          period_start: current_month,
+          period_end: period_end
+        )
+
+      [building_with_stats] = Revenue.list_buildings_with_stats(user.id, group.id)
+
+      assert Ecto.assoc_loaded?(building_with_stats.stores)
+      assert length(building_with_stats.stores) == 1
+      assert hd(building_with_stats.stores).id == store.id
+      assert Ecto.assoc_loaded?(hd(building_with_stats.stores).reports)
+      assert length(hd(building_with_stats.stores).reports) == 1
+      assert hd(hd(building_with_stats.stores).reports).id == report.id
+    end
+  end
+
+  describe "get_group_dashboard_stats/2" do
+    test "returns dashboard stats for a group" do
+      user = insert(:user)
+      group = insert(:group, created_by_user: user)
+      building1 = insert(:building, group: group)
+      building2 = insert(:building, group: group)
+      store1 = insert(:store, building: building1)
+      store2 = insert(:store, building: building1)
+      store3 = insert(:store, building: building2)
+
+      current_month = Date.beginning_of_month(Date.utc_today())
+      period_end = Date.end_of_month(current_month)
+
+      # Store 1 has submitted report
+      insert(:report,
+        store: store1,
+        status: :submitted,
+        period_start: current_month,
+        period_end: period_end
+      )
+
+      # Store 2 has approved report
+      insert(:report,
+        store: store2,
+        status: :approved,
+        period_start: current_month,
+        period_end: period_end
+      )
+
+      # Store 3 has pending report
+      insert(:report,
+        store: store3,
+        status: :pending,
+        period_start: current_month,
+        period_end: period_end
+      )
+
+      assert {:ok, stats} = Revenue.get_group_dashboard_stats(user.id, group.id)
+
+      assert stats.buildings_count == 2
+      assert stats.stores_count == 3
+      assert stats.reported_count == 2
+      assert stats.pending_count == 1
+    end
+
+    test "returns zero stats for group with no buildings" do
+      user = insert(:user)
+      group = insert(:group, created_by_user: user)
+
+      assert {:ok, stats} = Revenue.get_group_dashboard_stats(user.id, group.id)
+
+      assert stats.buildings_count == 0
+      assert stats.stores_count == 0
+      assert stats.reported_count == 0
+      assert stats.pending_count == 0
+    end
+
+    test "counts only current month reports" do
+      user = insert(:user)
+      group = insert(:group, created_by_user: user)
+      building = insert(:building, group: group)
+      store = insert(:store, building: building)
+
+      current_month = Date.beginning_of_month(Date.utc_today())
+      previous_month = current_month |> Date.add(-32) |> Date.beginning_of_month()
+      previous_month_end = Date.end_of_month(previous_month)
+
+      # Previous month report
+      insert(:report,
+        store: store,
+        status: :submitted,
+        period_start: previous_month,
+        period_end: previous_month_end
+      )
+
+      # Current month report
+      current_month_end = Date.end_of_month(current_month)
+
+      insert(:report,
+        store: store,
+        status: :submitted,
+        period_start: current_month,
+        period_end: current_month_end
+      )
+
+      assert {:ok, stats} = Revenue.get_group_dashboard_stats(user.id, group.id)
+
+      assert stats.reported_count == 1
+      assert stats.pending_count == 0
+    end
+
+    test "distinguishes between reported and pending counts" do
+      user = insert(:user)
+      group = insert(:group, created_by_user: user)
+      building = insert(:building, group: group)
+      store1 = insert(:store, building: building)
+      store2 = insert(:store, building: building)
+      store3 = insert(:store, building: building)
+
+      current_month = Date.beginning_of_month(Date.utc_today())
+      period_end = Date.end_of_month(current_month)
+
+      # Submitted report
+      insert(:report,
+        store: store1,
+        status: :submitted,
+        period_start: current_month,
+        period_end: period_end
+      )
+
+      # Approved report
+      insert(:report,
+        store: store2,
+        status: :approved,
+        period_start: current_month,
+        period_end: period_end
+      )
+
+      # Pending report
+      insert(:report,
+        store: store3,
+        status: :pending,
+        period_start: current_month,
+        period_end: period_end
+      )
+
+      assert {:ok, stats} = Revenue.get_group_dashboard_stats(user.id, group.id)
+
+      assert stats.reported_count == 2
+      assert stats.pending_count == 1
+    end
+
+    test "returns error when user doesn't own group" do
+      user = insert(:user)
+      other_user = insert(:user)
+      group = insert(:group, created_by_user: other_user)
+
+      assert {:error, :group_not_found} = Revenue.get_group_dashboard_stats(user.id, group.id)
+    end
+
+    test "returns error when group doesn't exist" do
+      user = insert(:user)
+      fake_id = Uniq.UUID.uuid7()
+
+      assert {:error, :group_not_found} = Revenue.get_group_dashboard_stats(user.id, fake_id)
+    end
+
+    test "handles multiple buildings correctly" do
+      user = insert(:user)
+      group = insert(:group, created_by_user: user)
+      building1 = insert(:building, group: group)
+      building2 = insert(:building, group: group)
+      building3 = insert(:building, group: group)
+
+      insert(:store, building: building1)
+      insert(:store, building: building1)
+      insert(:store, building: building2)
+      insert(:store, building: building3)
+
+      assert {:ok, stats} = Revenue.get_group_dashboard_stats(user.id, group.id)
+
+      assert stats.buildings_count == 3
+      assert stats.stores_count == 4
+    end
+
+    test "counts reports correctly across multiple buildings" do
+      user = insert(:user)
+      group = insert(:group, created_by_user: user)
+      building1 = insert(:building, group: group)
+      building2 = insert(:building, group: group)
+      store1 = insert(:store, building: building1)
+      store2 = insert(:store, building: building1)
+      store3 = insert(:store, building: building2)
+
+      current_month = Date.beginning_of_month(Date.utc_today())
+      period_end = Date.end_of_month(current_month)
+
+      insert(:report,
+        store: store1,
+        status: :submitted,
+        period_start: current_month,
+        period_end: period_end
+      )
+
+      insert(:report,
+        store: store2,
+        status: :approved,
+        period_start: current_month,
+        period_end: period_end
+      )
+
+      insert(:report,
+        store: store3,
+        status: :pending,
+        period_start: current_month,
+        period_end: period_end
+      )
+
+      assert {:ok, stats} = Revenue.get_group_dashboard_stats(user.id, group.id)
+
+      assert stats.buildings_count == 2
+      assert stats.stores_count == 3
+      assert stats.reported_count == 2
+      assert stats.pending_count == 1
+    end
+  end
+
   ############################
   # Stores Tests
   ############################
@@ -434,21 +902,22 @@ defmodule Antonia.RevenueTest do
       store = insert(:store, building: building)
       report = insert(:report, store: store)
 
-      fetched_store = Revenue.get_store(user.id, group.id, building.id, store.id)
+      assert {:ok, fetched_store} = Revenue.get_store(user.id, group.id, building.id, store.id)
 
       assert fetched_store.id == store.id
       assert length(fetched_store.reports) == 1
       assert hd(fetched_store.reports).id == report.id
     end
 
-    test "returns nil when user doesn't own group" do
+    test "returns error when user doesn't own group" do
       user = insert(:user)
       other_user = insert(:user)
       group = insert(:group, created_by_user: other_user)
       building = insert(:building, group: group)
       store = insert(:store, building: building)
 
-      assert Revenue.get_store(user.id, group.id, building.id, store.id) == nil
+      assert Revenue.get_store(user.id, group.id, building.id, store.id) ==
+               {:error, :group_not_found}
     end
   end
 
@@ -629,6 +1098,111 @@ defmodule Antonia.RevenueTest do
 
       assert changeset.data.__struct__ == Revenue.Report
       refute changeset.valid?
+    end
+  end
+
+  describe "upsert_report/6" do
+    test "creates new report when existing_report is nil" do
+      user = insert(:user)
+      group = insert(:group, created_by_user: user)
+      building = insert(:building, group: group)
+      store = insert(:store, building: building)
+
+      attrs = %{
+        revenue: "169.69",
+        note: "Test note",
+        year: 2025,
+        month: 1,
+        currency: "EUR"
+      }
+
+      assert {:ok, report} =
+               Revenue.upsert_report(user.id, group.id, building.id, store.id, nil, attrs)
+
+      assert report.revenue == Decimal.new("169.69")
+      assert report.note == "Test note"
+      assert report.status == :approved
+      assert report.currency == "EUR"
+    end
+
+    test "updates existing report" do
+      user = insert(:user)
+      group = insert(:group, created_by_user: user)
+      building = insert(:building, group: group)
+      store = insert(:store, building: building)
+
+      existing_report =
+        insert(:report,
+          store: store,
+          period_start: Date.new!(2025, 1, 1),
+          period_end: Date.new!(2025, 1, 31),
+          revenue: Decimal.new("100.00"),
+          status: :submitted
+        )
+
+      attrs = %{
+        revenue: "250.50",
+        note: "Updated note",
+        year: 2025,
+        month: 1
+      }
+
+      assert {:ok, updated_report} =
+               Revenue.upsert_report(
+                 user.id,
+                 group.id,
+                 building.id,
+                 store.id,
+                 existing_report,
+                 attrs
+               )
+
+      assert updated_report.id == existing_report.id
+      assert updated_report.revenue == Decimal.new("250.50")
+      assert updated_report.note == "Updated note"
+      assert updated_report.status == :submitted
+    end
+
+    test "preserves status when updating existing report" do
+      user = insert(:user)
+      group = insert(:group, created_by_user: user)
+      building = insert(:building, group: group)
+      store = insert(:store, building: building)
+
+      existing_report =
+        insert(:report,
+          store: store,
+          period_start: Date.new!(2025, 1, 1),
+          period_end: Date.new!(2025, 1, 31),
+          status: :approved
+        )
+
+      attrs = %{revenue: "300.00", year: 2025, month: 1}
+
+      assert {:ok, updated_report} =
+               Revenue.upsert_report(
+                 user.id,
+                 group.id,
+                 building.id,
+                 store.id,
+                 existing_report,
+                 attrs
+               )
+
+      assert updated_report.status == :approved
+    end
+
+    test "returns error when user doesn't own group" do
+      user = insert(:user)
+      other_user = insert(:user)
+      group = insert(:group, created_by_user: other_user)
+      building = insert(:building, group: group)
+      store = insert(:store, building: building)
+
+      attrs = %{revenue: "100.00", year: 2025, month: 1}
+
+      assert {:error, :group_not_found} =
+               Revenue.upsert_report(user.id, group.id, building.id, store.id, nil, attrs)
     end
   end
 

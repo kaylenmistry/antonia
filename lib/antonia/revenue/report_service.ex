@@ -200,7 +200,7 @@ defmodule Antonia.Revenue.ReportService do
       period_start: period_start,
       period_end: period_end,
       due_date: Report.calculate_due_date(period_end),
-      currency: "AUD",
+      currency: "EUR",
       revenue: Decimal.new(0),
       inserted_at: NaiveDateTime.truncate(NaiveDateTime.utc_now(), :second),
       updated_at: NaiveDateTime.truncate(NaiveDateTime.utc_now(), :second)
