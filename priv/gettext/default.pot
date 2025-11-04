@@ -427,7 +427,7 @@ msgstr ""
 msgid "Add a new store to %{building_name}"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:200
+#: lib/antonia_web/live/store_live.html.heex:276
 #, elixir-autogen, elixir-format
 msgid "Add notes about this revenue report..."
 msgstr ""
@@ -482,7 +482,7 @@ msgstr ""
 msgid "Create your first group to get started"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:218
+#: lib/antonia_web/live/store_live.html.heex:294
 #, elixir-autogen, elixir-format
 msgid "Date"
 msgstr ""
@@ -492,7 +492,7 @@ msgstr ""
 msgid "Edit"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:207
+#: lib/antonia_web/live/store_live.html.heex:283
 #, elixir-autogen, elixir-format
 msgid "Email Sent"
 msgstr ""
@@ -522,12 +522,12 @@ msgstr ""
 msgid "Export to Excel"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.ex:354
+#: lib/antonia_web/live/store_live.ex:353
 #, elixir-autogen, elixir-format
 msgid "Failed to update revenue"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:214
+#: lib/antonia_web/live/store_live.html.heex:290
 #, elixir-autogen, elixir-format
 msgid "From"
 msgstr ""
@@ -578,7 +578,7 @@ msgstr ""
 msgid "No attachment available"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:238
+#: lib/antonia_web/live/store_live.html.heex:314
 #, elixir-autogen, elixir-format
 msgid "No email content available"
 msgstr ""
@@ -593,7 +593,7 @@ msgstr ""
 msgid "No stores yet"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:194
+#: lib/antonia_web/live/store_live.html.heex:270
 #, elixir-autogen, elixir-format
 msgid "Note"
 msgstr ""
@@ -618,7 +618,7 @@ msgstr ""
 msgid "Revenue"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:226
+#: lib/antonia_web/live/store_live.html.heex:302
 #, elixir-autogen, elixir-format
 msgid "Revenue Report"
 msgstr ""
@@ -628,12 +628,12 @@ msgstr ""
 msgid "Revenue details for %{month} %{year}"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:239
+#: lib/antonia_web/live/store_live.html.heex:315
 #, elixir-autogen, elixir-format
 msgid "Revenue may have been entered manually"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.ex:210
+#: lib/antonia_web/live/store_live.ex:209
 #, elixir-autogen, elixir-format
 msgid "Revenue updated successfully"
 msgstr ""
@@ -653,7 +653,7 @@ msgstr ""
 msgid "Store Revenue Details"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:226
+#: lib/antonia_web/live/store_live.html.heex:302
 #, elixir-autogen, elixir-format
 msgid "Subject"
 msgstr ""
@@ -775,17 +775,18 @@ msgstr ""
 msgid "Stores"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.ex:362
+#: lib/antonia_web/live/store_live.ex:361
 #, elixir-autogen, elixir-format
 msgid "Failed to update revenue: %{errors}"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:249
+#: lib/antonia_web/live/store_live.html.heex:192
+#: lib/antonia_web/live/store_live.html.heex:325
 #, elixir-autogen, elixir-format
 msgid "Timeline"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.ex:217
+#: lib/antonia_web/live/store_live.ex:216
 #, elixir-autogen, elixir-format
 msgid "Failed to save revenue: %{reason}"
 msgstr ""
