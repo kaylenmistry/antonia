@@ -55,10 +55,24 @@ defmodule Antonia.Revenue.Report do
     |> cast(attrs, @fields)
     |> maybe_set_due_date()
     |> validate_required(@required_fields)
-    |> validate_number(:revenue, greater_than_or_equal_to: 0)
+    |> validate_revenue_non_negative()
     |> validate_period_dates()
     |> foreign_key_constraint(:store_id)
     |> unique_constraint([:store_id, :period_start])
+  end
+
+  defp validate_revenue_non_negative(changeset) do
+    case get_field(changeset, :revenue) do
+      %Decimal{} = revenue ->
+        if Decimal.lt?(revenue, Decimal.new("0")) do
+          add_error(changeset, :revenue, "must be greater than or equal to 0")
+        else
+          changeset
+        end
+
+      _ ->
+        changeset
+    end
   end
 
   defp validate_period_dates(changeset) do
@@ -206,7 +220,7 @@ defmodule Antonia.Revenue.Report do
     %{
       type: :email,
       title: "Email sent",
-      description: "#{email_type_label} - #{log.recipient_email}",
+      description: "Sent \"#{email_type_label}\" to #{log.recipient_email}",
       timestamp: log.sent_at,
       is_complete: true
     }

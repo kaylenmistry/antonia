@@ -1206,6 +1206,55 @@ defmodule Antonia.RevenueTest do
     end
   end
 
+  describe "update_report_via_token/2" do
+    test "successfully updates report without authentication" do
+      report = insert(:report, revenue: Decimal.new("1000.00"), note: "Original note")
+
+      attrs = %{
+        revenue: "2000.50",
+        note: "Updated note"
+      }
+
+      assert {:ok, updated_report} = Revenue.update_report_via_token(report, attrs)
+
+      assert Decimal.equal?(updated_report.revenue, Decimal.new("2000.50"))
+      assert updated_report.note == "Updated note"
+    end
+
+    test "returns error for invalid revenue" do
+      report = insert(:report)
+
+      attrs = %{
+        revenue: "-100",
+        note: "Test"
+      }
+
+      assert {:error, changeset} = Revenue.update_report_via_token(report, attrs)
+      refute changeset.valid?
+      assert "must be greater than or equal to 0" in errors_on(changeset).revenue
+    end
+
+    test "preserves existing currency and period" do
+      report =
+        insert(:report,
+          currency: "USD",
+          period_start: ~D[2025-01-01],
+          period_end: ~D[2025-01-31]
+        )
+
+      attrs = %{
+        revenue: "3000.00",
+        note: "Test"
+      }
+
+      assert {:ok, updated_report} = Revenue.update_report_via_token(report, attrs)
+
+      assert updated_report.currency == "USD"
+      assert updated_report.period_start == ~D[2025-01-01]
+      assert updated_report.period_end == ~D[2025-01-31]
+    end
+  end
+
   ############################
   # Business Logic Helpers
   ############################

@@ -19,9 +19,9 @@ defmodule Antonia.MailerWorkerTest do
         }
       }
 
-      with_mock Notifier, deliver_monthly_reminder: fn _, _ -> {:ok, %{}} end do
+      with_mock Notifier, deliver_monthly_reminder: fn _, _, _ -> {:ok, %{}} end do
         assert :ok = MailerWorker.perform(job)
-        assert_called(Notifier.deliver_monthly_reminder(:_, :_))
+        assert_called(Notifier.deliver_monthly_reminder(:_, :_, :_))
       end
     end
 
@@ -36,9 +36,9 @@ defmodule Antonia.MailerWorkerTest do
         }
       }
 
-      with_mock Notifier, deliver_overdue_reminder: fn _, _ -> {:ok, %{}} end do
+      with_mock Notifier, deliver_overdue_reminder: fn _, _, _ -> {:ok, %{}} end do
         assert :ok = MailerWorker.perform(job)
-        assert_called(Notifier.deliver_overdue_reminder(:_, :_))
+        assert_called(Notifier.deliver_overdue_reminder(:_, :_, :_))
       end
     end
 
@@ -53,9 +53,9 @@ defmodule Antonia.MailerWorkerTest do
         }
       }
 
-      with_mock Notifier, deliver_submission_receipt: fn _, _ -> {:ok, %{}} end do
+      with_mock Notifier, deliver_submission_receipt: fn _, _, _ -> {:ok, %{}} end do
         assert :ok = MailerWorker.perform(job)
-        assert_called(Notifier.deliver_submission_receipt(:_, :_))
+        assert_called(Notifier.deliver_submission_receipt(:_, :_, :_))
       end
     end
 
@@ -98,7 +98,7 @@ defmodule Antonia.MailerWorkerTest do
         }
       }
 
-      with_mock Notifier, deliver_monthly_reminder: fn _, _ -> {:error, :smtp_error} end do
+      with_mock Notifier, deliver_monthly_reminder: fn _, _, _ -> {:error, :smtp_error} end do
         assert {:error, {:error, :smtp_error}} = MailerWorker.perform(job)
       end
     end
@@ -125,10 +125,10 @@ defmodule Antonia.MailerWorkerTest do
         }
       }
 
-      with_mock Notifier, deliver_monthly_reminder: fn _, _ -> {:ok, %{}} end do
+      with_mock Notifier, deliver_monthly_reminder: fn _, _, _ -> {:ok, %{}} end do
         assert :ok = MailerWorker.perform(job)
         # The worker should handle preloading the store
-        assert_called(Notifier.deliver_monthly_reminder(:_, :_))
+        assert_called(Notifier.deliver_monthly_reminder(:_, :_, :_))
       end
     end
   end
@@ -143,13 +143,13 @@ defmodule Antonia.MailerWorkerTest do
         "email_type" => "monthly_reminder"
       }
 
-      with_mock Notifier, deliver_monthly_reminder: fn _, _ -> {:ok, %{}} end do
+      with_mock Notifier, deliver_monthly_reminder: fn _, _, _ -> {:ok, %{}} end do
         assert {:ok, _} = job |> MailerWorker.new() |> Oban.insert()
 
         # Process the job
         perform_job(MailerWorker, job)
 
-        assert_called(Notifier.deliver_monthly_reminder(:_, :_))
+        assert_called(Notifier.deliver_monthly_reminder(:_, :_, :_))
       end
     end
   end

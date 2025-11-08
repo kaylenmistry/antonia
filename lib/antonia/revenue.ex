@@ -519,6 +519,21 @@ defmodule Antonia.Revenue do
     end
   end
 
+  @doc "Public function to update a report via submission token (no authentication required)"
+  @spec update_report_via_token(Report.t(), map()) ::
+          {:ok, Report.t()} | {:error, Changeset.t()}
+  def update_report_via_token(report, attrs) do
+    # Preload store and building to get group for currency
+    report = Repo.preload(report, store: [building: :group])
+    store = report.store
+    group = store.building.group
+
+    report_params = build_report_params(report, attrs, store, group)
+    changeset = Report.changeset(report, report_params)
+
+    Repo.update(changeset)
+  end
+
   defp build_report_params(existing_report, attrs, store, group) do
     {period_start, period_end} = get_period(existing_report, attrs)
     revenue_decimal = normalize_revenue(attrs[:revenue] || "0")

@@ -35,9 +35,11 @@
         <mj-text color="#4b5563" padding-bottom="16px">
           <%= gettext("In accordance with the terms of the lease agreement, we request that you report the revenue for %{store_name} for the period %{period_start} to %{period_end}.", store_name: @store.name, period_start: @period_start, period_end: @period_end) %>
         </mj-text>
-        <mj-button href="<%= @base_url %>/stores/<%= @store.id %>" align="left" background-color="#0094ca" border-radius="0.375rem" padding="0px">
-          <%= gettext("Report revenue") %>
-        </mj-button>
+        <%= if @submission_url do %>
+          <mj-button href="<%= @submission_url %>" align="left" background-color="#0094ca" border-radius="0.375rem" padding="0px">
+            <%= gettext("Report revenue") %>
+          </mj-button>
+        <% end %>
         <mj-text color="#4b5563" padding-top="16px">
           <%= gettext("We would like to politely remind you to submit the revenue report within 7 days of receiving this letter.") %>
         </mj-text>

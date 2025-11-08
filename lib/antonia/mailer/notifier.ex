@@ -17,57 +17,62 @@ defmodule Antonia.Mailer.Notifier do
   alias Antonia.Revenue.Store
 
   @doc "Delivers the monthly reminder email to a recipient store"
-  @spec deliver_monthly_reminder(Store.t(), Report.t()) ::
+  @spec deliver_monthly_reminder(Store.t(), Report.t(), integer() | nil) ::
           {:ok, Swoosh.Email.t()} | {:error, term()}
-  def deliver_monthly_reminder(store, report) do
+  def deliver_monthly_reminder(store, report, oban_job_id \\ nil) do
     Gettext.with_locale(AntoniaWeb.Gettext, "en", fn ->
       subject = gettext("Revenue report due")
-      assigns = email_assigns(store, report)
-
-      deliver_with_logging(:monthly_reminder, store.email, subject, assigns, report)
+      # Token will be generated in create_email_log_and_send
+      deliver_with_logging(:monthly_reminder, store.email, subject, report, oban_job_id)
     end)
   end
 
   @doc "Delivers the overdue reminder email to a recipient store"
-  @spec deliver_overdue_reminder(Store.t(), Report.t()) ::
+  @spec deliver_overdue_reminder(Store.t(), Report.t(), integer() | nil) ::
           {:ok, Swoosh.Email.t()} | {:error, term()}
-  def deliver_overdue_reminder(store, report) do
+  def deliver_overdue_reminder(store, report, oban_job_id \\ nil) do
     Gettext.with_locale(AntoniaWeb.Gettext, "en", fn ->
       subject = gettext("REMINDER: Report revenue due")
-      assigns = email_assigns(store, report)
-
-      deliver_with_logging(:overdue_reminder, store.email, subject, assigns, report)
+      # Token will be generated in create_email_log_and_send
+      deliver_with_logging(:overdue_reminder, store.email, subject, report, oban_job_id)
     end)
   end
 
   @doc "Delivers the submission receipt email to a recipient store"
-  @spec deliver_submission_receipt(Store.t(), Report.t()) ::
+  @spec deliver_submission_receipt(Store.t(), Report.t(), integer() | nil) ::
           {:ok, Swoosh.Email.t()} | {:error, term()}
-  def deliver_submission_receipt(store, report) do
+  def deliver_submission_receipt(store, report, oban_job_id \\ nil) do
     Gettext.with_locale(AntoniaWeb.Gettext, "en", fn ->
       subject = gettext("Thank you")
-      assigns = email_assigns(store, report)
-
-      deliver_with_logging(:submission_receipt, store.email, subject, assigns, report)
+      # Token will be generated in create_email_log_and_send
+      deliver_with_logging(:submission_receipt, store.email, subject, report, oban_job_id)
     end)
   end
 
-  @spec email_assigns(Store.t(), Report.t()) :: map()
-  defp email_assigns(store, report) do
+  @spec email_assigns(Store.t(), Report.t(), String.t() | nil) :: map()
+  defp email_assigns(store, report, submission_token) do
+    submission_url =
+      if submission_token do
+        "#{base_url()}/submit/#{submission_token}"
+      else
+        nil
+      end
+
     %{
       store: store,
       period_start: report.period_start,
       period_end: report.period_end,
-      base_url: base_url()
+      base_url: base_url(),
+      submission_url: submission_url
     }
   end
 
   # Delivers the email with logging using a transaction
-  @spec deliver_with_logging(atom(), String.t(), String.t(), map(), Report.t()) ::
+  @spec deliver_with_logging(atom(), String.t(), String.t(), Report.t(), integer() | nil) ::
           {:ok, Swoosh.Email.t()} | {:error, term()}
-  defp deliver_with_logging(email_type, recipient, subject, assigns, report) do
+  defp deliver_with_logging(email_type, recipient, subject, report, oban_job_id) do
     case Repo.transaction(fn ->
-           create_email_log_and_send(email_type, recipient, subject, assigns, report)
+           create_email_log_and_send(email_type, recipient, subject, report, oban_job_id)
          end) do
       {:ok, result} -> result
       {:error, error} -> {:error, error}
@@ -75,25 +80,44 @@ defmodule Antonia.Mailer.Notifier do
   end
 
   # Creates email log and sends the email
-  @spec create_email_log_and_send(atom(), String.t(), String.t(), map(), Report.t()) ::
+  @spec create_email_log_and_send(atom(), String.t(), String.t(), Report.t(), integer() | nil) ::
           {:ok, Swoosh.Email.t()} | {:error, term()}
-  defp create_email_log_and_send(email_type, recipient, subject, assigns, report) do
+  defp create_email_log_and_send(email_type, recipient, subject, report, oban_job_id) do
+    # Get store for email assigns (ensure it's preloaded)
+    report = Repo.preload(report, :store)
+    store = report.store
+
+    {submission_token, expires_at} = generate_submission_token_if_needed(email_type)
+
     email_log_attrs = %{
       report_id: report.id,
       email_type: email_type,
       recipient_email: recipient,
       subject: subject,
-      status: :pending
+      status: :pending,
+      oban_job_id: oban_job_id,
+      submission_token: submission_token,
+      expires_at: expires_at
     }
 
     case Repo.insert(EmailLog.changeset(%EmailLog{}, email_log_attrs)) do
       {:ok, email_log} ->
+        assigns = email_assigns(store, report, submission_token)
         send_and_log_email(email_type, recipient, subject, assigns, email_log)
 
       {:error, changeset} ->
         Repo.rollback(changeset)
     end
   end
+
+  # Generates submission token and expiry for reminder emails
+  @spec generate_submission_token_if_needed(atom()) :: {String.t() | nil, DateTime.t() | nil}
+  defp generate_submission_token_if_needed(email_type)
+       when email_type in [:monthly_reminder, :overdue_reminder] do
+    {EmailLog.generate_submission_token(), EmailLog.calculate_expires_at()}
+  end
+
+  defp generate_submission_token_if_needed(_), do: {nil, nil}
 
   # Sends email and updates the log based on result
   @spec send_and_log_email(atom(), String.t(), String.t(), map(), EmailLog.t()) ::

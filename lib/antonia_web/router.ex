@@ -50,6 +50,7 @@ defmodule AntoniaWeb.Router do
     live "/reporting/groups/:id", ReportingLive
     live "/reporting/groups/:id/buildings/:building_id", BuildingLive
     live "/reporting/groups/:id/buildings/:building_id/stores/:store_id", StoreLive
+    live "/submit/:token", ReportSubmissionLive
   end
 
   scope "/app", AntoniaWeb do

@@ -218,4 +218,125 @@ defmodule Antonia.Revenue.EmailLogTest do
       assert overdue_count == 1
     end
   end
+
+  describe "generate_submission_token/0" do
+    test "generates a unique URL-safe token" do
+      token1 = EmailLog.generate_submission_token()
+      token2 = EmailLog.generate_submission_token()
+
+      assert token1 != token2
+      assert is_binary(token1)
+      assert String.length(token1) > 20
+      # Base64URL encoded 32 bytes should be ~43 characters
+      assert String.length(token1) >= 40
+    end
+  end
+
+  describe "calculate_expires_at/0" do
+    test "returns a datetime 30 days in the future" do
+      expires_at = EmailLog.calculate_expires_at()
+      now = DateTime.utc_now()
+
+      # Should be approximately 30 days from now (allow 1 second variance)
+      days_diff = DateTime.diff(expires_at, now, :day)
+      assert days_diff >= 29
+      assert days_diff <= 31
+    end
+  end
+
+  describe "find_by_token/1" do
+    test "finds email log by submission token" do
+      report = insert(:report)
+      token = EmailLog.generate_submission_token()
+
+      email_log =
+        insert(:email_log,
+          report: report,
+          submission_token: token,
+          expires_at: EmailLog.calculate_expires_at()
+        )
+
+      result = EmailLog.find_by_token(token)
+
+      assert result.id == email_log.id
+      assert result.submission_token == token
+      assert Ecto.assoc_loaded?(result.report)
+    end
+
+    test "returns nil for non-existent token" do
+      assert is_nil(EmailLog.find_by_token("non-existent-token"))
+    end
+  end
+
+  describe "mark_accessed/1" do
+    test "updates accessed_at timestamp" do
+      email_log = insert(:email_log, accessed_at: nil)
+
+      changeset = EmailLog.mark_accessed(email_log)
+
+      assert changeset.changes.accessed_at
+      assert DateTime.diff(changeset.changes.accessed_at, DateTime.utc_now(), :second) < 2
+    end
+  end
+
+  describe "mark_submitted/1" do
+    test "updates submitted_at timestamp" do
+      email_log = insert(:email_log, submitted_at: nil)
+
+      changeset = EmailLog.mark_submitted(email_log)
+
+      assert changeset.changes.submitted_at
+      assert DateTime.diff(changeset.changes.submitted_at, DateTime.utc_now(), :second) < 2
+    end
+  end
+
+  describe "valid?/1" do
+    test "returns true for valid token" do
+      email_log =
+        insert(:email_log,
+          submission_token: EmailLog.generate_submission_token(),
+          expires_at: DateTime.add(DateTime.utc_now(), 1, :day),
+          submitted_at: nil
+        )
+
+      assert EmailLog.valid?(email_log)
+    end
+
+    test "returns false for nil email log" do
+      refute EmailLog.valid?(nil)
+    end
+
+    test "returns false when token is expired" do
+      email_log =
+        insert(:email_log,
+          submission_token: EmailLog.generate_submission_token(),
+          expires_at: DateTime.add(DateTime.utc_now(), -1, :day),
+          submitted_at: nil
+        )
+
+      refute EmailLog.valid?(email_log)
+    end
+
+    test "returns false when already submitted" do
+      email_log =
+        insert(:email_log,
+          submission_token: EmailLog.generate_submission_token(),
+          expires_at: DateTime.add(DateTime.utc_now(), 1, :day),
+          submitted_at: DateTime.utc_now()
+        )
+
+      refute EmailLog.valid?(email_log)
+    end
+
+    test "returns false when expires_at is nil" do
+      email_log =
+        insert(:email_log,
+          submission_token: EmailLog.generate_submission_token(),
+          expires_at: nil,
+          submitted_at: nil
+        )
+
+      refute EmailLog.valid?(email_log)
+    end
+  end
 end

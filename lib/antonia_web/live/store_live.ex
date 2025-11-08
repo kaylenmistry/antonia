@@ -6,6 +6,10 @@ defmodule AntoniaWeb.StoreLive do
 
   import AntoniaWeb.SharedComponents
 
+  import AntoniaWeb.DisplayHelpers,
+    only: [format_currency: 2, format_timestamp: 1, build_error_message: 2]
+
+  alias Antonia.MailerWorker
   alias Antonia.Repo
   alias Antonia.Revenue
   alias Antonia.Revenue.Report
@@ -39,7 +43,8 @@ defmodule AntoniaWeb.StoreLive do
        is_editing: false,
        edited_revenue: 0,
        note: "",
-       selected_file: nil
+       selected_file: nil,
+       sending_email?: false
      )}
   end
 
@@ -200,6 +205,33 @@ defmodule AntoniaWeb.StoreLive do
   end
 
   @impl Phoenix.LiveView
+  def handle_event("send_report_email", _params, socket) do
+    socket = assign(socket, :sending_email?, true)
+
+    result =
+      case socket.assigns.current_report do
+        nil ->
+          # Create a new report if it doesn't exist
+          create_report_and_send_email(socket)
+
+        report ->
+          # Use existing report
+          send_email_for_report(socket, report)
+      end
+
+    case result do
+      {:ok, updated_socket} ->
+        {:noreply, updated_socket}
+
+      {:error, reason} ->
+        {:noreply,
+         socket
+         |> assign(:sending_email?, false)
+         |> put_flash(:error, gettext("Failed to send email: %{reason}", reason: reason))}
+    end
+  end
+
+  @impl Phoenix.LiveView
   def handle_event("save_revenue", params, socket) do
     attrs = prepare_revenue_attrs(params, socket.assigns)
 
@@ -209,7 +241,7 @@ defmodule AntoniaWeb.StoreLive do
         {:noreply, put_flash(socket, :info, gettext("Revenue updated successfully"))}
 
       {:error, changeset} when is_struct(changeset) ->
-        error_message = build_error_message(changeset)
+        error_message = build_error_message(changeset, gettext("Failed to update revenue"))
         {:noreply, put_flash(socket, :error, error_message)}
 
       {:error, reason} when is_atom(reason) ->
@@ -309,25 +341,6 @@ defmodule AntoniaWeb.StoreLive do
     Enum.sort_by(historical_data, & &1.year, :desc)
   end
 
-  defp format_currency(amount, currency) when is_number(amount) do
-    currency = currency || "EUR"
-    amount = :erlang.float_to_binary(amount * 1.0, decimals: 2)
-    amount = String.replace(amount, ~r/\B(?=(\d{3})+(?!\d))/, ",")
-
-    symbol =
-      case currency do
-        "EUR" -> "€"
-        "AUD" -> "A$"
-        "USD" -> "$"
-        _ -> currency
-      end
-
-    "#{symbol}#{amount}"
-  end
-
-  defp format_currency(amount, _) when is_number(amount), do: format_currency(amount, "EUR")
-  defp format_currency(_, _), do: "€0"
-
   defp month_name(month) do
     month_names = [
       "January",
@@ -347,28 +360,61 @@ defmodule AntoniaWeb.StoreLive do
     Enum.at(month_names, month - 1, "Unknown")
   end
 
-  defp build_error_message(changeset) do
-    case changeset.errors do
-      [] ->
-        gettext("Failed to update revenue")
+  defp create_report_and_send_email(socket) do
+    %{
+      year: year,
+      month: month,
+      user_id: user_id,
+      group_id: group_id,
+      building_id: building_id,
+      store_id: store_id
+    } =
+      socket.assigns
 
-      errors ->
-        error_details =
-          Enum.map_join(errors, ", ", fn {field, {message, _}} ->
-            "#{field}: #{message}"
-          end)
+    # Build report attributes with defaults
+    attrs = %{
+      revenue: "0",
+      note: "",
+      year: year,
+      month: month,
+      status: "pending"
+    }
 
-        gettext("Failed to update revenue: %{errors}", errors: error_details)
+    case Revenue.upsert_report(user_id, group_id, building_id, store_id, nil, attrs) do
+      {:ok, report} ->
+        send_email_for_report(socket, report)
+
+      {:error, changeset} ->
+        error_message = build_error_message(changeset, gettext("Failed to create report"))
+        {:error, error_message}
     end
   end
 
-  defp format_timestamp(%NaiveDateTime{} = datetime) do
-    Calendar.strftime(datetime, "%B %d, %Y at %I:%M %p")
-  end
+  defp send_email_for_report(socket, report) do
+    # Schedule the email using MailerWorker
+    %{report_id: report.id, email_type: "monthly_reminder"}
+    |> MailerWorker.new()
+    |> Oban.insert()
 
-  defp format_timestamp(%DateTime{} = datetime) do
-    Calendar.strftime(datetime, "%B %d, %Y at %I:%M %p")
-  end
+    # Reload store data to get updated report with email_logs
+    store = reload_store_with_associations(socket.assigns.store_id)
 
-  defp format_timestamp(_), do: ""
+    current_report =
+      Revenue.find_report_for_period(store.reports, socket.assigns.year, socket.assigns.month)
+
+    updated_timeline = Report.timeline_events(current_report)
+
+    updated_socket =
+      socket
+      |> assign(:sending_email?, false)
+      |> assign(:store, store)
+      |> assign(:current_report, current_report)
+      |> assign(:timeline_events, updated_timeline)
+      |> put_flash(
+        :info,
+        gettext("Email queued successfully to %{email}", email: socket.assigns.store.email)
+      )
+
+    {:ok, updated_socket}
+  end
 end
