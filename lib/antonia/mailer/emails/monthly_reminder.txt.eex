@@ -7,9 +7,7 @@
 
 <%= gettext("In accordance with the terms of the lease agreement, we request that you report the revenue for %{store_name} for the period %{period_start} to %{period_end}.", store_name: @store.name, period_start: @period_start, period_end: @period_end) %>
 
-<%= if @submission_url do %>
 <%= gettext("Report revenue") %>: <%= @submission_url %>
-<% end %>
 
 <%= gettext("We would like to politely remind you to submit the revenue report within 7 days of receiving this letter.") %>
 

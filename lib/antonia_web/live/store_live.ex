@@ -12,8 +12,10 @@ defmodule AntoniaWeb.StoreLive do
   alias Antonia.MailerWorker
   alias Antonia.Repo
   alias Antonia.Revenue
+  alias Antonia.Revenue.Attachment
   alias Antonia.Revenue.Report
   alias Antonia.Revenue.Store
+  alias Antonia.Services.S3
 
   @impl Phoenix.LiveView
   def mount(
@@ -25,7 +27,14 @@ defmodule AntoniaWeb.StoreLive do
     send(self(), {:fetch_store_data, user_id, group_id, building_id, store_id, params})
 
     {:ok,
-     assign(socket,
+     socket
+     |> allow_upload(:attachments,
+       accept: ~w(.jpg .jpeg .png .pdf .doc .docx .xlsx .txt),
+       max_entries: 10,
+       auto_upload: true,
+       external: &S3.presign_upload/2
+     )
+     |> assign(
        user: auth.info,
        user_id: user_id,
        group_id: group_id,
@@ -43,7 +52,6 @@ defmodule AntoniaWeb.StoreLive do
        is_editing: false,
        edited_revenue: 0,
        note: "",
-       selected_file: nil,
        sending_email?: false
      )}
   end
@@ -89,8 +97,8 @@ defmodule AntoniaWeb.StoreLive do
          {:ok, building} <- get_building(user_id, group_id, building_id),
          {:ok, store} <- get_store(user_id, group_id, building_id, store_id),
          {:ok, year_month} <- parse_year_month(params) do
-      # Preload email_logs with reports for timeline display
-      store = Repo.preload(store, reports: [:email_logs])
+      # Preload email_logs and attachments with reports for timeline display
+      store = Repo.preload(store, reports: [:email_logs, :attachments])
 
       current_report =
         Revenue.find_report_for_period(store.reports, year_month.year, year_month.month)
@@ -182,7 +190,6 @@ defmodule AntoniaWeb.StoreLive do
       |> assign(:is_editing, false)
       |> assign(:edited_revenue, original_revenue)
       |> assign(:note, original_note)
-      |> assign(:selected_file, nil)
 
     {:noreply, socket}
   end
@@ -236,7 +243,9 @@ defmodule AntoniaWeb.StoreLive do
     attrs = prepare_revenue_attrs(params, socket.assigns)
 
     case save_revenue_upsert(socket.assigns, attrs) do
-      {:ok, _report} ->
+      {:ok, report} ->
+        # Save attachments if any were uploaded
+        save_attachments(socket, report)
         socket = update_socket_after_save(socket, attrs.note)
         {:noreply, put_flash(socket, :info, gettext("Revenue updated successfully"))}
 
@@ -247,6 +256,28 @@ defmodule AntoniaWeb.StoreLive do
       {:error, reason} when is_atom(reason) ->
         error_message = gettext("Failed to save revenue: %{reason}", reason: reason)
         {:noreply, put_flash(socket, :error, error_message)}
+    end
+  end
+
+  @impl Phoenix.LiveView
+  def handle_event("cancel-upload", %{"ref" => ref}, socket) do
+    {:noreply, cancel_upload(socket, :attachments, ref)}
+  rescue
+    ArgumentError ->
+      # Entry might have already been consumed or doesn't exist
+      {:noreply, socket}
+  end
+
+  @impl Phoenix.LiveView
+  def handle_event("view_attachment", %{"id" => attachment_id}, socket) do
+    attachment = Repo.get(Attachment, attachment_id)
+
+    case attachment && S3.presign_read(attachment.s3_key) do
+      {:ok, url} ->
+        {:noreply, push_event(socket, "open_url", %{url: url})}
+
+      _ ->
+        {:noreply, put_flash(socket, :error, gettext("Failed to generate attachment URL"))}
     end
   end
 
@@ -297,13 +328,12 @@ defmodule AntoniaWeb.StoreLive do
       )
     )
     |> assign(:is_editing, false)
-    |> assign(:selected_file, nil)
   end
 
   defp reload_store_with_associations(store_id) do
     Store
     |> Repo.get(store_id)
-    |> Repo.preload(reports: [:email_logs])
+    |> Repo.preload(reports: [:email_logs, :attachments])
     |> add_area_field()
   end
 
@@ -314,6 +344,50 @@ defmodule AntoniaWeb.StoreLive do
 
   defp extract_revenue_float(nil), do: 0.0
   defp extract_revenue_float(report), do: Decimal.to_float(report.revenue || Decimal.new("0"))
+
+  # Attachment helpers
+
+  defp extract_file_info(%{key: s3_key}, %Phoenix.LiveView.UploadEntry{
+         progress: progress,
+         client_name: client_name,
+         client_type: client_type,
+         client_size: client_size
+       }) do
+    case progress do
+      100 ->
+        {:ok,
+         %{
+           s3_key: s3_key,
+           filename: client_name,
+           file_type: client_type,
+           file_size: client_size
+         }}
+
+      _ ->
+        {:error, :upload_not_finished}
+    end
+  end
+
+  defp save_attachments(socket, report) do
+    attachments =
+      consume_uploaded_entries(socket, :attachments, fn entry, %{key: s3_key} ->
+        extract_file_info(%{key: s3_key}, entry)
+      end)
+
+    Enum.each(attachments, fn
+      {:ok, attrs} ->
+        attrs_with_report = Map.put(attrs, :report_id, report.id)
+        changeset = Attachment.changeset(%Attachment{}, attrs_with_report)
+
+        case Repo.insert(changeset) do
+          {:ok, _attachment} -> :ok
+          {:error, _changeset} -> :ok
+        end
+
+      {:error, _} ->
+        :ok
+    end)
+  end
 
   # Private helper functions
 

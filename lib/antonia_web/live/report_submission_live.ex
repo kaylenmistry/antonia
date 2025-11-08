@@ -10,20 +10,33 @@ defmodule AntoniaWeb.ReportSubmissionLive do
 
   alias Antonia.Repo
   alias Antonia.Revenue
+  alias Antonia.Revenue.Attachment
   alias Antonia.Revenue.EmailLog
+  alias Antonia.Services.S3
 
   @impl Phoenix.LiveView
   def mount(%{"token" => token}, _session, socket) do
     case load_and_validate_token(token) do
       {:ok, email_log, report} ->
+        # Get user_id from the group's created_by_user_id for S3 uploads
+        user_id = report.store.building.group.created_by_user_id
+
         {:ok,
-         assign(socket,
+         socket
+         |> allow_upload(:attachments,
+           accept: ~w(.jpg .jpeg .png .pdf .doc .docx .xlsx .txt),
+           max_entries: 10,
+           auto_upload: true,
+           external: &S3.presign_upload/2
+         )
+         |> assign(
            error: nil,
            email_log: email_log,
            report: report,
            submitted: false,
            revenue: extract_revenue_float(report),
-           note: report.note || ""
+           note: report.note || "",
+           user_id: user_id
          )}
 
       {:error, :token_not_found} ->
@@ -88,6 +101,15 @@ defmodule AntoniaWeb.ReportSubmissionLive do
   end
 
   @impl Phoenix.LiveView
+  def handle_event("cancel-upload", %{"ref" => ref}, socket) do
+    {:noreply, cancel_upload(socket, :attachments, ref)}
+  rescue
+    ArgumentError ->
+      # Entry might have already been consumed or doesn't exist
+      {:noreply, socket}
+  end
+
+  @impl Phoenix.LiveView
   def handle_event("submit_report", params, socket) do
     case socket.assigns do
       %{error: nil, report: report, email_log: email_log} ->
@@ -117,6 +139,8 @@ defmodule AntoniaWeb.ReportSubmissionLive do
 
     case Revenue.update_report_via_token(report, attrs) do
       {:ok, updated_report} ->
+        # Save attachments if any were uploaded
+        save_attachments(socket, updated_report)
         # Mark as submitted and extend expiry (ignore errors here as report is already updated)
         _ = mark_submitted_and_extend_expiry(email_log)
 
@@ -148,4 +172,48 @@ defmodule AntoniaWeb.ReportSubmissionLive do
 
   defp extract_revenue_float(nil), do: 0.0
   defp extract_revenue_float(report), do: Decimal.to_float(report.revenue || Decimal.new("0"))
+
+  # Attachment helpers
+
+  defp extract_file_info(%{key: s3_key}, %Phoenix.LiveView.UploadEntry{
+         progress: progress,
+         client_name: client_name,
+         client_type: client_type,
+         client_size: client_size
+       }) do
+    case progress do
+      100 ->
+        {:ok,
+         %{
+           s3_key: s3_key,
+           filename: client_name,
+           file_type: client_type,
+           file_size: client_size
+         }}
+
+      _ ->
+        {:error, :upload_not_finished}
+    end
+  end
+
+  defp save_attachments(socket, report) do
+    attachments =
+      consume_uploaded_entries(socket, :attachments, fn entry, %{key: s3_key} ->
+        extract_file_info(%{key: s3_key}, entry)
+      end)
+
+    Enum.each(attachments, fn
+      {:ok, attrs} ->
+        attrs_with_report = Map.put(attrs, :report_id, report.id)
+        changeset = Attachment.changeset(%Attachment{}, attrs_with_report)
+
+        case Repo.insert(changeset) do
+          {:ok, _attachment} -> :ok
+          {:error, _changeset} -> :ok
+        end
+
+      {:error, _} ->
+        :ok
+    end)
+  end
 end

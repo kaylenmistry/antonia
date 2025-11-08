@@ -5,6 +5,7 @@ defmodule Antonia.Revenue.Report do
   import Ecto.Changeset
 
   alias Antonia.Enums.ReportStatus
+  alias Antonia.Revenue.Attachment
   alias Antonia.Revenue.EmailLog
   alias Antonia.Revenue.Store
 
@@ -16,9 +17,7 @@ defmodule Antonia.Revenue.Report do
     :period_end,
     :store_id,
     :due_date,
-    :note,
-    :email_content,
-    :attachment_url
+    :note
   ]
 
   @required_fields [
@@ -39,11 +38,10 @@ defmodule Antonia.Revenue.Report do
     field(:period_end, :date)
     field(:due_date, :date)
     field(:note, :string)
-    field(:email_content, :string)
-    field(:attachment_url, :string)
 
     belongs_to(:store, Store)
     has_many(:email_logs, EmailLog)
+    has_many(:attachments, Attachment)
 
     timestamps()
   end
