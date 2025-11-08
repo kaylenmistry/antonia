@@ -6,10 +6,16 @@ defmodule AntoniaWeb.StoreLive do
 
   import AntoniaWeb.SharedComponents
 
+  import AntoniaWeb.DisplayHelpers,
+    only: [format_currency: 2, format_timestamp: 1, build_error_message: 2]
+
+  alias Antonia.MailerWorker
   alias Antonia.Repo
   alias Antonia.Revenue
+  alias Antonia.Revenue.Attachment
   alias Antonia.Revenue.Report
   alias Antonia.Revenue.Store
+  alias Antonia.Services.S3
 
   @impl Phoenix.LiveView
   def mount(
@@ -21,7 +27,14 @@ defmodule AntoniaWeb.StoreLive do
     send(self(), {:fetch_store_data, user_id, group_id, building_id, store_id, params})
 
     {:ok,
-     assign(socket,
+     socket
+     |> allow_upload(:attachments,
+       accept: ~w(.jpg .jpeg .png .pdf .doc .docx .xlsx .txt),
+       max_entries: 10,
+       auto_upload: true,
+       external: &S3.presign_upload/2
+     )
+     |> assign(
        user: auth.info,
        user_id: user_id,
        group_id: group_id,
@@ -39,7 +52,7 @@ defmodule AntoniaWeb.StoreLive do
        is_editing: false,
        edited_revenue: 0,
        note: "",
-       selected_file: nil
+       sending_email?: false
      )}
   end
 
@@ -84,8 +97,8 @@ defmodule AntoniaWeb.StoreLive do
          {:ok, building} <- get_building(user_id, group_id, building_id),
          {:ok, store} <- get_store(user_id, group_id, building_id, store_id),
          {:ok, year_month} <- parse_year_month(params) do
-      # Preload email_logs with reports for timeline display
-      store = Repo.preload(store, reports: [:email_logs])
+      # Preload email_logs and attachments with reports for timeline display
+      store = Repo.preload(store, reports: [:email_logs, :attachments])
 
       current_report =
         Revenue.find_report_for_period(store.reports, year_month.year, year_month.month)
@@ -177,7 +190,6 @@ defmodule AntoniaWeb.StoreLive do
       |> assign(:is_editing, false)
       |> assign(:edited_revenue, original_revenue)
       |> assign(:note, original_note)
-      |> assign(:selected_file, nil)
 
     {:noreply, socket}
   end
@@ -200,21 +212,72 @@ defmodule AntoniaWeb.StoreLive do
   end
 
   @impl Phoenix.LiveView
+  def handle_event("send_report_email", _params, socket) do
+    socket = assign(socket, :sending_email?, true)
+
+    result =
+      case socket.assigns.current_report do
+        nil ->
+          # Create a new report if it doesn't exist
+          create_report_and_send_email(socket)
+
+        report ->
+          # Use existing report
+          send_email_for_report(socket, report)
+      end
+
+    case result do
+      {:ok, updated_socket} ->
+        {:noreply, updated_socket}
+
+      {:error, reason} ->
+        {:noreply,
+         socket
+         |> assign(:sending_email?, false)
+         |> put_flash(:error, gettext("Failed to send email: %{reason}", reason: reason))}
+    end
+  end
+
+  @impl Phoenix.LiveView
   def handle_event("save_revenue", params, socket) do
     attrs = prepare_revenue_attrs(params, socket.assigns)
 
     case save_revenue_upsert(socket.assigns, attrs) do
-      {:ok, _report} ->
+      {:ok, report} ->
+        # Save attachments if any were uploaded
+        save_attachments(socket, report)
         socket = update_socket_after_save(socket, attrs.note)
         {:noreply, put_flash(socket, :info, gettext("Revenue updated successfully"))}
 
       {:error, changeset} when is_struct(changeset) ->
-        error_message = build_error_message(changeset)
+        error_message = build_error_message(changeset, gettext("Failed to update revenue"))
         {:noreply, put_flash(socket, :error, error_message)}
 
       {:error, reason} when is_atom(reason) ->
         error_message = gettext("Failed to save revenue: %{reason}", reason: reason)
         {:noreply, put_flash(socket, :error, error_message)}
+    end
+  end
+
+  @impl Phoenix.LiveView
+  def handle_event("cancel-upload", %{"ref" => ref}, socket) do
+    {:noreply, cancel_upload(socket, :attachments, ref)}
+  rescue
+    ArgumentError ->
+      # Entry might have already been consumed or doesn't exist
+      {:noreply, socket}
+  end
+
+  @impl Phoenix.LiveView
+  def handle_event("view_attachment", %{"id" => attachment_id}, socket) do
+    attachment = Repo.get(Attachment, attachment_id)
+
+    case attachment && S3.presign_read(attachment.s3_key) do
+      {:ok, url} ->
+        {:noreply, push_event(socket, "open_url", %{url: url})}
+
+      _ ->
+        {:noreply, put_flash(socket, :error, gettext("Failed to generate attachment URL"))}
     end
   end
 
@@ -265,13 +328,12 @@ defmodule AntoniaWeb.StoreLive do
       )
     )
     |> assign(:is_editing, false)
-    |> assign(:selected_file, nil)
   end
 
   defp reload_store_with_associations(store_id) do
     Store
     |> Repo.get(store_id)
-    |> Repo.preload(reports: [:email_logs])
+    |> Repo.preload(reports: [:email_logs, :attachments])
     |> add_area_field()
   end
 
@@ -282,6 +344,50 @@ defmodule AntoniaWeb.StoreLive do
 
   defp extract_revenue_float(nil), do: 0.0
   defp extract_revenue_float(report), do: Decimal.to_float(report.revenue || Decimal.new("0"))
+
+  # Attachment helpers
+
+  defp extract_file_info(%{key: s3_key}, %Phoenix.LiveView.UploadEntry{
+         progress: progress,
+         client_name: client_name,
+         client_type: client_type,
+         client_size: client_size
+       }) do
+    case progress do
+      100 ->
+        {:ok,
+         %{
+           s3_key: s3_key,
+           filename: client_name,
+           file_type: client_type,
+           file_size: client_size
+         }}
+
+      _ ->
+        {:error, :upload_not_finished}
+    end
+  end
+
+  defp save_attachments(socket, report) do
+    attachments =
+      consume_uploaded_entries(socket, :attachments, fn entry, %{key: s3_key} ->
+        extract_file_info(%{key: s3_key}, entry)
+      end)
+
+    Enum.each(attachments, fn
+      {:ok, attrs} ->
+        attrs_with_report = Map.put(attrs, :report_id, report.id)
+        changeset = Attachment.changeset(%Attachment{}, attrs_with_report)
+
+        case Repo.insert(changeset) do
+          {:ok, _attachment} -> :ok
+          {:error, _changeset} -> :ok
+        end
+
+      {:error, _} ->
+        :ok
+    end)
+  end
 
   # Private helper functions
 
@@ -309,25 +415,6 @@ defmodule AntoniaWeb.StoreLive do
     Enum.sort_by(historical_data, & &1.year, :desc)
   end
 
-  defp format_currency(amount, currency) when is_number(amount) do
-    currency = currency || "EUR"
-    amount = :erlang.float_to_binary(amount * 1.0, decimals: 2)
-    amount = String.replace(amount, ~r/\B(?=(\d{3})+(?!\d))/, ",")
-
-    symbol =
-      case currency do
-        "EUR" -> "€"
-        "AUD" -> "A$"
-        "USD" -> "$"
-        _ -> currency
-      end
-
-    "#{symbol}#{amount}"
-  end
-
-  defp format_currency(amount, _) when is_number(amount), do: format_currency(amount, "EUR")
-  defp format_currency(_, _), do: "€0"
-
   defp month_name(month) do
     month_names = [
       "January",
@@ -347,28 +434,61 @@ defmodule AntoniaWeb.StoreLive do
     Enum.at(month_names, month - 1, "Unknown")
   end
 
-  defp build_error_message(changeset) do
-    case changeset.errors do
-      [] ->
-        gettext("Failed to update revenue")
+  defp create_report_and_send_email(socket) do
+    %{
+      year: year,
+      month: month,
+      user_id: user_id,
+      group_id: group_id,
+      building_id: building_id,
+      store_id: store_id
+    } =
+      socket.assigns
 
-      errors ->
-        error_details =
-          Enum.map_join(errors, ", ", fn {field, {message, _}} ->
-            "#{field}: #{message}"
-          end)
+    # Build report attributes with defaults
+    attrs = %{
+      revenue: "0",
+      note: "",
+      year: year,
+      month: month,
+      status: "pending"
+    }
 
-        gettext("Failed to update revenue: %{errors}", errors: error_details)
+    case Revenue.upsert_report(user_id, group_id, building_id, store_id, nil, attrs) do
+      {:ok, report} ->
+        send_email_for_report(socket, report)
+
+      {:error, changeset} ->
+        error_message = build_error_message(changeset, gettext("Failed to create report"))
+        {:error, error_message}
     end
   end
 
-  defp format_timestamp(%NaiveDateTime{} = datetime) do
-    Calendar.strftime(datetime, "%B %d, %Y at %I:%M %p")
-  end
+  defp send_email_for_report(socket, report) do
+    # Schedule the email using MailerWorker
+    %{report_id: report.id, email_type: "monthly_reminder"}
+    |> MailerWorker.new()
+    |> Oban.insert()
 
-  defp format_timestamp(%DateTime{} = datetime) do
-    Calendar.strftime(datetime, "%B %d, %Y at %I:%M %p")
-  end
+    # Reload store data to get updated report with email_logs
+    store = reload_store_with_associations(socket.assigns.store_id)
 
-  defp format_timestamp(_), do: ""
+    current_report =
+      Revenue.find_report_for_period(store.reports, socket.assigns.year, socket.assigns.month)
+
+    updated_timeline = Report.timeline_events(current_report)
+
+    updated_socket =
+      socket
+      |> assign(:sending_email?, false)
+      |> assign(:store, store)
+      |> assign(:current_report, current_report)
+      |> assign(:timeline_events, updated_timeline)
+      |> put_flash(
+        :info,
+        gettext("Email queued successfully to %{email}", email: socket.assigns.store.email)
+      )
+
+    {:ok, updated_socket}
+  end
 end

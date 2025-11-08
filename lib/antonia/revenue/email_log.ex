@@ -21,7 +21,11 @@ defmodule Antonia.Revenue.EmailLog do
     :status,
     :sent_at,
     :error_message,
-    :oban_job_id
+    :oban_job_id,
+    :submission_token,
+    :expires_at,
+    :accessed_at,
+    :submitted_at
   ]
 
   @required_fields [:report_id, :email_type, :recipient_email, :subject, :status]
@@ -34,6 +38,10 @@ defmodule Antonia.Revenue.EmailLog do
     field(:sent_at, :utc_datetime)
     field(:error_message, :string)
     field(:oban_job_id, :integer)
+    field(:submission_token, :string)
+    field(:expires_at, :utc_datetime)
+    field(:accessed_at, :utc_datetime)
+    field(:submitted_at, :utc_datetime)
 
     belongs_to(:report, Report)
 
@@ -121,5 +129,63 @@ defmodule Antonia.Revenue.EmailLog do
         select: count(e.id)
       )
     )
+  end
+
+  @doc "Generate a secure submission token"
+  @spec generate_submission_token() :: String.t()
+  def generate_submission_token do
+    Base.url_encode64(:crypto.strong_rand_bytes(32), padding: false)
+  end
+
+  @doc "Calculate expiry date (1 month from now)"
+  @spec calculate_expires_at() :: DateTime.t()
+  def calculate_expires_at do
+    DateTime.utc_now()
+    |> DateTime.add(30, :day)
+    |> DateTime.truncate(:second)
+  end
+
+  @doc "Find email log by submission token"
+  @spec find_by_token(String.t()) :: __MODULE__.t() | nil
+  def find_by_token(token) do
+    import Ecto.Query
+
+    Antonia.Repo.one(
+      from(e in __MODULE__,
+        where: e.submission_token == ^token,
+        preload: [:report]
+      )
+    )
+  end
+
+  @doc "Mark email log as accessed"
+  @spec mark_accessed(__MODULE__.t()) :: Ecto.Changeset.t()
+  def mark_accessed(email_log) do
+    change(email_log, %{
+      accessed_at: DateTime.truncate(DateTime.utc_now(), :second)
+    })
+  end
+
+  @doc "Mark email log as submitted"
+  @spec mark_submitted(__MODULE__.t()) :: Ecto.Changeset.t()
+  def mark_submitted(email_log) do
+    change(email_log, %{
+      submitted_at: DateTime.truncate(DateTime.utc_now(), :second)
+    })
+  end
+
+  @doc "Check if token is valid (not expired and not already submitted)"
+  @spec valid?(__MODULE__.t() | nil) :: boolean()
+  def valid?(nil), do: false
+
+  def valid?(email_log) do
+    now = DateTime.utc_now()
+
+    cond do
+      is_nil(email_log.expires_at) -> false
+      DateTime.compare(now, email_log.expires_at) == :gt -> false
+      not is_nil(email_log.submitted_at) -> false
+      true -> true
+    end
   end
 end

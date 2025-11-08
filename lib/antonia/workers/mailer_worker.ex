@@ -19,10 +19,13 @@ defmodule Antonia.MailerWorker do
   alias Antonia.Repo
 
   @impl Oban.Worker
-  def perform(%Oban.Job{args: %{"report_id" => report_id, "email_type" => email_type}}) do
+  def perform(%Oban.Job{
+        id: job_id,
+        args: %{"report_id" => report_id, "email_type" => email_type}
+      }) do
     WorkerHelpers.timed("send_email", [report_id: report_id, email_type: email_type], fn ->
       with {:ok, report} <- get_report_with_store(report_id),
-           {:ok, _email} <- send_email(email_type, report.store, report) do
+           {:ok, _email} <- send_email(email_type, report.store, report, job_id) do
         :ok
       else
         error ->
@@ -50,19 +53,19 @@ defmodule Antonia.MailerWorker do
     end
   end
 
-  defp send_email("monthly_reminder", store, report) do
-    Notifier.deliver_monthly_reminder(store, report)
+  defp send_email("monthly_reminder", store, report, oban_job_id) do
+    Notifier.deliver_monthly_reminder(store, report, oban_job_id)
   end
 
-  defp send_email("overdue_reminder", store, report) do
-    Notifier.deliver_overdue_reminder(store, report)
+  defp send_email("overdue_reminder", store, report, oban_job_id) do
+    Notifier.deliver_overdue_reminder(store, report, oban_job_id)
   end
 
-  defp send_email("submission_receipt", store, report) do
-    Notifier.deliver_submission_receipt(store, report)
+  defp send_email("submission_receipt", store, report, oban_job_id) do
+    Notifier.deliver_submission_receipt(store, report, oban_job_id)
   end
 
-  defp send_email(email_type, _store, _report) do
+  defp send_email(email_type, _store, _report, _oban_job_id) do
     {:error, "Unknown email type: #{email_type}"}
   end
 end

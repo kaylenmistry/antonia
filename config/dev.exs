@@ -65,6 +65,12 @@ config :antonia, AntoniaWeb.Endpoint,
 # Enable dev routes for dashboard and mailbox
 config :antonia, dev_routes: true
 
+# Use Local adapter for development mailbox preview
+config :antonia, Antonia.Mailer, adapter: Swoosh.Adapters.Local
+
+# Enable Swoosh local storage for mailbox preview
+config :swoosh, local: true
+
 # Configure logging to file as well as to the console in local environment
 config :logger, Antonia.DevLoggerFileBackend, []
 

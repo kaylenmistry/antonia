@@ -388,7 +388,7 @@ defmodule Antonia.RevenueTest do
       building = insert(:building, name: "Building A", group: group)
       store1 = insert(:store, name: "Store 1", building: building)
       store2 = insert(:store, name: "Store 2", building: building)
-      store3 = insert(:store, name: "Store 3", building: building)
+      _store3 = insert(:store, name: "Store 3", building: building)
 
       current_month = Date.beginning_of_month(Date.utc_today())
       period_end = Date.end_of_month(current_month)
@@ -434,8 +434,8 @@ defmodule Antonia.RevenueTest do
       store1 = insert(:store, building: building)
       store2 = insert(:store, building: building)
       store3 = insert(:store, building: building)
-      store4 = insert(:store, building: building)
-      store5 = insert(:store, building: building)
+      _store4 = insert(:store, building: building)
+      _store5 = insert(:store, building: building)
 
       current_month = Date.beginning_of_month(Date.utc_today())
       period_end = Date.end_of_month(current_month)
@@ -504,11 +504,11 @@ defmodule Antonia.RevenueTest do
       user = insert(:user)
       group = insert(:group, created_by_user: user)
       building = insert(:building, group: group)
-      store1 = insert(:store, name: "Store 1", building: building)
-      store2 = insert(:store, name: "Store 2", building: building)
-      store3 = insert(:store, name: "Store 3", building: building)
-      store4 = insert(:store, name: "Store 4", building: building)
-      store5 = insert(:store, name: "Store 5", building: building)
+      _store1 = insert(:store, name: "Store 1", building: building)
+      _store2 = insert(:store, name: "Store 2", building: building)
+      _store3 = insert(:store, name: "Store 3", building: building)
+      _store4 = insert(:store, name: "Store 4", building: building)
+      _store5 = insert(:store, name: "Store 5", building: building)
 
       # No reports for any store
 
@@ -521,7 +521,7 @@ defmodule Antonia.RevenueTest do
     test "handles building with no stores" do
       user = insert(:user)
       group = insert(:group, created_by_user: user)
-      building = insert(:building, group: group)
+      _building = insert(:building, group: group)
 
       [building_with_stats] = Revenue.list_buildings_with_stats(user.id, group.id)
 
@@ -1203,6 +1203,55 @@ defmodule Antonia.RevenueTest do
 
       assert {:error, :group_not_found} =
                Revenue.upsert_report(user.id, group.id, building.id, store.id, nil, attrs)
+    end
+  end
+
+  describe "update_report_via_token/2" do
+    test "successfully updates report without authentication" do
+      report = insert(:report, revenue: Decimal.new("1000.00"), note: "Original note")
+
+      attrs = %{
+        revenue: "2000.50",
+        note: "Updated note"
+      }
+
+      assert {:ok, updated_report} = Revenue.update_report_via_token(report, attrs)
+
+      assert Decimal.equal?(updated_report.revenue, Decimal.new("2000.50"))
+      assert updated_report.note == "Updated note"
+    end
+
+    test "returns error for invalid revenue" do
+      report = insert(:report)
+
+      attrs = %{
+        revenue: "-100",
+        note: "Test"
+      }
+
+      assert {:error, changeset} = Revenue.update_report_via_token(report, attrs)
+      refute changeset.valid?
+      assert "must be greater than or equal to 0" in errors_on(changeset).revenue
+    end
+
+    test "preserves existing currency and period" do
+      report =
+        insert(:report,
+          currency: "USD",
+          period_start: ~D[2025-01-01],
+          period_end: ~D[2025-01-31]
+        )
+
+      attrs = %{
+        revenue: "3000.00",
+        note: "Test"
+      }
+
+      assert {:ok, updated_report} = Revenue.update_report_via_token(report, attrs)
+
+      assert updated_report.currency == "USD"
+      assert updated_report.period_start == ~D[2025-01-01]
+      assert updated_report.period_end == ~D[2025-01-31]
     end
   end
 

@@ -5,6 +5,7 @@ defmodule Antonia.Revenue.Report do
   import Ecto.Changeset
 
   alias Antonia.Enums.ReportStatus
+  alias Antonia.Revenue.Attachment
   alias Antonia.Revenue.EmailLog
   alias Antonia.Revenue.Store
 
@@ -16,9 +17,7 @@ defmodule Antonia.Revenue.Report do
     :period_end,
     :store_id,
     :due_date,
-    :note,
-    :email_content,
-    :attachment_url
+    :note
   ]
 
   @required_fields [
@@ -39,11 +38,10 @@ defmodule Antonia.Revenue.Report do
     field(:period_end, :date)
     field(:due_date, :date)
     field(:note, :string)
-    field(:email_content, :string)
-    field(:attachment_url, :string)
 
     belongs_to(:store, Store)
     has_many(:email_logs, EmailLog)
+    has_many(:attachments, Attachment)
 
     timestamps()
   end
@@ -55,10 +53,24 @@ defmodule Antonia.Revenue.Report do
     |> cast(attrs, @fields)
     |> maybe_set_due_date()
     |> validate_required(@required_fields)
-    |> validate_number(:revenue, greater_than_or_equal_to: 0)
+    |> validate_revenue_non_negative()
     |> validate_period_dates()
     |> foreign_key_constraint(:store_id)
     |> unique_constraint([:store_id, :period_start])
+  end
+
+  defp validate_revenue_non_negative(changeset) do
+    case get_field(changeset, :revenue) do
+      %Decimal{} = revenue ->
+        if Decimal.lt?(revenue, Decimal.new("0")) do
+          add_error(changeset, :revenue, "must be greater than or equal to 0")
+        else
+          changeset
+        end
+
+      _ ->
+        changeset
+    end
   end
 
   defp validate_period_dates(changeset) do
@@ -206,7 +218,7 @@ defmodule Antonia.Revenue.Report do
     %{
       type: :email,
       title: "Email sent",
-      description: "#{email_type_label} - #{log.recipient_email}",
+      description: "Sent \"#{email_type_label}\" to #{log.recipient_email}",
       timestamp: log.sent_at,
       is_complete: true
     }

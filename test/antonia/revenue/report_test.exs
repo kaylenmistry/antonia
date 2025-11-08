@@ -142,17 +142,13 @@ defmodule Antonia.Revenue.ReportTest do
         period_end: Date.new!(2025, 1, 31),
         store_id: store.id,
         due_date: Date.new!(2025, 2, 7),
-        note: "Test note",
-        email_content: "Content",
-        attachment_url: "https://example.com/file.pdf"
+        note: "Test note"
       }
 
       changeset = Report.changeset(%Report{}, attrs)
 
       assert changeset.valid?
       assert get_field(changeset, :note) == "Test note"
-      assert get_field(changeset, :email_content) == "Content"
-      assert get_field(changeset, :attachment_url) == "https://example.com/file.pdf"
     end
   end
 
