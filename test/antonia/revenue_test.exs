@@ -388,7 +388,7 @@ defmodule Antonia.RevenueTest do
       building = insert(:building, name: "Building A", group: group)
       store1 = insert(:store, name: "Store 1", building: building)
       store2 = insert(:store, name: "Store 2", building: building)
-      store3 = insert(:store, name: "Store 3", building: building)
+      _store3 = insert(:store, name: "Store 3", building: building)
 
       current_month = Date.beginning_of_month(Date.utc_today())
       period_end = Date.end_of_month(current_month)
@@ -434,8 +434,8 @@ defmodule Antonia.RevenueTest do
       store1 = insert(:store, building: building)
       store2 = insert(:store, building: building)
       store3 = insert(:store, building: building)
-      store4 = insert(:store, building: building)
-      store5 = insert(:store, building: building)
+      _store4 = insert(:store, building: building)
+      _store5 = insert(:store, building: building)
 
       current_month = Date.beginning_of_month(Date.utc_today())
       period_end = Date.end_of_month(current_month)
@@ -504,11 +504,11 @@ defmodule Antonia.RevenueTest do
       user = insert(:user)
       group = insert(:group, created_by_user: user)
       building = insert(:building, group: group)
-      store1 = insert(:store, name: "Store 1", building: building)
-      store2 = insert(:store, name: "Store 2", building: building)
-      store3 = insert(:store, name: "Store 3", building: building)
-      store4 = insert(:store, name: "Store 4", building: building)
-      store5 = insert(:store, name: "Store 5", building: building)
+      _store1 = insert(:store, name: "Store 1", building: building)
+      _store2 = insert(:store, name: "Store 2", building: building)
+      _store3 = insert(:store, name: "Store 3", building: building)
+      _store4 = insert(:store, name: "Store 4", building: building)
+      _store5 = insert(:store, name: "Store 5", building: building)
 
       # No reports for any store
 
@@ -521,7 +521,7 @@ defmodule Antonia.RevenueTest do
     test "handles building with no stores" do
       user = insert(:user)
       group = insert(:group, created_by_user: user)
-      building = insert(:building, group: group)
+      _building = insert(:building, group: group)
 
       [building_with_stats] = Revenue.list_buildings_with_stats(user.id, group.id)
 
