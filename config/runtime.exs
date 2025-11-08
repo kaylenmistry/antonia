@@ -49,6 +49,6 @@ config :antonia, Antonia.Services.Kinde,
 
 config :antonia, Antonia.Services.S3,
   aws_region: get_string("AWS_REGION", "eu-west-1"),
-  s3_bucket_name: get_string("S3_BUCKET_NAME", "antonia-reports")
+  s3_bucket_name: get_string("S3_BUCKET_NAME", "ahead-local-revenue-report-attachments")
 
 config :antonia, Antonia.Accounts.UserNotifier, base_url: base_url
