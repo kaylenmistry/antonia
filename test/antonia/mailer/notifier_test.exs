@@ -167,7 +167,7 @@ defmodule Antonia.Mailer.NotifierTest do
           # Assert email properties
           assert email.to == [{"", "store@example.com"}]
           assert email.subject == "Revenue report due"
-          assert email.from == {"Ahead", "notifications@buyahead.co"}
+          assert email.from == {"Ahead", "notifications@revenue-report.com"}
           {:ok, %{}}
         end do
         assert {:ok, _} = Notifier.deliver_monthly_reminder(store, report)
@@ -183,7 +183,7 @@ defmodule Antonia.Mailer.NotifierTest do
           # Assert email properties
           assert email.to == [{"", "store@example.com"}]
           assert email.subject == "REMINDER: Report revenue due"
-          assert email.from == {"Ahead", "notifications@buyahead.co"}
+          assert email.from == {"Ahead", "notifications@revenue-report.com"}
           {:ok, %{}}
         end do
         assert {:ok, _} = Notifier.deliver_overdue_reminder(store, report)
@@ -199,7 +199,7 @@ defmodule Antonia.Mailer.NotifierTest do
           # Assert email properties
           assert email.to == [{"", "store@example.com"}]
           assert email.subject == "Thank you"
-          assert email.from == {"Ahead", "notifications@buyahead.co"}
+          assert email.from == {"Ahead", "notifications@revenue-report.com"}
           {:ok, %{}}
         end do
         assert {:ok, _} = Notifier.deliver_submission_receipt(store, report)

@@ -151,7 +151,7 @@ defmodule Antonia.Mailer.Notifier do
     email =
       new()
       |> to(recipient)
-      |> Swoosh.Email.from({"Ahead", "notifications@buyahead.co"})
+      |> Swoosh.Email.from({"Ahead", "notifications@revenue-report.com"})
       |> subject(subject)
       |> text_body(text_body)
       |> maybe_apply_mjml_body(template, assigns)
