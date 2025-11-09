@@ -37,3 +37,4 @@ defmodule AntoniaWeb.Admin.Resources.BuildingLive do
     ]
   end
 end
+

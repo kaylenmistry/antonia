@@ -62,3 +62,4 @@ defmodule AntoniaWeb.Admin.Resources.ReportLive do
     ]
   end
 end
+

@@ -37,3 +37,4 @@ defmodule AntoniaWeb.Admin.Resources.GroupLive do
     ]
   end
 end
+

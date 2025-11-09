@@ -19,3 +19,4 @@ defmodule Antonia.Repo.Migrations.CreateAttachments do
     create index(:attachments, [:s3_key])
   end
 end
+

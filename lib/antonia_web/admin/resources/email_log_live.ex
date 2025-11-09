@@ -63,3 +63,4 @@ defmodule AntoniaWeb.Admin.Resources.EmailLogLive do
     ]
   end
 end
+

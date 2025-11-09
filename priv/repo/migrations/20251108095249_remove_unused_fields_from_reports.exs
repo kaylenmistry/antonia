@@ -8,3 +8,4 @@ defmodule Antonia.Repo.Migrations.RemoveUnusedFieldsFromReports do
     end
   end
 end
+

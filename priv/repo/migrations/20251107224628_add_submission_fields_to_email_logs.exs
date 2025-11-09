@@ -12,3 +12,4 @@ defmodule Antonia.Repo.Migrations.AddSubmissionFieldsToEmailLogs do
     create unique_index(:email_logs, [:submission_token])
   end
 end
+
