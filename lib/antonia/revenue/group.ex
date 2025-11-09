@@ -35,6 +35,12 @@ defmodule Antonia.Revenue.Group do
     |> foreign_key_constraint(:created_by_user_id)
   end
 
+  @doc "Changeset for groups with action (for Backpex compatibility)"
+  @spec changeset(__MODULE__.t(), map(), atom()) :: Ecto.Changeset.t()
+  def changeset(group, attrs, _action) do
+    changeset(group, attrs)
+  end
+
   defp put_default_currency(changeset) do
     case get_field(changeset, :default_currency) do
       nil -> put_change(changeset, :default_currency, "EUR")

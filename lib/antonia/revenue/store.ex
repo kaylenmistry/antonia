@@ -36,4 +36,10 @@ defmodule Antonia.Revenue.Store do
     |> validate_format(:email, ~r/@/)
     |> foreign_key_constraint(:building_id)
   end
+
+  @doc "Changeset for stores with action (for Backpex compatibility)"
+  @spec changeset(__MODULE__.t(), map(), atom()) :: Ecto.Changeset.t()
+  def changeset(store, attrs, _action) do
+    changeset(store, attrs)
+  end
 end

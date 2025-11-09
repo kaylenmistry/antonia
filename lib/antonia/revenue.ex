@@ -15,7 +15,9 @@ defmodule Antonia.Revenue do
   require Logger
 
   alias Antonia.Repo
+  alias Antonia.Revenue.Attachment
   alias Antonia.Revenue.Building
+  alias Antonia.Revenue.EmailLog
   alias Antonia.Revenue.Group
   alias Antonia.Revenue.Report
   alias Antonia.Revenue.Store
@@ -642,4 +644,136 @@ defmodule Antonia.Revenue do
       do: true
 
   def valid_store_access?(_, _, _), do: false
+
+  ##### Admin Functions #####
+
+  @doc "Lists all stores (for admin panel)."
+  @spec list_stores() :: [Store.t()]
+  def list_stores do
+    Repo.all(Store)
+  end
+
+  @doc "Creates a new store (for admin panel)."
+  @spec create_store(map()) :: {:ok, Store.t()} | {:error, Ecto.Changeset.t()}
+  def create_store(attrs) do
+    %Store{}
+    |> Store.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc "Deletes a store (for admin panel)."
+  @spec delete_store(Store.t()) :: {:ok, Store.t()} | {:error, Ecto.Changeset.t()}
+  def delete_store(%Store{} = store) do
+    Repo.delete(store)
+  end
+
+  ##### Admin Functions for Groups #####
+
+  @doc "Lists all groups (for admin panel)."
+  @spec list_groups() :: [Group.t()]
+  def list_groups do
+    Repo.all(Group)
+  end
+
+  @doc "Creates a new group (for admin panel)."
+  @spec create_group(map()) :: {:ok, Group.t()} | {:error, Ecto.Changeset.t()}
+  def create_group(attrs) do
+    %Group{}
+    |> Group.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc "Deletes a group (for admin panel)."
+  @spec delete_group(Group.t()) :: {:ok, Group.t()} | {:error, Ecto.Changeset.t()}
+  def delete_group(%Group{} = group) do
+    Repo.delete(group)
+  end
+
+  ##### Admin Functions for Buildings #####
+
+  @doc "Lists all buildings (for admin panel)."
+  @spec list_buildings() :: [Building.t()]
+  def list_buildings do
+    Repo.all(Building)
+  end
+
+  @doc "Creates a new building (for admin panel)."
+  @spec create_building(map()) :: {:ok, Building.t()} | {:error, Ecto.Changeset.t()}
+  def create_building(attrs) do
+    %Building{}
+    |> Building.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc "Deletes a building (for admin panel)."
+  @spec delete_building(Building.t()) :: {:ok, Building.t()} | {:error, Ecto.Changeset.t()}
+  def delete_building(%Building{} = building) do
+    Repo.delete(building)
+  end
+
+  ##### Admin Functions for Reports #####
+
+  @doc "Lists all reports (for admin panel)."
+  @spec list_reports() :: [Report.t()]
+  def list_reports do
+    Repo.all(Report)
+  end
+
+  @doc "Creates a new report (for admin panel)."
+  @spec create_report(map()) :: {:ok, Report.t()} | {:error, Ecto.Changeset.t()}
+  def create_report(attrs) do
+    %Report{}
+    |> Report.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc "Deletes a report (for admin panel)."
+  @spec delete_report(Report.t()) :: {:ok, Report.t()} | {:error, Ecto.Changeset.t()}
+  def delete_report(%Report{} = report) do
+    Repo.delete(report)
+  end
+
+  ##### Admin Functions for Attachments #####
+
+  @doc "Lists all attachments (for admin panel)."
+  @spec list_attachments() :: [Attachment.t()]
+  def list_attachments do
+    Repo.all(Attachment)
+  end
+
+  @doc "Creates a new attachment (for admin panel)."
+  @spec create_attachment(map()) :: {:ok, Attachment.t()} | {:error, Ecto.Changeset.t()}
+  def create_attachment(attrs) do
+    %Attachment{}
+    |> Attachment.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc "Deletes an attachment (for admin panel)."
+  @spec delete_attachment(Attachment.t()) :: {:ok, Attachment.t()} | {:error, Ecto.Changeset.t()}
+  def delete_attachment(%Attachment{} = attachment) do
+    Repo.delete(attachment)
+  end
+
+  ##### Admin Functions for EmailLogs #####
+
+  @doc "Lists all email logs (for admin panel)."
+  @spec list_email_logs() :: [EmailLog.t()]
+  def list_email_logs do
+    Repo.all(EmailLog)
+  end
+
+  @doc "Creates a new email log (for admin panel)."
+  @spec create_email_log(map()) :: {:ok, EmailLog.t()} | {:error, Ecto.Changeset.t()}
+  def create_email_log(attrs) do
+    %EmailLog{}
+    |> EmailLog.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc "Deletes an email log (for admin panel)."
+  @spec delete_email_log(EmailLog.t()) :: {:ok, EmailLog.t()} | {:error, Ecto.Changeset.t()}
+  def delete_email_log(%EmailLog{} = email_log) do
+    Repo.delete(email_log)
+  end
 end

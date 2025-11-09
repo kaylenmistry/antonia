@@ -34,4 +34,10 @@ defmodule Antonia.Revenue.Building do
     |> validate_length(:name, min: 1, max: 255)
     |> foreign_key_constraint(:group_id)
   end
+
+  @doc "Changeset for buildings with action (for Backpex compatibility)"
+  @spec changeset(__MODULE__.t(), map(), atom()) :: Ecto.Changeset.t()
+  def changeset(building, attrs, _action) do
+    changeset(building, attrs)
+  end
 end

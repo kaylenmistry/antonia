@@ -59,6 +59,12 @@ defmodule Antonia.Revenue.Report do
     |> unique_constraint([:store_id, :period_start])
   end
 
+  @doc "Changeset for reports with action (for Backpex compatibility)"
+  @spec changeset(__MODULE__.t(), map(), atom()) :: Ecto.Changeset.t()
+  def changeset(report, attrs, _action) do
+    changeset(report, attrs)
+  end
+
   defp validate_revenue_non_negative(changeset) do
     case get_field(changeset, :revenue) do
       %Decimal{} = revenue ->

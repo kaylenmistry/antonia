@@ -40,6 +40,12 @@ defmodule Antonia.Accounts do
     |> Repo.insert()
   end
 
+  @doc "Creates a new user."
+  @spec create_user(map()) :: {:ok, User.t()} | {:error, Ecto.Changeset.t()}
+  def create_user(attrs) do
+    create_new_user(attrs)
+  end
+
   @doc "Creates a new user, or updates an existing one if a user with the same email already exists."
   @spec create_or_update_user(map()) :: {:ok, User.t()} | {:error, atom()}
   def create_or_update_user(%{email: email} = attrs) do
@@ -63,5 +69,17 @@ defmodule Antonia.Accounts do
   @spec change_user(User.t()) :: Ecto.Changeset.t()
   def change_user(user \\ %User{}) do
     User.changeset(user, %{})
+  end
+
+  @doc "Lists all users."
+  @spec list_users() :: [User.t()]
+  def list_users do
+    Repo.all(User)
+  end
+
+  @doc "Deletes a user."
+  @spec delete_user(User.t()) :: {:ok, User.t()} | {:error, Ecto.Changeset.t()}
+  def delete_user(%User{} = user) do
+    Repo.delete(user)
   end
 end

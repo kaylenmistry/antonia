@@ -46,6 +46,12 @@ defmodule Antonia.Accounts.User do
     |> validate_email()
   end
 
+  @doc "Changeset for users with action (for Backpex compatibility)"
+  @spec changeset(User.t(), map(), atom()) :: Ecto.Changeset.t()
+  def changeset(user, attrs, _action) do
+    changeset(user, attrs)
+  end
+
   @spec validate_email(Ecto.Changeset.t()) :: Ecto.Changeset.t()
   defp validate_email(changeset) do
     changeset

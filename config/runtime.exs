@@ -52,3 +52,9 @@ config :antonia, Antonia.Services.S3,
   s3_bucket_name: get_string("S3_BUCKET_NAME", "ahead-local-revenue-report-attachments")
 
 config :antonia, Antonia.Accounts.UserNotifier, base_url: base_url
+
+config :antonia, AntoniaWeb.Plugs.RequireAdminUser,
+  authorised_users:
+    System.get_env("AUTHORISED_USERS", "kaylenmistry@gmail.com")
+    |> String.split(",")
+    |> Enum.filter(&(&1 != ""))
