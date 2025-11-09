@@ -8,6 +8,7 @@ const path = require("path")
 module.exports = {
   content: [
     "../deps/salad_ui/lib/**/*.ex",
+    "../deps/backpex/lib/**/*.ex",
     "./js/**/*.js",
     "../lib/antonia_web.ex",
     "../lib/antonia_web/**/*.*ex"
@@ -21,6 +22,12 @@ module.exports = {
     },
   },
   plugins: [
+    require("daisyui")({
+      themes: ["light", "dark", "cupcake", "bumblebee", "emerald", "corporate", "synthwave", "retro", "cyberpunk", "valentine", "halloween", "garden", "forest", "aqua", "lofi", "pastel", "fantasy", "wireframe", "black", "luxury", "dracula", "cmyk", "autumn", "business", "acid", "lemonade", "night", "coffee", "winter", "dim", "nord", "sunset", "caramellatte", "abyss", "silk"],
+      base: true,
+      styled: true,
+      utils: true,
+    }),
     require("@tailwindcss/typography"),
     require("./vendor/tailwindcss-animate"),
     require("@tailwindcss/forms"),

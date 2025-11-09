@@ -31,6 +31,10 @@ config :antonia, AntoniaWeb.Endpoint,
   pubsub_server: Antonia.PubSub,
   live_view: [signing_salt: "nY+dmTOa"]
 
+# Configure Backpex
+config :backpex,
+  pubsub_server: Antonia.PubSub
+
 # Configures the mailer
 #
 # By default it uses the "Local" adapter which stores the emails

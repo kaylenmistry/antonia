@@ -88,6 +88,7 @@ defmodule Antonia.MixProject do
       {:prom_ex, "~> 1.11.0"},
       {:resend, "~> 0.4.0"},
       {:salad_ui, "~> 1.0.0-beta.3"},
+      {:backpex, "~> 0.16.3"},
       {:swoosh, "~> 1.5"},
       {:telemetry_metrics, "~> 1.0"},
       {:telemetry_poller, "~> 1.0"},

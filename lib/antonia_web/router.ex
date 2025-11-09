@@ -4,6 +4,7 @@ defmodule AntoniaWeb.Router do
   alias AntoniaWeb.Plugs.FetchCurrentUser
   alias AntoniaWeb.Plugs.RedirectAuthenticatedUser
   alias AntoniaWeb.Plugs.ReferrerPolicy
+  alias AntoniaWeb.Plugs.RequireAdminUser
   alias AntoniaWeb.Plugs.RequireAuthenticatedUser
 
   @csp :antonia
@@ -64,11 +65,23 @@ defmodule AntoniaWeb.Router do
 
   # Admin routes (authenticated users only)
   scope "/admin", AntoniaWeb do
-    pipe_through [:browser, RequireAuthenticatedUser]
+    pipe_through [:browser, RequireAuthenticatedUser, RequireAdminUser]
 
     import Oban.Web.Router
+    import Backpex.Router
 
     oban_dashboard("/oban")
+    backpex_routes()
+
+    live_session :default, on_mount: Backpex.InitAssigns do
+      live_resources("/users", Admin.Resources.UserLive)
+      live_resources("/stores", Admin.Resources.StoreLive)
+      live_resources("/groups", Admin.Resources.GroupLive)
+      live_resources("/buildings", Admin.Resources.BuildingLive)
+      live_resources("/reports", Admin.Resources.ReportLive)
+      live_resources("/attachments", Admin.Resources.AttachmentLive)
+      live_resources("/email_logs", Admin.Resources.EmailLogLive)
+    end
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development

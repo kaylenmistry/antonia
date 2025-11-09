@@ -19,12 +19,18 @@
 import "phoenix_html"
 // Establish Phoenix Socket and LiveView configuration.
 import { Socket } from "phoenix"
+import { Hooks as BackpexHooks } from 'backpex';
 import { LiveSocket } from "phoenix_live_view"
 import topbar from "../vendor/topbar"
+import Alpine from "alpinejs"
 import SaladUI from "salad_ui";
 import "salad_ui/components/dropdown_menu";
 import "salad_ui/components/dialog";
 import "./salad_ui_patches";
+
+// Initialize Alpine.js for Backpex dropdowns and interactive components
+window.Alpine = Alpine
+Alpine.start()
 
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 // Custom hook to handle SaladUI dialog issues
@@ -74,7 +80,17 @@ let liveSocket = new LiveSocket("/live", Socket, {
   params: { _csrf_token: csrfToken },
   hooks: { 
     SaladUI: SafeSaladUIHook,
-    AutoDismiss: AutoDismiss
+    AutoDismiss: AutoDismiss,
+    ...BackpexHooks
+  },
+  dom: {
+    onBeforeElUpdated(from, to) {
+      // Preserve Alpine.js state when LiveView updates DOM
+      if (from._x_dataStack) {
+        window.Alpine.clone(from, to);
+        window.Alpine.initTree(to);
+      }
+    },
   }
 })
 
@@ -104,4 +120,74 @@ liveSocket.connect()
 // >> liveSocket.enableLatencySim(1000)  // enabled for duration of browser session
 // >> liveSocket.disableLatencySim()
 window.liveSocket = liveSocket
+
+// Theme selector handler - integrates with Backpex's theme system
+function applyTheme(theme) {
+  // Store in both keys for compatibility
+  localStorage.setItem("backpexTheme", theme);
+  localStorage.setItem("theme", theme);
+  // Update document root
+  document.documentElement.setAttribute("data-theme", theme);
+  // Update body
+  document.body.setAttribute("data-theme", theme);
+  // Update all elements with data-theme attribute
+  document.querySelectorAll("[data-theme]").forEach((el) => {
+    el.setAttribute("data-theme", theme);
+  });
+}
+
+// Listen for Backpex theme change events
+window.addEventListener("backpex:theme-change", () => {
+  // Find the checked radio button
+  const checkedRadio = document.querySelector('input[name="theme-selector"]:checked');
+  if (checkedRadio) {
+    applyTheme(checkedRadio.value);
+  }
+});
+
+// Ensure theme selector shows correct selection when dropdown opens
+document.addEventListener("click", (e) => {
+  // Check if a dropdown is being opened
+  if (e.target.closest('[role="button"][tabindex="0"]')) {
+    // Small delay to ensure dropdown is open
+    setTimeout(() => {
+      const theme = localStorage.getItem("backpexTheme") || localStorage.getItem("theme") || "business";
+      const radio = document.querySelector(`input[name="theme-selector"][value="${theme}"]`);
+      if (radio) {
+        radio.checked = true;
+      }
+    }, 50);
+  }
+});
+
+// Apply theme on page load - check Backpex's key first, then fallback
+function initTheme() {
+  const theme = localStorage.getItem("backpexTheme") || localStorage.getItem("theme") || "business";
+  applyTheme(theme);
+  
+  // Mark the corresponding radio button as checked if it exists
+  const radio = document.querySelector(`input[name="theme-selector"][value="${theme}"]`);
+  if (radio) {
+    radio.checked = true;
+  }
+}
+
+// Initialize theme on load
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initTheme);
+} else {
+  initTheme();
+}
+
+// Re-apply theme after LiveView updates
+document.addEventListener("phx:update", () => {
+  const theme = localStorage.getItem("backpexTheme") || localStorage.getItem("theme") || "business";
+  applyTheme(theme);
+  
+  // Mark the corresponding radio button as checked if it exists
+  const radio = document.querySelector(`input[name="theme-selector"][value="${theme}"]`);
+  if (radio) {
+    radio.checked = true;
+  }
+});
 

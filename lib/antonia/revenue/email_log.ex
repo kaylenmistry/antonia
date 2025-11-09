@@ -60,6 +60,12 @@ defmodule Antonia.Revenue.EmailLog do
     |> foreign_key_constraint(:report_id)
   end
 
+  @doc "Changeset for email logs with action (for Backpex compatibility)"
+  @spec changeset(__MODULE__.t(), map(), atom()) :: Ecto.Changeset.t()
+  def changeset(email_log, attrs, _action) do
+    changeset(email_log, attrs)
+  end
+
   @doc "Mark email as sent successfully"
   @spec mark_sent(__MODULE__.t()) :: Ecto.Changeset.t()
   def mark_sent(email_log) do

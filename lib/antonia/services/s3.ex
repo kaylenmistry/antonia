@@ -57,3 +57,4 @@ defmodule Antonia.Services.S3 do
 
   defp config, do: Application.get_env(:antonia, __MODULE__)
 end
+

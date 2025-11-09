@@ -52,4 +52,10 @@ defmodule Antonia.Revenue.Attachment do
     |> validate_required([:s3_key, :filename, :file_type])
     |> foreign_key_constraint(:report_id)
   end
+
+  @doc "Changeset for attachments with action (for Backpex compatibility)"
+  @spec changeset(Attachment.t(), map(), atom()) :: Ecto.Changeset.t()
+  def changeset(attachment, attrs, _action) do
+    changeset(attachment, attrs)
+  end
 end
