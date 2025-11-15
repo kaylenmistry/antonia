@@ -486,7 +486,7 @@ defmodule AntoniaWeb.StoreLive do
       |> assign(:timeline_events, updated_timeline)
       |> put_flash(
         :info,
-        gettext("Email queued successfully to %{email}", email: socket.assigns.store.email)
+        gettext("Email sent to %{email}", email: socket.assigns.store.email)
       )
 
     {:ok, updated_socket}

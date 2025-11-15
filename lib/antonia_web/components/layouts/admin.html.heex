@@ -1,0 +1,556 @@
+<Backpex.HTML.Layout.app_shell fluid={@fluid?}>
+  <:topbar>
+    <div class="flex items-center space-x-3">
+      <.link
+        navigate={~p"/admin/users"}
+        class="flex items-center space-x-3 hover:opacity-80 transition-opacity"
+      >
+        <.icon name="hero-building-office-2" class="h-8 w-8 text-primary" />
+        <span class="text-xl font-semibold">Revenue Management</span>
+      </.link>
+    </div>
+    <div class="flex items-center gap-2 ml-auto">
+      <div class="dropdown dropdown-end">
+        <div tabindex="0" role="button" class="btn btn-ghost">
+          Theme <.icon name="hero-chevron-down" class="size-4 ml-1" />
+        </div>
+        <ul
+          tabindex="0"
+          class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow max-h-96 overflow-y-auto scrollbar-thin"
+        >
+          <li class="w-full">
+            <label class="has-checked:bg-neutral has-checked:text-neutral-content">
+              <input
+                type="radio"
+                name="theme-selector"
+                class="theme-controller hidden"
+                phx-click={JS.dispatch("backpex:theme-change")}
+                value="light"
+              /> Light
+            </label>
+          </li>
+          <li class="w-full">
+            <label class="has-checked:bg-neutral has-checked:text-neutral-content">
+              <input
+                type="radio"
+                name="theme-selector"
+                class="theme-controller hidden"
+                phx-click={JS.dispatch("backpex:theme-change")}
+                value="dark"
+              /> Dark
+            </label>
+          </li>
+          <li class="w-full">
+            <label class="has-checked:bg-neutral has-checked:text-neutral-content">
+              <input
+                type="radio"
+                name="theme-selector"
+                class="theme-controller hidden"
+                phx-click={JS.dispatch("backpex:theme-change")}
+                value="cupcake"
+              /> Cupcake
+            </label>
+          </li>
+          <li class="w-full">
+            <label class="has-checked:bg-neutral has-checked:text-neutral-content">
+              <input
+                type="radio"
+                name="theme-selector"
+                class="theme-controller hidden"
+                phx-click={JS.dispatch("backpex:theme-change")}
+                value="bumblebee"
+              /> Bumblebee
+            </label>
+          </li>
+          <li class="w-full">
+            <label class="has-checked:bg-neutral has-checked:text-neutral-content">
+              <input
+                type="radio"
+                name="theme-selector"
+                class="theme-controller hidden"
+                phx-click={JS.dispatch("backpex:theme-change")}
+                value="emerald"
+              /> Emerald
+            </label>
+          </li>
+          <li class="w-full">
+            <label class="has-checked:bg-neutral has-checked:text-neutral-content">
+              <input
+                type="radio"
+                name="theme-selector"
+                class="theme-controller hidden"
+                phx-click={JS.dispatch("backpex:theme-change")}
+                value="corporate"
+              /> Corporate
+            </label>
+          </li>
+          <li class="w-full">
+            <label class="has-checked:bg-neutral has-checked:text-neutral-content">
+              <input
+                type="radio"
+                name="theme-selector"
+                class="theme-controller hidden"
+                phx-click={JS.dispatch("backpex:theme-change")}
+                value="synthwave"
+              /> Synthwave
+            </label>
+          </li>
+          <li class="w-full">
+            <label class="has-checked:bg-neutral has-checked:text-neutral-content">
+              <input
+                type="radio"
+                name="theme-selector"
+                class="theme-controller hidden"
+                phx-click={JS.dispatch("backpex:theme-change")}
+                value="retro"
+              /> Retro
+            </label>
+          </li>
+          <li class="w-full">
+            <label class="has-checked:bg-neutral has-checked:text-neutral-content">
+              <input
+                type="radio"
+                name="theme-selector"
+                class="theme-controller hidden"
+                phx-click={JS.dispatch("backpex:theme-change")}
+                value="cyberpunk"
+              /> Cyberpunk
+            </label>
+          </li>
+          <li class="w-full">
+            <label class="has-checked:bg-neutral has-checked:text-neutral-content">
+              <input
+                type="radio"
+                name="theme-selector"
+                class="theme-controller hidden"
+                phx-click={JS.dispatch("backpex:theme-change")}
+                value="valentine"
+              /> Valentine
+            </label>
+          </li>
+          <li class="w-full">
+            <label class="has-checked:bg-neutral has-checked:text-neutral-content">
+              <input
+                type="radio"
+                name="theme-selector"
+                class="theme-controller hidden"
+                phx-click={JS.dispatch("backpex:theme-change")}
+                value="halloween"
+              /> Halloween
+            </label>
+          </li>
+          <li class="w-full">
+            <label class="has-checked:bg-neutral has-checked:text-neutral-content">
+              <input
+                type="radio"
+                name="theme-selector"
+                class="theme-controller hidden"
+                phx-click={JS.dispatch("backpex:theme-change")}
+                value="garden"
+              /> Garden
+            </label>
+          </li>
+          <li class="w-full">
+            <label class="has-checked:bg-neutral has-checked:text-neutral-content">
+              <input
+                type="radio"
+                name="theme-selector"
+                class="theme-controller hidden"
+                phx-click={JS.dispatch("backpex:theme-change")}
+                value="forest"
+              /> Forest
+            </label>
+          </li>
+          <li class="w-full">
+            <label class="has-checked:bg-neutral has-checked:text-neutral-content">
+              <input
+                type="radio"
+                name="theme-selector"
+                class="theme-controller hidden"
+                phx-click={JS.dispatch("backpex:theme-change")}
+                value="aqua"
+              /> Aqua
+            </label>
+          </li>
+          <li class="w-full">
+            <label class="has-checked:bg-neutral has-checked:text-neutral-content">
+              <input
+                type="radio"
+                name="theme-selector"
+                class="theme-controller hidden"
+                phx-click={JS.dispatch("backpex:theme-change")}
+                value="lofi"
+              /> Lofi
+            </label>
+          </li>
+          <li class="w-full">
+            <label class="has-checked:bg-neutral has-checked:text-neutral-content">
+              <input
+                type="radio"
+                name="theme-selector"
+                class="theme-controller hidden"
+                phx-click={JS.dispatch("backpex:theme-change")}
+                value="pastel"
+              /> Pastel
+            </label>
+          </li>
+          <li class="w-full">
+            <label class="has-checked:bg-neutral has-checked:text-neutral-content">
+              <input
+                type="radio"
+                name="theme-selector"
+                class="theme-controller hidden"
+                phx-click={JS.dispatch("backpex:theme-change")}
+                value="fantasy"
+              /> Fantasy
+            </label>
+          </li>
+          <li class="w-full">
+            <label class="has-checked:bg-neutral has-checked:text-neutral-content">
+              <input
+                type="radio"
+                name="theme-selector"
+                class="theme-controller hidden"
+                phx-click={JS.dispatch("backpex:theme-change")}
+                value="wireframe"
+              /> Wireframe
+            </label>
+          </li>
+          <li class="w-full">
+            <label class="has-checked:bg-neutral has-checked:text-neutral-content">
+              <input
+                type="radio"
+                name="theme-selector"
+                class="theme-controller hidden"
+                phx-click={JS.dispatch("backpex:theme-change")}
+                value="black"
+              /> Black
+            </label>
+          </li>
+          <li class="w-full">
+            <label class="has-checked:bg-neutral has-checked:text-neutral-content">
+              <input
+                type="radio"
+                name="theme-selector"
+                class="theme-controller hidden"
+                phx-click={JS.dispatch("backpex:theme-change")}
+                value="luxury"
+              /> Luxury
+            </label>
+          </li>
+          <li class="w-full">
+            <label class="has-checked:bg-neutral has-checked:text-neutral-content">
+              <input
+                type="radio"
+                name="theme-selector"
+                class="theme-controller hidden"
+                phx-click={JS.dispatch("backpex:theme-change")}
+                value="dracula"
+              /> Dracula
+            </label>
+          </li>
+          <li class="w-full">
+            <label class="has-checked:bg-neutral has-checked:text-neutral-content">
+              <input
+                type="radio"
+                name="theme-selector"
+                class="theme-controller hidden"
+                phx-click={JS.dispatch("backpex:theme-change")}
+                value="cmyk"
+              /> CMYK
+            </label>
+          </li>
+          <li class="w-full">
+            <label class="has-checked:bg-neutral has-checked:text-neutral-content">
+              <input
+                type="radio"
+                name="theme-selector"
+                class="theme-controller hidden"
+                phx-click={JS.dispatch("backpex:theme-change")}
+                value="autumn"
+              /> Autumn
+            </label>
+          </li>
+          <li class="w-full">
+            <label class="has-checked:bg-neutral has-checked:text-neutral-content">
+              <input
+                type="radio"
+                name="theme-selector"
+                class="theme-controller hidden"
+                phx-click={JS.dispatch("backpex:theme-change")}
+                value="business"
+              /> Business
+            </label>
+          </li>
+          <li class="w-full">
+            <label class="has-checked:bg-neutral has-checked:text-neutral-content">
+              <input
+                type="radio"
+                name="theme-selector"
+                class="theme-controller hidden"
+                phx-click={JS.dispatch("backpex:theme-change")}
+                value="acid"
+              /> Acid
+            </label>
+          </li>
+          <li class="w-full">
+            <label class="has-checked:bg-neutral has-checked:text-neutral-content">
+              <input
+                type="radio"
+                name="theme-selector"
+                class="theme-controller hidden"
+                phx-click={JS.dispatch("backpex:theme-change")}
+                value="lemonade"
+              /> Lemonade
+            </label>
+          </li>
+          <li class="w-full">
+            <label class="has-checked:bg-neutral has-checked:text-neutral-content">
+              <input
+                type="radio"
+                name="theme-selector"
+                class="theme-controller hidden"
+                phx-click={JS.dispatch("backpex:theme-change")}
+                value="night"
+              /> Night
+            </label>
+          </li>
+          <li class="w-full">
+            <label class="has-checked:bg-neutral has-checked:text-neutral-content">
+              <input
+                type="radio"
+                name="theme-selector"
+                class="theme-controller hidden"
+                phx-click={JS.dispatch("backpex:theme-change")}
+                value="coffee"
+              /> Coffee
+            </label>
+          </li>
+          <li class="w-full">
+            <label class="has-checked:bg-neutral has-checked:text-neutral-content">
+              <input
+                type="radio"
+                name="theme-selector"
+                class="theme-controller hidden"
+                phx-click={JS.dispatch("backpex:theme-change")}
+                value="winter"
+              /> Winter
+            </label>
+          </li>
+          <li class="w-full">
+            <label class="has-checked:bg-neutral has-checked:text-neutral-content">
+              <input
+                type="radio"
+                name="theme-selector"
+                class="theme-controller hidden"
+                phx-click={JS.dispatch("backpex:theme-change")}
+                value="dim"
+              /> Dim
+            </label>
+          </li>
+          <li class="w-full">
+            <label class="has-checked:bg-neutral has-checked:text-neutral-content">
+              <input
+                type="radio"
+                name="theme-selector"
+                class="theme-controller hidden"
+                phx-click={JS.dispatch("backpex:theme-change")}
+                value="nord"
+              /> Nord
+            </label>
+          </li>
+          <li class="w-full">
+            <label class="has-checked:bg-neutral has-checked:text-neutral-content">
+              <input
+                type="radio"
+                name="theme-selector"
+                class="theme-controller hidden"
+                phx-click={JS.dispatch("backpex:theme-change")}
+                value="sunset"
+              /> Sunset
+            </label>
+          </li>
+          <li class="w-full">
+            <label class="has-checked:bg-neutral has-checked:text-neutral-content">
+              <input
+                type="radio"
+                name="theme-selector"
+                class="theme-controller hidden"
+                phx-click={JS.dispatch("backpex:theme-change")}
+                value="caramellatte"
+              /> Caramel Latte
+            </label>
+          </li>
+          <li class="w-full">
+            <label class="has-checked:bg-neutral has-checked:text-neutral-content">
+              <input
+                type="radio"
+                name="theme-selector"
+                class="theme-controller hidden"
+                phx-click={JS.dispatch("backpex:theme-change")}
+                value="abyss"
+              /> Abyss
+            </label>
+          </li>
+          <li class="w-full">
+            <label class="has-checked:bg-neutral has-checked:text-neutral-content">
+              <input
+                type="radio"
+                name="theme-selector"
+                class="theme-controller hidden"
+                phx-click={JS.dispatch("backpex:theme-change")}
+                value="silk"
+              /> Silk
+            </label>
+          </li>
+        </ul>
+      </div>
+      <Backpex.HTML.Layout.topbar_dropdown class="mr-2 md:mr-0">
+        <:label>
+          <div class="btn btn-square btn-ghost">
+            <%= if assigns[:user] && assigns[:user].image do %>
+              <img
+                alt={assigns[:user].email || "User"}
+                src={assigns[:user].image}
+                class="w-10 h-10 rounded-full"
+              />
+            <% else %>
+              <.icon name="hero-user" class="size-6" />
+            <% end %>
+          </div>
+        </:label>
+        <li>
+          <%= if assigns[:user] do %>
+            <div class="menu-title">
+              <span>{assigns[:user].first_name || assigns[:user].email}</span>
+            </div>
+          <% end %>
+        </li>
+        <li>
+          <.link href={~p"/auth/logout"} class="text-error flex justify-between hover:bg-base-200">
+            <p>Logout</p>
+            <.icon name="hero-arrow-right-on-rectangle" class="size-5" />
+          </.link>
+        </li>
+      </Backpex.HTML.Layout.topbar_dropdown>
+    </div>
+  </:topbar>
+  <:sidebar>
+    <ul class="menu">
+      <li>
+        <.link
+          navigate={~p"/admin/users"}
+          class={[
+            "flex items-center gap-3",
+            if(String.contains?(@current_url, "/admin/users"),
+              do: "bg-base-200 text-base-content font-semibold",
+              else: ""
+            )
+          ]}
+        >
+          <.icon name="hero-users" class="size-5" /> Users
+        </.link>
+      </li>
+      <li>
+        <.link
+          navigate={~p"/admin/stores"}
+          class={[
+            "flex items-center gap-3",
+            if(String.contains?(@current_url, "/admin/stores"),
+              do: "bg-base-200 text-base-content font-semibold",
+              else: ""
+            )
+          ]}
+        >
+          <.icon name="hero-building-storefront" class="size-5" /> Stores
+        </.link>
+      </li>
+      <li>
+        <.link
+          navigate={~p"/admin/groups"}
+          class={[
+            "flex items-center gap-3",
+            if(String.contains?(@current_url, "/admin/groups"),
+              do: "bg-base-200 text-base-content font-semibold",
+              else: ""
+            )
+          ]}
+        >
+          <.icon name="hero-folder" class="size-5" /> Groups
+        </.link>
+      </li>
+      <li>
+        <.link
+          navigate={~p"/admin/buildings"}
+          class={[
+            "flex items-center gap-3",
+            if(String.contains?(@current_url, "/admin/buildings"),
+              do: "bg-base-200 text-base-content font-semibold",
+              else: ""
+            )
+          ]}
+        >
+          <.icon name="hero-building-office" class="size-5" /> Buildings
+        </.link>
+      </li>
+      <li>
+        <.link
+          navigate={~p"/admin/reports"}
+          class={[
+            "flex items-center gap-3",
+            if(String.contains?(@current_url, "/admin/reports"),
+              do: "bg-base-200 text-base-content font-semibold",
+              else: ""
+            )
+          ]}
+        >
+          <.icon name="hero-document-text" class="size-5" /> Reports
+        </.link>
+      </li>
+      <li>
+        <.link
+          navigate={~p"/admin/attachments"}
+          class={[
+            "flex items-center gap-3",
+            if(String.contains?(@current_url, "/admin/attachments"),
+              do: "bg-base-200 text-base-content font-semibold",
+              else: ""
+            )
+          ]}
+        >
+          <.icon name="hero-paper-clip" class="size-5" /> Attachments
+        </.link>
+      </li>
+      <li>
+        <.link
+          navigate={~p"/admin/email_logs"}
+          class={[
+            "flex items-center gap-3",
+            if(String.contains?(@current_url, "/admin/email_logs"),
+              do: "bg-base-200 text-base-content font-semibold",
+              else: ""
+            )
+          ]}
+        >
+          <.icon name="hero-envelope" class="size-5" /> Email Logs
+        </.link>
+      </li>
+      <li>
+        <.link
+          navigate={~p"/admin/oban"}
+          class={[
+            "flex items-center gap-3",
+            if(String.contains?(@current_url, "/admin/oban"),
+              do: "bg-base-200 text-base-content font-semibold",
+              else: ""
+            )
+          ]}
+        >
+          <.icon name="hero-queue-list" class="size-5" /> Oban Dashboard
+        </.link>
+      </li>
+    </ul>
+  </:sidebar>
+  <.flash_group flash={@flash} />
+  {render_slot(@inner_block)}
+</Backpex.HTML.Layout.app_shell>
