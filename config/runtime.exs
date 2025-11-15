@@ -52,3 +52,5 @@ config :antonia, Antonia.Services.S3,
   s3_bucket_name: get_string("S3_BUCKET_NAME", "ahead-local-revenue-report-attachments")
 
 config :antonia, Antonia.Accounts.UserNotifier, base_url: base_url
+
+config :antonia, Antonia.Mailer.Notifier, base_url: base_url

@@ -728,11 +728,6 @@ msgstr ""
 msgid "Create a new report and send an email to the recipient to fill it out."
 msgstr ""
 
-#: lib/antonia_web/live/store_live.ex:489
-#, elixir-autogen, elixir-format
-msgid "Email queued successfully to %{email}"
-msgstr ""
-
 #: lib/antonia_web/live/store_live.ex:462
 #, elixir-autogen, elixir-format
 msgid "Failed to create report"
@@ -878,4 +873,9 @@ msgstr ""
 #: lib/antonia_web/live/store_live.html.heex:182
 #, elixir-autogen, elixir-format
 msgid "or drag and drop"
+msgstr ""
+
+#: lib/antonia_web/live/store_live.ex:489
+#, elixir-autogen, elixir-format
+msgid "Email sent to %{email}"
 msgstr ""
