@@ -1,5 +1,5 @@
 # ---- Build Elixir image ----
-FROM public.ecr.aws/docker/library/elixir:1.19.1-alpine AS build-elixir
+FROM public.ecr.aws/docker/library/elixir:1.19.3-alpine AS build-elixir
 ENV MIX_ENV=prod
 RUN mix local.hex --force && \
     mix local.rebar --force
