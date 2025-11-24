@@ -9,7 +9,9 @@ defmodule Antonia.Revenue.Group do
   @fields [
     :name,
     :created_by_user_id,
-    :default_currency
+    :default_currency,
+    :email_logo_url,
+    :email_company_name
   ]
 
   @required_fields [:name]
@@ -17,6 +19,8 @@ defmodule Antonia.Revenue.Group do
   typed_schema "groups" do
     field(:name, :string)
     field(:default_currency, :string, default: "EUR")
+    field(:email_logo_url, :string)
+    field(:email_company_name, :string)
 
     belongs_to(:created_by_user, Antonia.Accounts.User)
     has_many(:buildings, Building)

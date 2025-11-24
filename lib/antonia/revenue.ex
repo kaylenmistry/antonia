@@ -133,6 +133,20 @@ defmodule Antonia.Revenue do
     Group.changeset(group, %{})
   end
 
+  @doc "Updates a group for a user."
+  @spec update_group(binary(), binary(), map()) :: {:ok, Group.t()} | {:error, Changeset.t() | :group_not_found}
+  def update_group(user_id, group_id, attrs) do
+    case get_group(user_id, group_id) do
+      {:error, :group_not_found} = error ->
+        error
+
+      {:ok, group} ->
+        group
+        |> Group.changeset(attrs)
+        |> Repo.update()
+    end
+  end
+
   ##### Buildings #####
 
   @doc "Lists buildings for a group, ordered alphabetically by name."

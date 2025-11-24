@@ -25,7 +25,7 @@
     <mj-section></mj-section>
     <mj-section background-color="#ffffff" border-radius="0.5rem" padding="32px 24px" css-class="box-shadow">
       <mj-column>
-        <mj-image src="https://rutter.at/themes/rutter/img/rutter-logo.png" width="72px" alt="logo" padding-bottom="16px" padding-left="0px" align="left" />
+        <mj-image src="<%= @logo_url %>" width="72px" alt="logo" padding-bottom="16px" padding-left="0px" align="left" />
         <mj-text font-size="20px" line-height="20px" font-weight="700" padding-bottom="16px">
           <%= gettext("Acknowledgement of receipt") %>
         </mj-text>
@@ -45,14 +45,14 @@
           <%= gettext("Best regards,") %>
         </mj-text>
         <mj-text color="#4b5563" padding-top="4px">
-          <%= gettext("Realverwaltung GmbH") %>
+          <%= @company_name %>
         </mj-text>
       </mj-column>
     </mj-section>
     <mj-section padding-top="16px">
       <mj-column>
         <mj-text align="center" font-size="12px" line-height="20px" color="#6b7280">
-          <%= gettext("© Realverwaltung GmbH. All rights reserved.") %>
+          <%= gettext("© %{company_name}. All rights reserved.", company_name: @company_name) %>
         </mj-text>
       </mj-column>
     </mj-section>

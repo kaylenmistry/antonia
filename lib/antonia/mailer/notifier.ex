@@ -49,8 +49,8 @@ defmodule Antonia.Mailer.Notifier do
     end)
   end
 
-  @spec email_assigns(Store.t(), Report.t(), String.t() | nil) :: map()
-  defp email_assigns(store, report, submission_token) do
+  @spec email_assigns(Store.t(), Report.t(), String.t() | nil, Antonia.Revenue.Group.t()) :: map()
+  defp email_assigns(store, report, submission_token, group) do
     submission_url =
       if submission_token do
         "#{base_url()}/submit/#{submission_token}"
@@ -58,12 +58,33 @@ defmodule Antonia.Mailer.Notifier do
         nil
       end
 
+    # Get logo URL - use group's custom logo or default
+    logo_url =
+      if group.email_logo_url do
+        # If it's an S3 key, get presigned URL, otherwise use as-is
+        if String.starts_with?(group.email_logo_url, "private/") do
+          case Antonia.Services.S3.presign_read(group.email_logo_url) do
+            {:ok, url} -> url
+            {:error, _} -> "https://rutter.at/themes/rutter/img/rutter-logo.png"
+          end
+        else
+          group.email_logo_url
+        end
+      else
+        "https://rutter.at/themes/rutter/img/rutter-logo.png"
+      end
+
+    # Get company name - use group's custom name or default to group name
+    company_name = group.email_company_name || group.name || "Realverwaltung GmbH"
+
     %{
       store: store,
       period_start: report.period_start,
       period_end: report.period_end,
       base_url: base_url(),
-      submission_url: submission_url
+      submission_url: submission_url,
+      logo_url: logo_url,
+      company_name: company_name
     }
   end
 
@@ -83,9 +104,10 @@ defmodule Antonia.Mailer.Notifier do
   @spec create_email_log_and_send(atom(), String.t(), String.t(), Report.t(), integer() | nil) ::
           {:ok, Swoosh.Email.t()} | {:error, term()}
   defp create_email_log_and_send(email_type, recipient, subject, report, oban_job_id) do
-    # Get store for email assigns (ensure it's preloaded)
-    report = Repo.preload(report, :store)
+    # Get store and group for email assigns (ensure they're preloaded)
+    report = Repo.preload(report, store: [building: :group])
     store = report.store
+    group = store.building.group
 
     {submission_token, expires_at} = generate_submission_token_if_needed(email_type)
 
@@ -102,7 +124,7 @@ defmodule Antonia.Mailer.Notifier do
 
     case Repo.insert(EmailLog.changeset(%EmailLog{}, email_log_attrs)) do
       {:ok, email_log} ->
-        assigns = email_assigns(store, report, submission_token)
+        assigns = email_assigns(store, report, submission_token, group)
         send_and_log_email(email_type, recipient, subject, assigns, email_log)
 
       {:error, changeset} ->

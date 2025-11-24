@@ -58,6 +58,7 @@ defmodule AntoniaWeb.Router do
 
     live "/", GroupsLive
     live "/groups/:id", ReportingLive
+    live "/groups/:id/email-config", EmailConfigLive
     live "/groups/:id/buildings/:building_id", BuildingLive
     live "/groups/:id/buildings/:building_id/stores/:store_id", StoreLive
   end
