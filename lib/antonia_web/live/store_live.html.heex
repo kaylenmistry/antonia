@@ -52,10 +52,11 @@
                     <span class="font-semibold text-gray-900">
                       <%= if data.is_current do %>
                         <input
-                          type="number"
-                          value={@edited_revenue}
+                          type="text"
+                          inputmode="decimal"
+                          value={format_number_for_input(@edited_revenue)}
                           name="revenue"
-                          step="0.01"
+                          pattern="[0-9]+(\.[0-9]{1,2})?"
                           class="w-24 px-2 py-1 border border-gray-300 rounded text-right"
                         />
                       <% else %>

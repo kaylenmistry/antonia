@@ -6,7 +6,7 @@ defmodule AntoniaWeb.ReportSubmissionLive do
   use AntoniaWeb, :live_view
 
   import AntoniaWeb.DisplayHelpers,
-    only: [format_currency: 2, format_date: 1, build_error_message: 2]
+    only: [format_currency: 2, format_date: 1, build_error_message: 2, format_number_for_input: 1]
 
   alias Antonia.Repo
   alias Antonia.Revenue
