@@ -15,6 +15,7 @@ defmodule Antonia.Mailer.Notifier do
   alias Antonia.Revenue.EmailLog
   alias Antonia.Revenue.Report
   alias Antonia.Revenue.Store
+  alias Antonia.Services.S3
 
   @doc "Delivers the monthly reminder email to a recipient store"
   @spec deliver_monthly_reminder(Store.t(), Report.t(), integer() | nil) ::
@@ -62,20 +63,17 @@ defmodule Antonia.Mailer.Notifier do
     logo_url =
       if group.email_logo_url do
         # If it's an S3 key, get presigned URL, otherwise use as-is
-        if String.starts_with?(group.email_logo_url, "private/") do
-          case Antonia.Services.S3.presign_read(group.email_logo_url) do
-            {:ok, url} -> url
-            {:error, _} -> "https://rutter.at/themes/rutter/img/rutter-logo.png"
-          end
-        else
-          group.email_logo_url
+        case S3.presign_read(group.email_logo_url) do
+          {:ok, url} -> url
+          {:error, _} -> "https://rutter.at/themes/rutter/img/rutter-logo.png"
         end
-      else
-        "https://rutter.at/themes/rutter/img/rutter-logo.png"
       end
 
     # Get company name - use group's custom name or default to group name
     company_name = group.email_company_name || group.name || "Realverwaltung GmbH"
+
+    # Use company name for email from field
+    email_from = company_name
 
     %{
       store: store,
@@ -84,7 +82,8 @@ defmodule Antonia.Mailer.Notifier do
       base_url: base_url(),
       submission_url: submission_url,
       logo_url: logo_url,
-      company_name: company_name
+      company_name: company_name,
+      email_from: email_from
     }
   end
 
@@ -170,10 +169,12 @@ defmodule Antonia.Mailer.Notifier do
 
     {:ok, text_body} = apply_template(template, :txt, assigns)
 
+    from_name = assigns[:email_from] || "Revenue Report"
+
     email =
       new()
       |> to(recipient)
-      |> Swoosh.Email.from({"Revenue Report", "notifications@revenue-report.com"})
+      |> Swoosh.Email.from({from_name, "notifications@revenue-report.com"})
       |> subject(subject)
       |> text_body(text_body)
       |> maybe_apply_mjml_body(template, assigns)

@@ -16,7 +16,7 @@ msgstr ""
 msgid "Actions"
 msgstr ""
 
-#: lib/antonia/mailer/notifier.ex:24
+#: lib/antonia/mailer/notifier.ex:25
 #, elixir-autogen, elixir-format
 msgid "Revenue report due"
 msgstr ""
@@ -39,6 +39,7 @@ msgstr ""
 #: lib/antonia/mailer/emails/overdue_reminder.txt.eex:16
 #: lib/antonia/mailer/emails/submission_receipt.mjml.eex:45
 #: lib/antonia/mailer/emails/submission_receipt.txt.eex:14
+#: lib/antonia_web/live/settings_live.html.heex:236
 #, elixir-autogen, elixir-format
 msgid "Best regards,"
 msgstr ""
@@ -47,6 +48,7 @@ msgstr ""
 #: lib/antonia/mailer/emails/monthly_reminder.txt.eex:6
 #: lib/antonia/mailer/emails/overdue_reminder.mjml.eex:33
 #: lib/antonia/mailer/emails/overdue_reminder.txt.eex:6
+#: lib/antonia_web/live/settings_live.html.heex:216
 #, elixir-autogen, elixir-format
 msgid "Dear Sir or Madam,"
 msgstr ""
@@ -55,15 +57,13 @@ msgstr ""
 #: lib/antonia/mailer/emails/monthly_reminder.txt.eex:8
 #: lib/antonia/mailer/emails/overdue_reminder.mjml.eex:36
 #: lib/antonia/mailer/emails/overdue_reminder.txt.eex:8
+#: lib/antonia_web/live/settings_live.html.heex:218
 #, elixir-autogen, elixir-format
 msgid "In accordance with the terms of the lease agreement, we request that you report the revenue for %{store_name} for the period %{period_start} to %{period_end}."
 msgstr ""
 
-#: lib/antonia/mailer/emails/monthly_reminder.mjml.eex:51
 #: lib/antonia/mailer/emails/monthly_reminder.txt.eex:17
-#: lib/antonia/mailer/emails/overdue_reminder.mjml.eex:51
 #: lib/antonia/mailer/emails/overdue_reminder.txt.eex:17
-#: lib/antonia/mailer/emails/submission_receipt.mjml.eex:48
 #: lib/antonia/mailer/emails/submission_receipt.txt.eex:15
 #, elixir-autogen, elixir-format
 msgid "Realverwaltung GmbH"
@@ -73,12 +73,14 @@ msgstr ""
 #: lib/antonia/mailer/emails/monthly_reminder.txt.eex:10
 #: lib/antonia/mailer/emails/overdue_reminder.mjml.eex:39
 #: lib/antonia/mailer/emails/overdue_reminder.txt.eex:10
+#: lib/antonia_web/live/settings_live.html.heex:227
 #, elixir-autogen, elixir-format
 msgid "Report revenue"
 msgstr ""
 
 #: lib/antonia/mailer/emails/monthly_reminder.mjml.eex:30
 #: lib/antonia/mailer/emails/monthly_reminder.txt.eex:4
+#: lib/antonia_web/live/settings_live.html.heex:214
 #, elixir-autogen, elixir-format
 msgid "Revenue declaration"
 msgstr ""
@@ -107,12 +109,14 @@ msgstr ""
 #: lib/antonia/mailer/emails/overdue_reminder.txt.eex:14
 #: lib/antonia/mailer/emails/submission_receipt.mjml.eex:42
 #: lib/antonia/mailer/emails/submission_receipt.txt.eex:12
+#: lib/antonia_web/live/settings_live.html.heex:235
 #, elixir-autogen, elixir-format
 msgid "We are of course happy to answer any questions you may have."
 msgstr ""
 
 #: lib/antonia/mailer/emails/monthly_reminder.mjml.eex:42
 #: lib/antonia/mailer/emails/monthly_reminder.txt.eex:12
+#: lib/antonia_web/live/settings_live.html.heex:231
 #, elixir-autogen, elixir-format
 msgid "We would like to politely remind you to submit the revenue report within 7 days of receiving this letter."
 msgstr ""
@@ -129,28 +133,25 @@ msgstr ""
 msgid "You can view your submitted report below."
 msgstr ""
 
-#: lib/antonia/mailer/emails/monthly_reminder.mjml.eex:58
 #: lib/antonia/mailer/emails/monthly_reminder.txt.eex:19
-#: lib/antonia/mailer/emails/overdue_reminder.mjml.eex:58
 #: lib/antonia/mailer/emails/overdue_reminder.txt.eex:19
-#: lib/antonia/mailer/emails/submission_receipt.mjml.eex:55
 #: lib/antonia/mailer/emails/submission_receipt.txt.eex:17
 #, elixir-autogen, elixir-format
 msgid "© Realverwaltung GmbH. All rights reserved."
 msgstr ""
 
-#: lib/antonia/mailer/notifier.ex:35
+#: lib/antonia/mailer/notifier.ex:36
 #, elixir-autogen, elixir-format
 msgid "REMINDER: Report revenue due"
 msgstr "REMINDER: Report revenue due"
 
-#: lib/antonia/mailer/notifier.ex:46
+#: lib/antonia/mailer/notifier.ex:47
 #, elixir-autogen, elixir-format
 msgid "Thank you"
 msgstr "Thank you"
 
-#: lib/antonia_web/live/reporting_live.html.heex:94
-#: lib/antonia_web/live/reporting_live.html.heex:99
+#: lib/antonia_web/live/reporting_live.html.heex:105
+#: lib/antonia_web/live/reporting_live.html.heex:110
 #, elixir-autogen, elixir-format
 msgid "Add New Building"
 msgstr ""
@@ -160,32 +161,32 @@ msgstr ""
 msgid "Analyze performance trends with comprehensive analytics including percentage changes and historical comparisons."
 msgstr ""
 
-#: lib/antonia_web/live/reporting_live.html.heex:111
+#: lib/antonia_web/live/reporting_live.html.heex:122
 #, elixir-autogen, elixir-format
 msgid "Building Name"
 msgstr ""
 
-#: lib/antonia_web/live/groups_live.html.heex:45
-#: lib/antonia_web/live/reporting_live.html.heex:89
+#: lib/antonia_web/live/groups_live.html.heex:61
+#: lib/antonia_web/live/reporting_live.html.heex:100
 #, elixir-autogen, elixir-format
 msgid "Buildings"
 msgstr ""
 
 #: lib/antonia_web/live/building_live.html.heex:90
-#: lib/antonia_web/live/reporting_live.html.heex:128
-#: lib/antonia_web/live/store_live.html.heex:91
+#: lib/antonia_web/live/reporting_live.html.heex:139
+#: lib/antonia_web/live/store_live.html.heex:92
 #, elixir-autogen, elixir-format
 msgid "Cancel"
 msgstr ""
 
-#: lib/antonia_web/live/groups_live.html.heex:68
-#: lib/antonia_web/live/reporting_live.html.heex:162
-#: lib/antonia_web/live/reporting_live.html.heex:236
+#: lib/antonia_web/live/groups_live.html.heex:84
+#: lib/antonia_web/live/reporting_live.html.heex:173
+#: lib/antonia_web/live/reporting_live.html.heex:247
 #, elixir-autogen, elixir-format
 msgid "Complete"
 msgstr ""
 
-#: lib/antonia_web/live/reporting_live.html.heex:125
+#: lib/antonia_web/live/reporting_live.html.heex:136
 #, elixir-autogen, elixir-format
 msgid "Create Building"
 msgstr ""
@@ -200,7 +201,7 @@ msgstr ""
 msgid "Easily track which tenants have submitted their monthly revenue reports and identify any missing submissions."
 msgstr ""
 
-#: lib/antonia_web/live/reporting_live.html.heex:112
+#: lib/antonia_web/live/reporting_live.html.heex:123
 #, elixir-autogen, elixir-format
 msgid "Enter building name"
 msgstr ""
@@ -235,14 +236,14 @@ msgstr ""
 msgid "My Account"
 msgstr ""
 
-#: lib/antonia_web/live/reporting_live.html.heex:251
+#: lib/antonia_web/live/reporting_live.html.heex:262
 #, elixir-autogen, elixir-format
 msgid "No buildings yet"
 msgstr ""
 
-#: lib/antonia_web/live/groups_live.html.heex:64
-#: lib/antonia_web/live/reporting_live.html.heex:167
-#: lib/antonia_web/live/reporting_live.html.heex:193
+#: lib/antonia_web/live/groups_live.html.heex:80
+#: lib/antonia_web/live/reporting_live.html.heex:178
+#: lib/antonia_web/live/reporting_live.html.heex:204
 #, elixir-autogen, elixir-format
 msgid "Pending"
 msgstr ""
@@ -303,24 +304,24 @@ msgstr ""
 msgid "Streamline tenant revenue reporting and track your commercial property performance with our comprehensive management platform designed for property owners."
 msgstr ""
 
-#: lib/antonia_web/live/reporting_live.html.heex:43
+#: lib/antonia_web/live/reporting_live.html.heex:54
 #, elixir-autogen, elixir-format
 msgid "Total Buildings"
 msgstr ""
 
-#: lib/antonia_web/live/reporting_live.html.heex:55
-#: lib/antonia_web/live/reporting_live.html.heex:181
+#: lib/antonia_web/live/reporting_live.html.heex:66
+#: lib/antonia_web/live/reporting_live.html.heex:192
 #, elixir-autogen, elixir-format
 msgid "Total Shops"
 msgstr ""
 
-#: lib/antonia_web/live/groups_live.html.heex:57
-#: lib/antonia_web/live/reporting_live.html.heex:79
+#: lib/antonia_web/live/groups_live.html.heex:73
+#: lib/antonia_web/live/reporting_live.html.heex:90
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Pending Reports"
 msgstr ""
 
-#: lib/antonia_web/live/reporting_live.html.heex:67
+#: lib/antonia_web/live/reporting_live.html.heex:78
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Reported this month"
 msgstr ""
@@ -412,7 +413,7 @@ msgstr ""
 msgid "Add Store"
 msgstr ""
 
-#: lib/antonia_web/live/groups_live.html.heex:7
+#: lib/antonia_web/live/groups_live.html.heex:8
 #, elixir-autogen, elixir-format
 msgid "Add a new group to organize your buildings and stores"
 msgstr ""
@@ -427,7 +428,7 @@ msgstr ""
 msgid "Add a new store to %{building_name}"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:225
+#: lib/antonia_web/live/store_live.html.heex:226
 #, elixir-autogen, elixir-format
 msgid "Add notes about this revenue report..."
 msgstr ""
@@ -437,7 +438,7 @@ msgstr ""
 msgid "Add your first store to this building using the button above"
 msgstr ""
 
-#: lib/antonia_web/live/reporting_live.html.heex:118
+#: lib/antonia_web/live/reporting_live.html.heex:129
 #, elixir-autogen, elixir-format
 msgid "Address"
 msgstr ""
@@ -457,37 +458,38 @@ msgstr ""
 msgid "Contact Email"
 msgstr ""
 
-#: lib/antonia_web/live/groups_live.html.heex:18
+#: lib/antonia_web/live/groups_live.html.heex:19
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Create Group"
 msgstr ""
 
-#: lib/antonia_web/live/groups_live.html.heex:6
+#: lib/antonia_web/live/groups_live.html.heex:7
 #, elixir-autogen, elixir-format
 msgid "Create New Group"
 msgstr ""
 
-#: lib/antonia_web/live/reporting_live.html.heex:101
+#: lib/antonia_web/live/reporting_live.html.heex:112
 #, elixir-autogen, elixir-format
 msgid "Create a new building in %{group_name}. Fill in the details below."
 msgstr ""
 
-#: lib/antonia_web/live/groups_live.html.heex:82
+#: lib/antonia_web/live/groups_live.html.heex:99
 #, elixir-autogen, elixir-format
 msgid "Create your first group to get started"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:131
+#: lib/antonia_web/live/store_live.html.heex:132
 #, elixir-autogen, elixir-format
 msgid "Edit"
 msgstr ""
 
-#: lib/antonia_web/live/reporting_live.html.heex:119
+#: lib/antonia_web/live/reporting_live.html.heex:130
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Enter building address"
 msgstr ""
 
-#: lib/antonia_web/live/groups_live.html.heex:14
+#: lib/antonia_web/live/groups_live.html.heex:15
+#: lib/antonia_web/live/settings_live.html.heex:46
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Enter group name"
 msgstr ""
@@ -507,28 +509,31 @@ msgstr ""
 msgid "Export to Excel"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.ex:253
+#: lib/antonia_web/live/store_live.ex:257
 #, elixir-autogen, elixir-format
 msgid "Failed to update revenue"
 msgstr ""
 
-#: lib/antonia_web/live/reporting_live.html.heex:253
+#: lib/antonia_web/live/reporting_live.html.heex:264
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Get started by adding your first building to %{group_name}"
 msgstr ""
 
-#: lib/antonia_web/live/groups_live.html.heex:13
+#: lib/antonia_web/live/groups_live.html.heex:14
+#: lib/antonia_web/live/settings_live.html.heex:38
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Group Name"
 msgstr ""
 
 #: lib/antonia_web/live/reporting_live.ex:31
 #: lib/antonia_web/live/reporting_live.ex:85
+#: lib/antonia_web/live/settings_live.ex:46
 #, elixir-autogen, elixir-format
 msgid "Group not found"
 msgstr ""
 
 #: lib/antonia_web/live/groups_live.html.heex:3
+#: lib/antonia_web/live/settings_live.html.heex:8
 #, elixir-autogen, elixir-format
 msgid "Groups"
 msgstr ""
@@ -538,7 +543,7 @@ msgstr ""
 msgid "Historical Revenue"
 msgstr ""
 
-#: lib/antonia_web/live/reporting_live.html.heex:14
+#: lib/antonia_web/live/reporting_live.html.heex:16
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Monitor revenue reporting across buildings in this group"
 msgstr ""
@@ -548,7 +553,7 @@ msgstr ""
 msgid "Monthly revenue breakdown by store (%{years})"
 msgstr ""
 
-#: lib/antonia_web/live/groups_live.html.heex:81
+#: lib/antonia_web/live/groups_live.html.heex:98
 #, elixir-autogen, elixir-format, fuzzy
 msgid "No groups yet"
 msgstr ""
@@ -558,8 +563,8 @@ msgstr ""
 msgid "No stores yet"
 msgstr ""
 
-#: lib/antonia_web/live/report_submission_live.html.heex:95
-#: lib/antonia_web/live/store_live.html.heex:219
+#: lib/antonia_web/live/report_submission_live.html.heex:96
+#: lib/antonia_web/live/store_live.html.heex:220
 #, elixir-autogen, elixir-format
 msgid "Note"
 msgstr ""
@@ -569,12 +574,12 @@ msgstr ""
 msgid "Phone"
 msgstr ""
 
-#: lib/antonia_web/live/reporting_live.html.heex:187
+#: lib/antonia_web/live/reporting_live.html.heex:198
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Reported"
 msgstr ""
 
-#: lib/antonia_web/live/reporting_live.html.heex:11
+#: lib/antonia_web/live/reporting_live.html.heex:13
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Reporting Dashboard"
 msgstr ""
@@ -591,12 +596,12 @@ msgstr ""
 msgid "Revenue details for %{month} %{year}"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.ex:250
+#: lib/antonia_web/live/store_live.ex:254
 #, elixir-autogen, elixir-format
 msgid "Revenue updated successfully"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:83
+#: lib/antonia_web/live/store_live.html.heex:84
 #, elixir-autogen, elixir-format
 msgid "Save"
 msgstr ""
@@ -636,7 +641,7 @@ msgstr ""
 msgid "Unit"
 msgstr ""
 
-#: lib/antonia_web/live/reporting_live.html.heex:203
+#: lib/antonia_web/live/reporting_live.html.heex:214
 #, elixir-autogen, elixir-format
 msgid "Unreported shops"
 msgstr ""
@@ -646,7 +651,7 @@ msgstr ""
 msgid "Year"
 msgstr ""
 
-#: lib/antonia_web/live/reporting_live.html.heex:212
+#: lib/antonia_web/live/reporting_live.html.heex:223
 #, elixir-autogen, elixir-format
 msgid "more"
 msgstr ""
@@ -693,52 +698,52 @@ msgstr ""
 msgid "Home"
 msgstr ""
 
-#: lib/antonia_web/live/reporting_live.html.heex:142
+#: lib/antonia_web/live/reporting_live.html.heex:153
 #, elixir-autogen, elixir-format
 msgid "Loading buildings..."
 msgstr ""
 
-#: lib/antonia_web/live/groups_live.html.heex:27
+#: lib/antonia_web/live/groups_live.html.heex:29
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Loading groups..."
 msgstr ""
 
-#: lib/antonia_web/live/groups_live.html.heex:51
+#: lib/antonia_web/live/groups_live.html.heex:67
 #, elixir-autogen, elixir-format
 msgid "Stores"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:259
+#: lib/antonia_web/live/store_live.html.heex:260
 #, elixir-autogen, elixir-format
 msgid "Timeline"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.ex:257
+#: lib/antonia_web/live/store_live.ex:261
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Failed to save revenue: %{reason}"
 msgstr ""
 
-#: lib/antonia_web/live/report_submission_live.html.heex:104
+#: lib/antonia_web/live/report_submission_live.html.heex:105
 #, elixir-autogen, elixir-format
 msgid "Add any additional notes or comments..."
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:239
+#: lib/antonia_web/live/store_live.html.heex:240
 #, elixir-autogen, elixir-format
 msgid "Create a new report and send an email to the recipient to fill it out."
 msgstr ""
 
-#: lib/antonia_web/live/store_live.ex:462
+#: lib/antonia_web/live/store_live.ex:466
 #, elixir-autogen, elixir-format
 msgid "Failed to create report"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.ex:237
+#: lib/antonia_web/live/store_live.ex:241
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Failed to send email: %{reason}"
 msgstr ""
 
-#: lib/antonia_web/live/report_submission_live.ex:154
+#: lib/antonia_web/live/report_submission_live.ex:155
 #, elixir-autogen, elixir-format
 msgid "Failed to submit report"
 msgstr ""
@@ -758,13 +763,13 @@ msgstr ""
 msgid "Link Expired"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:289
+#: lib/antonia_web/live/store_live.html.heex:290
 #, elixir-autogen, elixir-format
 msgid "No timeline events yet"
 msgstr ""
 
-#: lib/antonia_web/live/report_submission_live.html.heex:95
-#: lib/antonia_web/live/report_submission_live.html.heex:110
+#: lib/antonia_web/live/report_submission_live.html.heex:96
+#: lib/antonia_web/live/report_submission_live.html.heex:111
 #, elixir-autogen, elixir-format
 msgid "Optional"
 msgstr ""
@@ -785,22 +790,22 @@ msgstr ""
 msgid "Revenue Report Submission"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:252
+#: lib/antonia_web/live/store_live.html.heex:253
 #, elixir-autogen, elixir-format
 msgid "Send Email"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:233
+#: lib/antonia_web/live/store_live.html.heex:234
 #, elixir-autogen, elixir-format
 msgid "Send Report Request"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:237
+#: lib/antonia_web/live/store_live.html.heex:238
 #, elixir-autogen, elixir-format
 msgid "Send an email to the recipient to fill out the report again."
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:249
+#: lib/antonia_web/live/store_live.html.heex:250
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Sending..."
 msgstr ""
@@ -811,7 +816,7 @@ msgstr ""
 msgid "Store"
 msgstr ""
 
-#: lib/antonia_web/live/report_submission_live.html.heex:168
+#: lib/antonia_web/live/report_submission_live.html.heex:169
 #, elixir-autogen, elixir-format
 msgid "Submit Report"
 msgstr ""
@@ -841,41 +846,159 @@ msgstr ""
 msgid "Your revenue report has been submitted successfully."
 msgstr ""
 
-#: lib/antonia_web/live/report_submission_live.html.heex:110
-#: lib/antonia_web/live/store_live.html.heex:139
+#: lib/antonia_web/live/report_submission_live.html.heex:111
+#: lib/antonia_web/live/store_live.html.heex:140
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Attachments"
 msgstr ""
 
-#: lib/antonia_web/live/report_submission_live.html.heex:123
-#: lib/antonia_web/live/store_live.html.heex:175
+#: lib/antonia_web/live/report_submission_live.html.heex:124
+#: lib/antonia_web/live/store_live.html.heex:176
 #, elixir-autogen, elixir-format
 msgid "Choose files"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.ex:280
+#: lib/antonia_web/live/store_live.ex:284
 #, elixir-autogen, elixir-format
 msgid "Failed to generate attachment URL"
 msgstr ""
 
-#: lib/antonia_web/live/report_submission_live.html.heex:133
-#: lib/antonia_web/live/store_live.html.heex:185
+#: lib/antonia_web/live/report_submission_live.html.heex:134
+#: lib/antonia_web/live/store_live.html.heex:186
 #, elixir-autogen, elixir-format
 msgid "PDF, PNG, JPG, JPEG, DOC, DOCX, XLSX, TXT up to 10MB"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.html.heex:156
+#: lib/antonia_web/live/store_live.html.heex:157
 #, elixir-autogen, elixir-format
 msgid "View"
 msgstr ""
 
-#: lib/antonia_web/live/report_submission_live.html.heex:130
-#: lib/antonia_web/live/store_live.html.heex:182
+#: lib/antonia_web/live/report_submission_live.html.heex:131
+#: lib/antonia_web/live/settings_live.html.heex:131
+#: lib/antonia_web/live/store_live.html.heex:183
 #, elixir-autogen, elixir-format
 msgid "or drag and drop"
 msgstr ""
 
-#: lib/antonia_web/live/store_live.ex:489
+#: lib/antonia_web/live/store_live.ex:493
 #, elixir-autogen, elixir-format
 msgid "Email sent to %{email}"
+msgstr ""
+
+#: lib/antonia_web/live/settings_live.html.heex:124
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Choose file"
+msgstr ""
+
+#: lib/antonia_web/live/settings_live.html.heex:82
+#, elixir-autogen, elixir-format
+msgid "Company Name"
+msgstr ""
+
+#: lib/antonia_web/live/settings_live.html.heex:75
+#, elixir-autogen, elixir-format
+msgid "Customize the appearance of emails sent to your tenants."
+msgstr ""
+
+#: lib/antonia_web/live/settings_live.html.heex:72
+#, elixir-autogen, elixir-format
+msgid "Email Configuration"
+msgstr ""
+
+#: lib/antonia_web/live/settings_live.html.heex:187
+#, elixir-autogen, elixir-format
+msgid "Email Preview"
+msgstr ""
+
+#: lib/antonia_web/live/settings_live.ex:115
+#, elixir-autogen, elixir-format
+msgid "Email configuration saved successfully"
+msgstr ""
+
+#: lib/antonia_web/live/settings_live.html.heex:90
+#, elixir-autogen, elixir-format
+msgid "Enter company name"
+msgstr ""
+
+#: lib/antonia_web/live/settings_live.ex:121
+#, elixir-autogen, elixir-format
+msgid "Failed to save email configuration"
+msgstr ""
+
+#: lib/antonia_web/live/settings_live.ex:85
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Failed to save group name"
+msgstr ""
+
+#: lib/antonia_web/live/settings_live.html.heex:29
+#, elixir-autogen, elixir-format
+msgid "Group Information"
+msgstr ""
+
+#: lib/antonia_web/live/settings_live.ex:79
+#, elixir-autogen, elixir-format
+msgid "Group name saved successfully"
+msgstr ""
+
+#: lib/antonia_web/live/settings_live.html.heex:103
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Logo"
+msgstr ""
+
+#: lib/antonia_web/live/settings_live.html.heex:32
+#, elixir-autogen, elixir-format
+msgid "Manage basic information about this group."
+msgstr ""
+
+#: lib/antonia_web/live/settings_live.html.heex:19
+#, elixir-autogen, elixir-format
+msgid "Manage settings for %{group_name}"
+msgstr ""
+
+#: lib/antonia_web/live/settings_live.html.heex:134
+#, elixir-autogen, elixir-format
+msgid "PNG, JPG, SVG up to 5MB"
+msgstr ""
+
+#: lib/antonia_web/live/settings_live.html.heex:190
+#, elixir-autogen, elixir-format
+msgid "Preview how your emails will look to recipients."
+msgstr ""
+
+#: lib/antonia_web/live/settings_live.html.heex:175
+#, elixir-autogen, elixir-format
+msgid "Save Email Configuration"
+msgstr ""
+
+#: lib/antonia_web/live/settings_live.html.heex:62
+#, elixir-autogen, elixir-format
+msgid "Save Group Name"
+msgstr ""
+
+#: lib/antonia_web/live/settings_live.html.heex:59
+#: lib/antonia_web/live/settings_live.html.heex:172
+#, elixir-autogen, elixir-format
+msgid "Saving..."
+msgstr ""
+
+#: lib/antonia_web/live/groups_live.html.heex:49
+#: lib/antonia_web/live/reporting_live.html.heex:24
+#: lib/antonia_web/live/settings_live.html.heex:10
+#: lib/antonia_web/live/settings_live.html.heex:16
+#, elixir-autogen, elixir-format
+msgid "Settings"
+msgstr ""
+
+#: lib/antonia_web/live/settings_live.html.heex:93
+#, elixir-autogen, elixir-format
+msgid "The name that appears in the sender email and used to sign off the email. Defaults to \"%{group_name}\" if not set."
+msgstr ""
+
+#: lib/antonia/mailer/emails/monthly_reminder.mjml.eex:58
+#: lib/antonia/mailer/emails/overdue_reminder.mjml.eex:58
+#: lib/antonia/mailer/emails/submission_receipt.mjml.eex:55
+#: lib/antonia_web/live/settings_live.html.heex:243
+#, elixir-autogen, elixir-format
+msgid "© %{company_name}. All rights reserved."
 msgstr ""

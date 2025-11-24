@@ -66,4 +66,9 @@ defmodule AntoniaWeb.GroupsLive do
   def handle_event("open_add_group_modal", _params, socket) do
     {:noreply, socket}
   end
+
+  @impl Phoenix.LiveView
+  def handle_event("stop_propagation", _params, socket) do
+    {:noreply, socket}
+  end
 end

@@ -134,7 +134,8 @@ defmodule Antonia.Revenue do
   end
 
   @doc "Updates a group for a user."
-  @spec update_group(binary(), binary(), map()) :: {:ok, Group.t()} | {:error, Changeset.t() | :group_not_found}
+  @spec update_group(binary(), binary(), map()) ::
+          {:ok, Group.t()} | {:error, Changeset.t() | :group_not_found}
   def update_group(user_id, group_id, attrs) do
     case get_group(user_id, group_id) do
       {:error, :group_not_found} = error ->

@@ -5,7 +5,9 @@ defmodule Antonia.Mailer.NotifierTest do
 
   alias Antonia.Mailer
   alias Antonia.Mailer.Notifier
+  alias Antonia.Repo
   alias Antonia.Revenue.EmailLog
+  alias Antonia.Revenue.Group
 
   describe "deliver_monthly_reminder/2" do
     test "successfully sends email and creates email log" do
@@ -161,13 +163,16 @@ defmodule Antonia.Mailer.NotifierTest do
     test "monthly reminder includes correct subject and recipient" do
       store = insert(:store, email: "store@example.com")
       report = insert(:report, store: store)
+      # Reload to get group association
+      report = Repo.preload(report, store: [building: :group])
+      group_name = report.store.building.group.name
 
       with_mock Mailer,
         deliver: fn email ->
           # Assert email properties
           assert email.to == [{"", "store@example.com"}]
           assert email.subject == "Revenue report due"
-          assert email.from == {"Revenue Report", "notifications@revenue-report.com"}
+          assert email.from == {group_name, "notifications@revenue-report.com"}
           {:ok, %{}}
         end do
         assert {:ok, _} = Notifier.deliver_monthly_reminder(store, report)
@@ -177,13 +182,16 @@ defmodule Antonia.Mailer.NotifierTest do
     test "overdue reminder includes correct subject and recipient" do
       store = insert(:store, email: "store@example.com")
       report = insert(:report, store: store)
+      # Reload to get group association
+      report = Repo.preload(report, store: [building: :group])
+      group_name = report.store.building.group.name
 
       with_mock Mailer,
         deliver: fn email ->
           # Assert email properties
           assert email.to == [{"", "store@example.com"}]
           assert email.subject == "REMINDER: Report revenue due"
-          assert email.from == {"Revenue Report", "notifications@revenue-report.com"}
+          assert email.from == {group_name, "notifications@revenue-report.com"}
           {:ok, %{}}
         end do
         assert {:ok, _} = Notifier.deliver_overdue_reminder(store, report)
@@ -193,16 +201,45 @@ defmodule Antonia.Mailer.NotifierTest do
     test "submission receipt includes correct subject and recipient" do
       store = insert(:store, email: "store@example.com")
       report = insert(:report, store: store)
+      # Reload to get group association
+      report = Repo.preload(report, store: [building: :group])
+      group_name = report.store.building.group.name
 
       with_mock Mailer,
         deliver: fn email ->
           # Assert email properties
           assert email.to == [{"", "store@example.com"}]
           assert email.subject == "Thank you"
-          assert email.from == {"Revenue Report", "notifications@revenue-report.com"}
+          assert email.from == {group_name, "notifications@revenue-report.com"}
           {:ok, %{}}
         end do
         assert {:ok, _} = Notifier.deliver_submission_receipt(store, report)
+      end
+    end
+
+    test "uses custom company name when set" do
+      store = insert(:store, email: "store@example.com")
+      report = insert(:report, store: store)
+      # Reload to get group association
+      report = Repo.preload(report, store: [building: :group])
+      group = report.store.building.group
+      # Update group with custom company name
+      group
+      |> Group.changeset(%{email_company_name: "Custom Company"})
+      |> Repo.update!()
+
+      # Reload report from database to ensure fresh associations
+      report =
+        Antonia.Revenue.Report
+        |> Repo.get!(report.id)
+        |> Repo.preload(store: [building: :group])
+
+      with_mock Mailer,
+        deliver: fn email ->
+          assert email.from == {"Custom Company", "notifications@revenue-report.com"}
+          {:ok, %{}}
+        end do
+        assert {:ok, _} = Notifier.deliver_monthly_reminder(store, report)
       end
     end
   end

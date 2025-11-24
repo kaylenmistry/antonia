@@ -38,28 +38,6 @@ defmodule AntoniaWeb.DisplayHelpers do
   def format_currency(_, _), do: "€0"
 
   @doc """
-  Formats a number for use in input fields, avoiding scientific notation.
-
-  ## Examples
-
-      iex> format_number_for_input(1234.56)
-      "1234.56"
-
-      iex> format_number_for_input(1000.0)
-      "1000.0"
-
-      iex> format_number_for_input(10000.5)
-      "10000.5"
-  """
-  @spec format_number_for_input(number() | nil) :: String.t()
-  def format_number_for_input(nil), do: ""
-  def format_number_for_input(amount) when is_number(amount) do
-    # Use :io_lib.format to avoid scientific notation, always show 2 decimal places for currency
-    :io_lib.format("~.2f", [amount * 1.0]) |> List.to_string()
-  end
-  def format_number_for_input(_), do: ""
-
-  @doc """
   Formats a date in a readable format.
 
   ## Examples
