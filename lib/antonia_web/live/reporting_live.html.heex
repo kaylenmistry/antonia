@@ -7,12 +7,23 @@
       ]} />
     </div>
 
-    <h1 class="text-3xl font-bold text-gray-900 mb-2">
-      {gettext("Reporting Dashboard")}
-    </h1>
-    <p class="text-gray-600">
-      {gettext("Monitor revenue reporting across buildings in this group")}
-    </p>
+    <div class="flex justify-between items-start">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">
+          {gettext("Reporting Dashboard")}
+        </h1>
+        <p class="text-gray-600">
+          {gettext("Monitor revenue reporting across buildings in this group")}
+        </p>
+      </div>
+      <.link
+        navigate={~p"/app/groups/#{@group.id}/settings"}
+        class="flex items-center space-x-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-gray-700"
+      >
+        <.icon name="hero-cog-6-tooth" class="h-5 w-5" />
+        <span>{gettext("Settings")}</span>
+      </.link>
+    </div>
   </div>
   
 <!-- Stats Cards -->

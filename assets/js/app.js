@@ -69,12 +69,79 @@ const AutoDismiss = {
   }
 };
 
+// LogoUploadWatcher hook for real-time preview
+const LogoUploadWatcher = {
+  mounted() {
+    this.handleUpload = () => {
+      // Find upload entries by checking for phx-upload-ref attributes
+      const uploadInputs = this.el.querySelectorAll('input[type="file"]');
+      uploadInputs.forEach(input => {
+        // Check if there's a parent with upload entries
+        const container = input.closest('[phx-drop-target]') || input.parentElement;
+        if (container) {
+          // Look for entries in the uploads object (they're rendered by LiveView)
+          // We'll watch for progress changes via DOM updates
+          const entries = container.querySelectorAll('[data-phx-entry]');
+          entries.forEach(entry => {
+            const ref = entry.getAttribute('data-phx-entry-ref');
+            const progressAttr = entry.getAttribute('data-phx-entry-progress');
+            const progress = progressAttr ? parseInt(progressAttr) : 0;
+            
+            if (progress === 100 && !entry.dataset.processed) {
+              entry.dataset.processed = 'true';
+              this.pushEvent('logo_uploaded', { ref: ref });
+            }
+          });
+        }
+      });
+    };
+    
+    // Watch for upload progress updates
+    this.observer = new MutationObserver(() => {
+      this.handleUpload();
+    });
+    
+    this.observer.observe(this.el, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['data-phx-entry-progress', 'data-phx-entry-ref']
+    });
+    
+    // Also listen for phx:upload-progress events
+    this.el.addEventListener('phx:upload-progress', (e) => {
+      if (e.detail.entries) {
+        e.detail.entries.forEach(entry => {
+          if (entry.progress === 100 && !entry.processed) {
+            entry.processed = true;
+            this.pushEvent('logo_uploaded', { ref: entry.ref });
+          }
+        });
+      }
+    });
+    
+    // Initial check
+    setTimeout(() => this.handleUpload(), 100);
+  },
+  
+  updated() {
+    this.handleUpload();
+  },
+  
+  destroyed() {
+    if (this.observer) {
+      this.observer.disconnect();
+    }
+  }
+};
+
 let liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: { _csrf_token: csrfToken },
   hooks: { 
     SaladUI: SafeSaladUIHook,
-    AutoDismiss: AutoDismiss
+    AutoDismiss: AutoDismiss,
+    LogoUploadWatcher: LogoUploadWatcher
   }
 })
 

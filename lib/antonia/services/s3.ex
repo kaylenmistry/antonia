@@ -53,6 +53,35 @@ defmodule Antonia.Services.S3 do
   @spec s3_key(map(), String.t()) :: String.t()
   defp s3_key(entry, user_id), do: "private/reports/#{user_id}/#{entry.client_name}"
 
+  @doc """
+  Presigns a write url for a logo upload (for email configuration).
+  """
+  @spec presign_logo_upload(map(), Socket.t()) :: {:ok, map(), Socket.t()} | {:error, binary()}
+  def presign_logo_upload(entry, socket) do
+    config = ExAws.Config.new(:s3, region: config()[:aws_region])
+    bucket = config()[:s3_bucket_name]
+
+    key = logo_s3_key(entry, socket.assigns.user_id, socket.assigns.group_id)
+
+    case ExAws.S3.presigned_url(config, :put, bucket, key,
+           expires_in: 600,
+           query_params: [{"Content-Type", entry.client_type}]
+         ) do
+      {:ok, url} ->
+        {:ok, %{uploader: "S3", key: key, url: url}, socket}
+
+      {:error, error} ->
+        Logger.error("Failed to generate presigned logo upload url: #{inspect(error)}")
+        {:error, error}
+    end
+  end
+
+  @spec logo_s3_key(map(), String.t(), String.t()) :: String.t()
+  defp logo_s3_key(entry, _user_id, group_id) do
+    extension = Path.extname(entry.client_name)
+    "private/groups/#{group_id}/logo#{extension}"
+  end
+
   ##### Config #####
 
   defp config, do: Application.get_env(:antonia, __MODULE__)

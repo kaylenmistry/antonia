@@ -7,7 +7,11 @@ defmodule AntoniaWeb.StoreLive do
   import AntoniaWeb.SharedComponents
 
   import AntoniaWeb.DisplayHelpers,
-    only: [format_currency: 2, format_timestamp: 1, build_error_message: 2]
+    only: [
+      format_currency: 2,
+      format_timestamp: 1,
+      build_error_message: 2
+    ]
 
   alias Antonia.MailerWorker
   alias Antonia.Repo

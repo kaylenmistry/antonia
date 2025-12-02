@@ -147,7 +147,8 @@ defmodule AntoniaWeb.ReportSubmissionLive do
         {:noreply,
          assign(socket,
            submitted: true,
-           report: updated_report
+           report: updated_report,
+           revenue: extract_revenue_float(updated_report)
          )}
 
       {:error, changeset} ->
