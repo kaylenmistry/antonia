@@ -38,7 +38,7 @@ jobs:
           elixir-version: "1.19.0-rc.0"
           otp-version: "28.0.2"
       - name: Restore dependencies cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             deps
@@ -47,7 +47,7 @@ jobs:
           restore-keys: ${{ runner.os }}-mix-v1-cache-
       # Restore PLT cache
       - name: Restore PLT cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: priv/plts
           key: ${{ runner.os }}-mix-plt-v2-${{ hashFiles('**/mix.lock') }}
